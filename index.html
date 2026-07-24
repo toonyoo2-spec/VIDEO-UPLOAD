@@ -66,15 +66,20 @@
         main { margin-top: 1.5rem; margin-bottom: 2.5rem; }
         .project-section { margin-bottom: 3rem; scroll-margin-top: 140px; }
 
-        .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color); }
-        .section-header-left { display: flex; align-items: center; gap: 0.6rem; }
+        .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; gap: 0.5rem; }
+        .section-header-left { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
         .date-badge { font-size: 0.85rem; font-weight: 800; color: #ffffff; background: #18181b; padding: 0.25rem 0.6rem; border-radius: 6px; border: 1px solid var(--border-hover); font-family: monospace; }
         .section-title { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); }
+
+        .admin-edit-badge { background: #27272a; color: #a1a1aa; border: 1px solid #3f3f46; font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+        .admin-edit-badge:hover { color: white; border-color: #71717a; }
+        .admin-delete-badge { background: rgba(239, 68, 68, 0.15); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.3); font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+        .admin-delete-badge:hover { background: var(--accent-red); color: white; }
 
         .video-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.8rem; align-items: start; }
         @media (min-width: 768px) { .video-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.5rem; } }
 
-        .video-card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; cursor: pointer; transition: border-color 0.2s, transform 0.2s; }
+        .video-card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; cursor: pointer; transition: border-color 0.2s, transform 0.2s; position: relative; }
         .video-card:hover { border-color: var(--accent-red); transform: translateY(-2px); }
 
         .thumb-cover { position: relative; width: 100%; background: #171717; overflow: hidden; aspect-ratio: 16 / 9; }
@@ -87,6 +92,7 @@
         .video-info { padding: 0.75rem; }
         .video-tag { font-size: 0.7rem; font-weight: 700; color: var(--accent-red); margin-bottom: 0.2rem; }
         .video-title { font-size: 0.85rem; font-weight: 700; color: var(--text-primary); line-height: 1.3; }
+        .video-admin-bar { display: flex; gap: 0.4rem; margin-top: 0.5rem; padding-top: 0.4rem; border-top: 1px solid var(--border-color); }
 
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(12px); display: none; align-items: center; justify-content: center; z-index: 9999; padding: 0.5rem; }
         .modal-overlay.active { display: flex; }
@@ -172,6 +178,7 @@
         <div style="font-size: 0.8rem; color: #a1a1aa;">대용량 파일의 경우 잠시만 기다려주세요.</div>
     </div>
 
+    <!-- 1. 새 프로젝트 추가 모달 -->
     <div id="projectModal" class="admin-modal-overlay">
         <div class="admin-modal-box">
             <div class="admin-modal-title">새 프로젝트 생성</div>
@@ -190,6 +197,51 @@
         </div>
     </div>
 
+    <!-- 2. 프로젝트 제목 수정 모달 -->
+    <div id="projectEditModal" class="admin-modal-overlay">
+        <div class="admin-modal-box">
+            <div class="admin-modal-title">프로젝트 수정</div>
+            <input type="hidden" id="editProjTargetId">
+            <input type="hidden" id="editProjTargetDate">
+            <div class="admin-input-group">
+                <label>프로젝트 제목</label>
+                <input type="text" id="editProjTitleInput" class="admin-input">
+            </div>
+            <div class="admin-btn-row">
+                <button class="btn-cancel" onclick="closeProjectEditModal()">취소</button>
+                <button class="btn-submit" onclick="submitEditProject()">수정 완료</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. 영상 정보 수정 모달 -->
+    <div id="videoEditModal" class="admin-modal-overlay">
+        <div class="admin-modal-box">
+            <div class="admin-modal-title">영상 시안 정보 수정</div>
+            <input type="hidden" id="editVidTargetId">
+            <div class="admin-input-group">
+                <label>태그 (예: OPTION 01)</label>
+                <input type="text" id="editVidTagInput" class="admin-input">
+            </div>
+            <div class="admin-input-group">
+                <label>비디오 제목</label>
+                <input type="text" id="editVidTitleInput" class="admin-input">
+            </div>
+            <div class="admin-input-group">
+                <label>화면 비율 모드</label>
+                <select id="editVidModeSelect" class="admin-input">
+                    <option value="landscape">가로 영상 (16:9)</option>
+                    <option value="portrait">세로 숏폼 (9:16)</option>
+                </select>
+            </div>
+            <div class="admin-btn-row">
+                <button class="btn-cancel" onclick="closeVideoEditModal()">취소</button>
+                <button class="btn-submit" onclick="submitEditVideo()">수정 완료</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. 새 영상 파일 업로드 모달 -->
     <div id="videoModalUpload" class="admin-modal-overlay">
         <div class="admin-modal-box">
             <div class="admin-modal-title">새 동영상 추가 (R2 자동 업로드)</div>
@@ -220,6 +272,7 @@
         </div>
     </div>
 
+    <!-- 5. 재생 모달 -->
     <div id="videoModal" class="modal-overlay" onclick="closeVideo(event)">
         <div class="modal-container">
             <div class="modal-header">
@@ -288,6 +341,7 @@
 
         const defaultProjectsArchive = [
             {
+                id: 'def_260625',
                 date: "260625",
                 title: "IP VIDEO TEST",
                 items: [
@@ -310,6 +364,7 @@
                 ]
             },
             {
+                id: 'def_260724',
                 date: "260724",
                 title: "INTRO 시안",
                 items: [
@@ -382,7 +437,6 @@
         let displayArchive = [];
         let currentFilterYear = 'ALL';
 
-        // 🔒 Supabase DB 기반 인증
         async function handleAdminToggle() {
             if (isAdmin) {
                 if (confirm('관리자 모드를 종료할까요?')) {
@@ -445,9 +499,9 @@
 
                 if (Array.isArray(dbProjects)) {
                     dbProjects.forEach(p => {
-                        let targetGroup = displayArchive.find(g => g.date === p.date);
+                        let targetGroup = displayArchive.find(g => (p.id && g.id === p.id));
                         if (!targetGroup) {
-                            targetGroup = { date: p.date, title: p.title, items: [] };
+                            targetGroup = { id: p.id, date: p.date, title: p.title, items: [] };
                             displayArchive.push(targetGroup);
                         } else {
                             targetGroup.title = p.title;
@@ -455,17 +509,19 @@
 
                         const matchingVids = dbVideos.filter(v => v.project_date === p.date);
                         matchingVids.forEach(v => {
-                            targetGroup.items.push({
-                                id: v.id,
-                                tag: v.tag,
-                                title: v.title,
-                                isSingle: v.is_single !== false,
-                                leftTitle: v.left_title,
-                                rightTitle: v.right_title,
-                                fullUrl: v.full_url,
-                                introUrl: v.intro_url,
-                                mode: v.mode
-                            });
+                            if(!targetGroup.items.some(existVid => existVid.id === v.id || existVid.fullUrl === v.full_url)) {
+                                targetGroup.items.push({
+                                    id: v.id,
+                                    tag: v.tag,
+                                    title: v.title,
+                                    isSingle: v.is_single !== false,
+                                    leftTitle: v.left_title,
+                                    rightTitle: v.right_title,
+                                    fullUrl: v.full_url,
+                                    introUrl: v.intro_url,
+                                    mode: v.mode
+                                });
+                            }
                         });
                     });
                 }
@@ -493,29 +549,39 @@
             quickLinksContainer.innerHTML = '';
             const yearsSet = new Set();
 
-            displayArchive.forEach((group) => {
+            displayArchive.forEach((group, idx) => {
                 const dateInfo = parseDate(group.date);
                 yearsSet.add(dateInfo.year);
 
                 if (currentFilterYear !== 'ALL' && dateInfo.year !== currentFilterYear) return;
 
+                const sectionId = `section-${group.date}-${idx}`;
+
                 const qLink = document.createElement('button');
                 qLink.className = 'quick-link-btn';
                 qLink.innerHTML = `<span class="date-label">${dateInfo.formattedFull}</span> ${group.title}`;
                 qLink.onclick = () => {
-                    const targetSec = document.getElementById(`section-${group.date}`);
+                    const targetSec = document.getElementById(sectionId);
                     if (targetSec) targetSec.scrollIntoView({ behavior: 'smooth' });
                 };
                 quickLinksContainer.appendChild(qLink);
 
                 const section = document.createElement('section');
                 section.className = 'project-section';
-                section.id = `section-${group.date}`;
+                section.id = sectionId;
 
                 let gridCardsHtml = '';
                 group.items.forEach((item) => {
                     const jsonItem = JSON.stringify(item).replace(/"/g, '&quot;');
                     const thumbSource = item.isSingle ? item.fullUrl : item.introUrl;
+
+                    const vidAdminBtnsHtml = (isAdmin && item.id) ? `
+                        <div class="video-admin-bar" onclick="event.stopPropagation();">
+                            <button class="admin-edit-badge" onclick="openVideoEditModal(${item.id}, '${item.tag.replace(/'/g, "\\'")}', '${item.title.replace(/'/g, "\\'")}', '${item.mode || 'landscape'}')">수정</button>
+                            <button class="admin-delete-badge" onclick="deleteVideo(${item.id})">삭제</button>
+                        </div>
+                    ` : '';
+
                     gridCardsHtml += `
                         <div class="video-card" onclick="openDualModal(${jsonItem})">
                             <div class="thumb-cover ${item.mode || 'landscape'}">
@@ -526,6 +592,7 @@
                             <div class="video-info">
                                 <div class="video-tag">${item.tag}</div>
                                 <div class="video-title">${item.title}</div>
+                                ${vidAdminBtnsHtml}
                             </div>
                         </div>
                     `;
@@ -535,11 +602,17 @@
                     ? `<button class="btn-admin-action" style="display:inline-block;" onclick="openVideoUploadModal('${group.date}')">+ 영상 추가</button>` 
                     : '';
 
+                const projAdminBtnsHtml = (isAdmin && group.id && !String(group.id).startsWith('def_')) ? `
+                    <button class="admin-edit-badge" onclick="openProjectEditModal('${group.id}', '${group.date}', '${group.title.replace(/'/g, "\\'")}')">제목 수정</button>
+                    <button class="admin-delete-badge" onclick="deleteProject('${group.id}', '${group.date}')">프로젝트 삭제</button>
+                ` : '';
+
                 section.innerHTML = `
                     <div class="section-header">
                         <div class="section-header-left">
                             <span class="date-badge">${dateInfo.formattedFull}</span>
                             <h2 class="section-title">${group.title}</h2>
+                            ${projAdminBtnsHtml}
                         </div>
                         ${addVideoBtnHtml}
                     </div>
@@ -598,9 +671,119 @@
                     closeProjectModal();
                     loadArchiveFromDB();
                 } else {
-                    alert('프로젝트 생성 실패. 이미 존재하는 날짜인지 확인하세요.');
+                    alert('프로젝트 생성 실패. DB 설정을 확인해 보세요.');
                 }
             } catch (e) { console.error(e); }
+        }
+
+        // ==========================================
+        // ✏️ 관리자 프로젝트 및 영상 수정 / 삭제 연동
+        // ==========================================
+        function openProjectEditModal(id, date, currentTitle) {
+            document.getElementById('editProjTargetId').value = id;
+            document.getElementById('editProjTargetDate').value = date;
+            document.getElementById('editProjTitleInput').value = currentTitle;
+            document.getElementById('projectEditModal').classList.add('active');
+        }
+        function closeProjectEditModal() { document.getElementById('projectEditModal').classList.remove('active'); }
+
+        async function submitEditProject() {
+            const id = document.getElementById('editProjTargetId').value;
+            const date = document.getElementById('editProjTargetDate').value;
+            const newTitle = document.getElementById('editProjTitleInput').value.trim();
+            if (!newTitle) return alert('제목을 입력해주세요.');
+
+            try {
+                const url = id && id !== 'undefined' 
+                    ? `${SUPABASE_URL}/rest/v1/archive_projects?id=eq.${id}`
+                    : `${SUPABASE_URL}/rest/v1/archive_projects?date=eq.${date}`;
+
+                const res = await fetch(url, {
+                    method: 'PATCH',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ title: newTitle })
+                });
+
+                if (res.ok) {
+                    alert('프로젝트 제목이 수정되었습니다.');
+                    closeProjectEditModal();
+                    loadArchiveFromDB();
+                } else { alert('수정 실패'); }
+            } catch(e) { console.error(e); }
+        }
+
+        async function deleteProject(id, date) {
+            if (!confirm('이 프로젝트를 삭제할까요? 관련 동영상 항목도 모두 삭제 권장됩니다.')) return;
+            try {
+                const url = id && id !== 'undefined' 
+                    ? `${SUPABASE_URL}/rest/v1/archive_projects?id=eq.${id}`
+                    : `${SUPABASE_URL}/rest/v1/archive_projects?date=eq.${date}`;
+
+                const res = await fetch(url, {
+                    method: 'DELETE',
+                    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+                });
+
+                if (res.ok) {
+                    alert('프로젝트가 삭제되었습니다.');
+                    loadArchiveFromDB();
+                } else { alert('삭제 실패'); }
+            } catch(e) { console.error(e); }
+        }
+
+        function openVideoEditModal(vidId, currentTag, currentTitle, currentMode) {
+            document.getElementById('editVidTargetId').value = vidId;
+            document.getElementById('editVidTagInput').value = currentTag;
+            document.getElementById('editVidTitleInput').value = currentTitle;
+            document.getElementById('editVidModeSelect').value = currentMode;
+            document.getElementById('videoEditModal').classList.add('active');
+        }
+        function closeVideoEditModal() { document.getElementById('videoEditModal').classList.remove('active'); }
+
+        async function submitEditVideo() {
+            const vidId = document.getElementById('editVidTargetId').value;
+            const newTag = document.getElementById('editVidTagInput').value.trim();
+            const newTitle = document.getElementById('editVidTitleInput').value.trim();
+            const newMode = document.getElementById('editVidModeSelect').value;
+
+            if (!newTag || !newTitle) return alert('태그와 제목을 모두 입력해 주세요.');
+
+            try {
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/archive_videos?id=eq.${vidId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ tag: newTag, title: newTitle, mode: newMode })
+                });
+
+                if (res.ok) {
+                    alert('영상 정보가 수정되었습니다.');
+                    closeVideoEditModal();
+                    loadArchiveFromDB();
+                } else { alert('수정 실패'); }
+            } catch(e) { console.error(e); }
+        }
+
+        async function deleteVideo(vidId) {
+            if (!confirm('이 영상 시안 항목을 삭제할까요?')) return;
+            try {
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/archive_videos?id=eq.${vidId}`, {
+                    method: 'DELETE',
+                    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+                });
+
+                if (res.ok) {
+                    alert('영상이 삭제되었습니다.');
+                    loadArchiveFromDB();
+                } else { alert('삭제 실패'); }
+            } catch(e) { console.error(e); }
         }
 
         function openVideoUploadModal(date) {
@@ -635,7 +818,7 @@
                 if (err) {
                     document.getElementById('loadingSpinner').style.display = 'none';
                     console.error("R2 업로드 실패:", err);
-                    alert("Cloudflare R2 업로드 중 오류가 발생했습니다. API 키 및 권한 설정을 확인해주세요.");
+                    alert("Cloudflare R2 업로드 중 오류가 발생했습니다.");
                     return;
                 }
 
