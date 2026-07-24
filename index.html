@@ -579,27 +579,31 @@
                     const jsonItem = JSON.stringify(item).replace(/"/g, '&quot;');
                     const thumbSource = item.isSingle ? item.fullUrl : item.introUrl;
 
-                    const vidAdminBtnsHtml = (isAdmin && item.id) ? `
-                        <div class="video-admin-bar" onclick="event.stopPropagation();">
-                            <button class="admin-edit-badge" onclick="openVideoEditModal(${item.id}, '${item.tag.replace(/'/g, "\\'")}', '${item.title.replace(/'/g, "\\'")}', '${item.mode || 'landscape'}')">수정</button>
-                            <button class="admin-delete-badge" onclick="deleteVideo(${item.id})">삭제</button>
-                        </div>
-                    ` : '';
+                    const canEdit = isAdmin && item.id;
+const editClickAttr = canEdit
+    ? `onclick="event.stopPropagation(); openVideoEditModal(${item.id}, '${item.tag.replace(/'/g, "\\'")}', '${item.title.replace(/'/g, "\\'")}', '${item.mode || 'landscape'}')"`
+    : '';
 
-                    gridCardsHtml += `
-                        <div class="video-card" onclick="openDualModal(${jsonItem})">
-                            <div class="thumb-cover ${item.mode || 'landscape'}">
-                                <video src="${thumbSource}#t=0.1" class="thumb-video" preload="metadata" muted playsinline
-                                    onloadedmetadata="if(this.videoWidth && this.videoHeight){ this.closest('.thumb-cover').style.aspectRatio = (this.videoWidth / this.videoHeight); }"></video>
-                                <div class="play-btn"></div>
-                            </div>
-                            <div class="video-info">
-                                <div class="video-tag">${item.tag}</div>
-                                <div class="video-title">${item.title}</div>
-                                ${vidAdminBtnsHtml}
-                            </div>
-                        </div>
-                    `;
+const vidAdminBtnsHtml = canEdit ? `
+    <div class="video-admin-bar" onclick="event.stopPropagation();">
+        <button class="admin-delete-badge" onclick="deleteVideo(${item.id})">삭제</button>
+    </div>
+` : '';
+
+gridCardsHtml += `
+    <div class="video-card" onclick="openDualModal(${jsonItem})">
+        <div class="thumb-cover ${item.mode || 'landscape'}">
+            <video src="${thumbSource}#t=0.1" class="thumb-video" preload="metadata" muted playsinline
+                onloadedmetadata="if(this.videoWidth && this.videoHeight){ this.closest('.thumb-cover').style.aspectRatio = (this.videoWidth / this.videoHeight); }"></video>
+            <div class="play-btn"></div>
+        </div>
+        <div class="video-info">
+            <div class="video-tag" ${editClickAttr} style="${canEdit ? 'cursor:pointer; text-decoration:underline dotted;' : ''}">${item.tag}</div>
+            <div class="video-title" ${editClickAttr} style="${canEdit ? 'cursor:pointer;' : ''}">${item.title}</div>
+            ${vidAdminBtnsHtml}
+        </div>
+    </div>
+`;
                 });
 
                 const addVideoBtnHtml = isAdmin 
