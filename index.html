@@ -33,21 +33,40 @@
         header { padding-top: 3.5rem; padding-bottom: 1.8rem; }
         .header-tag { color: var(--accent-red); font-size: 2.6rem; font-weight: 800; letter-spacing: -1px; }
 
-        /* Navigation Bar */
+        /* ------------------------------------
+           3줄 세로 고정 + 3행 가로 스크롤 내비게이션
+        ------------------------------------ */
         .nav-bar-wrapper {
             position: sticky; top: 0;
             background: rgba(10, 10, 10, 0.88); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
             border-bottom: 1px solid var(--border-color);
             z-index: 100;
-            padding-top: 0.85rem;
-            padding-bottom: 0.85rem;
+            padding-top: 1rem;
+            padding-bottom: 1rem;
         }
 
         .nav-bar-container { 
             display: flex; 
-            align-items: center; 
-            justify-content: flex-start;
+            flex-direction: column;
             gap: 0.6rem; 
+        }
+
+        /* 1, 2행 일반 행 */
+        .nav-row {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        /* 3행 전용: 가로 드래그/터치 스크롤 지원 */
+        .nav-row-scroll {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 0.6rem;
             overflow-x: auto;
             white-space: nowrap;
             scrollbar-width: none;
@@ -55,10 +74,11 @@
             cursor: grab;
             user-select: none;
             -webkit-overflow-scrolling: touch;
+            width: 100%;
         }
 
-        .nav-bar-container:active { cursor: grabbing; }
-        .nav-bar-container::-webkit-scrollbar { display: none; }
+        .nav-row-scroll:active { cursor: grabbing; }
+        .nav-row-scroll::-webkit-scrollbar { display: none; }
 
         .tab-btn, .quick-link-btn {
             height: 36px !important;
@@ -74,7 +94,7 @@
             transition: background 0.2s, border-color 0.2s;
             box-sizing: border-box;
             margin: 0 !important;
-            flex-shrink: 0;
+            flex-shrink: 0; /* 줄바꿈 방지 */
         }
 
         .tab-btn {
@@ -94,7 +114,7 @@
 
         /* Main Grid Area */
         main { margin-top: 2.5rem; margin-bottom: 2.5rem; }
-        .project-section { margin-bottom: 4.5rem; scroll-margin-top: 100px; }
+        .project-section { margin-bottom: 4.5rem; scroll-margin-top: 180px; }
 
         .section-header { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); }
         .date-badge { font-size: 1rem; font-weight: 800; color: #ffffff; background: #18181b; padding: 0.3rem 0.75rem; border-radius: 6px; border: 1px solid var(--border-hover); font-family: monospace; }
@@ -276,8 +296,6 @@
         }
         .top-btn:hover { background: var(--accent-red); border-color: var(--accent-red); transform: translateY(-3px); }
 
-        footer { margin-top: 5rem; margin-bottom: 2rem; padding-top: 2rem; padding-bottom: 2rem; border-top: 1px solid var(--border-color); color: var(--text-secondary); font-size: 0.85rem; text-align: center; }
-
         @media (max-width: 768px) {
             .grid-layout-align { padding-left: 1.2rem; padding-right: 1.2rem; }
             header { padding-top: 2.2rem; padding-bottom: 1.2rem; }
@@ -306,11 +324,17 @@
         <div class="header-tag">Socra Brandteam Archive</div>
     </header>
 
+    <!-- 3줄 구조 내비게이션 바 -->
     <div class="nav-bar-wrapper">
-        <div id="navBarContainer" class="nav-bar-container grid-layout-align">
-            <button id="btnAll" class="tab-btn active" onclick="handleButtonClick(() => filterYear('ALL'))">ALL</button>
-            <div id="yearTabs" style="display: flex; gap: 0.6rem; align-items: center;"></div>
-            <div id="quickLinks" style="display: flex; gap: 0.6rem; align-items: center;"></div>
+        <div class="nav-bar-container grid-layout-align">
+            <!-- 1행: ALL -->
+            <div class="nav-row">
+                <button id="btnAll" class="tab-btn active" onclick="filterYear('ALL')">ALL</button>
+            </div>
+            <!-- 2행: 연도 목록 -->
+            <div id="yearTabs" class="nav-row"></div>
+            <!-- 3행: 해당일 프로젝트 바로가기 (가로 스크롤 유효) -->
+            <div id="quickLinks" class="nav-row-scroll"></div>
         </div>
     </div>
 
@@ -475,7 +499,7 @@
                 const btn = document.createElement('button');
                 btn.className = `tab-btn ${currentFilterYear === yr ? 'active' : ''}`;
                 btn.textContent = yr;
-                btn.onclick = () => handleButtonClick(() => filterYear(yr));
+                btn.onclick = () => filterYear(yr);
                 yearTabsContainer.appendChild(btn);
             });
         }
@@ -491,26 +515,26 @@
 
         renderArchive();
 
-        // 가로 드래그 스크롤
-        const navBar = document.getElementById('navBarContainer');
+        // 3행 전용 마우스 드래그 가로 스크롤 제어
+        const quickRow = document.getElementById('quickLinks');
         let isMouseDown = false, startX, scrollLeft, isDragging = false;
 
-        navBar.addEventListener('mousedown', (e) => {
+        quickRow.addEventListener('mousedown', (e) => {
             isMouseDown = true; isDragging = false;
-            startX = e.pageX - navBar.offsetLeft;
-            scrollLeft = navBar.scrollLeft;
+            startX = e.pageX - quickRow.offsetLeft;
+            scrollLeft = quickRow.scrollLeft;
         });
 
-        navBar.addEventListener('mouseleave', () => { isMouseDown = false; });
-        navBar.addEventListener('mouseup', () => { isMouseDown = false; });
+        quickRow.addEventListener('mouseleave', () => { isMouseDown = false; });
+        quickRow.addEventListener('mouseup', () => { isMouseDown = false; });
 
-        navBar.addEventListener('mousemove', (e) => {
+        quickRow.addEventListener('mousemove', (e) => {
             if (!isMouseDown) return;
             e.preventDefault();
-            const x = e.pageX - navBar.offsetLeft;
+            const x = e.pageX - quickRow.offsetLeft;
             const walk = (x - startX) * 1.5;
             if (Math.abs(walk) > 5) isDragging = true;
-            navBar.scrollLeft = scrollLeft - walk;
+            quickRow.scrollLeft = scrollLeft - walk;
         });
 
         function handleButtonClick(action) { if (!isDragging) action(); }
@@ -531,7 +555,6 @@
         function openDualModal(item) {
             modalHeaderTitle.textContent = item.title;
 
-            // 프로그레스 바 UI 초기화
             resetProgressUI('fillLeft', 'timeLeft');
             resetProgressUI('fillRight', 'timeRight');
 
@@ -576,13 +599,11 @@
             return `${m < 10 ? '0' + m : m}:${s < 10 ? '0' + s : s}`;
         }
 
-        // 프로그레스 바 0% 리셋 함수
         function resetProgressUI(fillId, timeId) {
             document.getElementById(fillId).style.width = '0%';
             document.getElementById(timeId).textContent = "00:00 / 00:00";
         }
 
-        // [핵심 보정] NaN 방지 및 안전한 비율 계산 함수
         function updateProgress(v, fillId, timeId) {
             const fill = document.getElementById(fillId);
             const time = document.getElementById(timeId);
@@ -606,7 +627,6 @@
             }
         }
 
-        // 메타데이터 로딩 완료 이벤트 추가 (초기 시간 렌더링)
         videoLeft.addEventListener('loadedmetadata', () => updateProgress(videoLeft, 'fillLeft', 'timeLeft'));
         videoRight.addEventListener('loadedmetadata', () => updateProgress(videoRight, 'fillRight', 'timeRight'));
 
