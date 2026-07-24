@@ -84,7 +84,14 @@
 
         .video-info { padding: 1rem; }
         .video-tag { font-size: 0.75rem; font-weight: 700; color: var(--accent-red); margin-bottom: 0.2rem; }
-        .video-title { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); }
+        
+        /* 괄호 줄바꿈을 위한 타이틀 스타일 */
+        .video-title { 
+            font-size: 0.95rem; 
+            font-weight: 700; 
+            color: var(--text-primary); 
+            line-height: 1.4;
+        }
 
         /* UI 0% Clean Video Modal */
         .modal-overlay {
@@ -144,7 +151,6 @@
             display: flex; align-items: center; justify-content: center;
         }
 
-        /* 100% 클린 비디오 플레이어 */
         .column-media video {
             width: 100%; height: 100%;
             object-fit: contain;
@@ -210,24 +216,20 @@
     </footer>
 
     <script>
-        // =========================================================
-        // 💡 [Supabase Storage CDN URL 기본 구성]
-        // Base URL: https://kblwddlquwlvumhwkirl.supabase.co/storage/v1/object/public/videos/
-        // 버킷에 올리신 파일명(예: intro_01.mp4, full_01.mp4)을 맞춰서 지정해주세요!
-        // =========================================================
         const SUPABASE_STORAGE_URL = "https://kblwddlquwlvumhwkirl.supabase.co/storage/v1/object/public/videos/";
 
+        // [정확한 Supabase 파일명 매핑]
         const projectsArchive = [
             {
                 date: "260724",
                 title: "INTRO 시안",
                 items: [
-                    { numKey: "01", introUrl: SUPABASE_STORAGE_URL + "intro_01.mp4", fullUrl: SUPABASE_STORAGE_URL + "full_01.mp4", tag: "OPTION 01", title: "INTRO_REF_01 (UI)", mode: "portrait" },
-                    { numKey: "02", introUrl: SUPABASE_STORAGE_URL + "intro_02.mp4", fullUrl: SUPABASE_STORAGE_URL + "full_02.mp4", tag: "OPTION 02", title: "INTRO_REF_02 (IP+THIS IS REAL CLASS)", mode: "portrait" },
-                    { numKey: "03", introUrl: SUPABASE_STORAGE_URL + "intro_03.mp4", fullUrl: SUPABASE_STORAGE_URL + "full_03.mp4", tag: "OPTION 03", title: "INTRO_REF_03 (IP+리얼클래스)", mode: "portrait" },
-                    { numKey: "04", introUrl: SUPABASE_STORAGE_URL + "intro_04.mp4", fullUrl: SUPABASE_STORAGE_URL + "full_04.mp4", tag: "OPTION 04", title: "INTRO_REF_04 (Jingle+Logo)", mode: "portrait" },
-                    { numKey: "05", introUrl: SUPABASE_STORAGE_URL + "intro_05.mp4", fullUrl: SUPABASE_STORAGE_URL + "full_05.mp4", tag: "OPTION 05", title: "INTRO_REF_05 (Voice_Logo)", mode: "portrait" },
-                    { numKey: "06", introUrl: SUPABASE_STORAGE_URL + "intro_06.mp4", fullUrl: SUPABASE_STORAGE_URL + "full_06.mp4", tag: "OPTION 06", title: "INTRO_REF_06 (Voice_Logo ani.)", mode: "portrait" }
+                    { numKey: "01", introUrl: SUPABASE_STORAGE_URL + "INTRO_01.mp4", fullUrl: SUPABASE_STORAGE_URL + encodeURIComponent("INTRO_REF_01 (UI).mp4"), tag: "OPTION 01", title: "INTRO_REF_01 (UI)", mode: "portrait" },
+                    { numKey: "02", introUrl: SUPABASE_STORAGE_URL + "INTRO_02.mp4", fullUrl: SUPABASE_STORAGE_URL + encodeURIComponent("INTRO_REF_02 (IP+THIS IS REAL CLASS).mp4"), tag: "OPTION 02", title: "INTRO_REF_02 (IP+THIS IS REAL CLASS)", mode: "portrait" },
+                    { numKey: "03", introUrl: SUPABASE_STORAGE_URL + "INTRO_03.mp4", fullUrl: SUPABASE_STORAGE_URL + encodeURIComponent("INTRO_REF_03 (IP+리얼클래스).mp4"), tag: "OPTION 03", title: "INTRO_REF_03 (IP+리얼클래스)", mode: "portrait" },
+                    { numKey: "04", introUrl: SUPABASE_STORAGE_URL + "INTRO_04.mp4", fullUrl: SUPABASE_STORAGE_URL + encodeURIComponent("INTRO_REF_04 (Jingle+Logo).mp4"), tag: "OPTION 04", title: "INTRO_REF_04 (Jingle+Logo)", mode: "portrait" },
+                    { numKey: "05", introUrl: SUPABASE_STORAGE_URL + "INTRO_05.mp4", fullUrl: SUPABASE_STORAGE_URL + encodeURIComponent("INTRO_REF_05 (Voice_Logo).mp4"), tag: "OPTION 05", title: "INTRO_REF_05 (Voice_Logo)", mode: "portrait" },
+                    { numKey: "06", introUrl: SUPABASE_STORAGE_URL + "INTRO_06.mp4", fullUrl: SUPABASE_STORAGE_URL + encodeURIComponent("INTRO_REF_06 (Voice_Logo ani.).mp4"), tag: "OPTION 06", title: "INTRO_REF_06 (Voice_Logo ani.)", mode: "portrait" }
                 ]
             }
         ];
@@ -239,6 +241,11 @@
             const month = dateStr.substring(2, 4);
             const day = dateStr.substring(4, 6);
             return { year, month, day, formattedFull: `${year}.${month}.${day}` };
+        }
+
+        // 괄호 `(` 기준으로 자동 줄바꿈 함수
+        function formatTitleWithBreak(title) {
+            return title.replace(/\s*(\()/g, '<br>$1');
         }
 
         const container = document.getElementById('archiveContainer');
@@ -274,6 +281,8 @@
                 let gridCardsHtml = '';
                 group.items.forEach(item => {
                     const jsonItem = JSON.stringify(item).replace(/"/g, '&quot;');
+                    const formattedTitle = formatTitleWithBreak(item.title);
+                    
                     gridCardsHtml += `
                         <div class="video-card" onclick="openDualModal(${jsonItem})">
                             <div class="thumb-cover ${item.mode}">
@@ -282,7 +291,7 @@
                             </div>
                             <div class="video-info">
                                 <div class="video-tag">${item.tag}</div>
-                                <div class="video-title">${item.title}</div>
+                                <div class="video-title">${formattedTitle}</div>
                             </div>
                         </div>
                     `;
@@ -321,7 +330,7 @@
 
         renderArchive();
 
-        // 팝업 오버레이 및 HTML5 비디오 제어
+        // 팝업 모달
         const modal = document.getElementById('videoModal');
         const modalHeaderTitle = document.getElementById('modalHeaderTitle');
         const leftTitle = document.getElementById('leftTitle');
