@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PROJECT ARCHIVE</title>
+    <title>INTRO 시안</title>
     <style>
         /* Black Eight 스타일 다크 테마 */
         :root {
@@ -14,7 +14,6 @@
             --text-primary: #ffffff;
             --text-secondary: #a1a1aa;
             --accent-blue: #3b82f6;
-            --accent-green: #10b981;
         }
 
         * {
@@ -30,6 +29,7 @@
             line-height: 1.6;
         }
 
+        /* Header */
         header {
             padding: 3.5rem 2rem 2.5rem;
             max-width: 1200px;
@@ -58,100 +58,156 @@
             font-size: 1.05rem;
         }
 
+        /* Main Container */
         main {
             max-width: 1200px;
             margin: 3rem auto;
             padding: 0 2rem;
         }
 
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .section-title {
-            font-size: 1.4rem;
-            font-weight: 700;
-        }
-
-        .sort-badge {
-            font-size: 0.8rem;
-            color: var(--accent-green);
-            background: rgba(16, 185, 129, 0.1);
-            padding: 0.3rem 0.8rem;
-            border-radius: 20px;
-            border: 1px solid rgba(16, 185, 129, 0.2);
-        }
-
-        /* 메인 프로젝트 그리드 */
-        .archive-grid {
+        /* Video Grid Layout */
+        .video-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
         }
 
-        .archive-card {
+        .video-card {
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 2rem;
-            text-decoration: none;
-            color: inherit;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
             transition: border-color 0.2s, transform 0.2s;
         }
 
-        .archive-card:hover {
-            border-color: var(--border-hover);
+        .video-card:hover {
+            border-color: var(--accent-blue);
             transform: translateY(-4px);
         }
 
-        .card-header {
+        /* 클릭 전 플레이 버튼 썸네일 커버 */
+        .thumb-cover {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 */
+            background: #171717;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 1rem;
+            justify-content: center;
         }
 
-        .card-date {
-            font-size: 0.85rem;
+        .play-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: rgba(59, 130, 246, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .play-btn::after {
+            content: "";
+            display: block;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 10px 0 10px 18px;
+            border-color: transparent transparent transparent #ffffff;
+            margin-left: 4px;
+        }
+
+        .video-card:hover .play-btn {
+            transform: translate(-50%, -50%) scale(1.1);
+            background: #2563eb;
+        }
+
+        .video-info {
+            padding: 1.25rem;
+        }
+
+        .video-tag {
+            font-size: 0.75rem;
             font-weight: 700;
             color: var(--accent-blue);
-            font-family: monospace;
+            margin-bottom: 0.25rem;
         }
 
-        .card-tag {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            background: #1a1a1a;
-            padding: 0.2rem 0.6rem;
-            border-radius: 4px;
-            border: 1px solid var(--border-color);
-        }
-
-        .archive-card h3 {
-            font-size: 1.25rem;
-            margin-bottom: 0.75rem;
+        .video-title {
+            font-size: 1.1rem;
+            font-weight: 700;
             color: var(--text-primary);
         }
 
-        .archive-card p {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            margin-bottom: 2rem;
-        }
-
-        .card-link {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            display: flex;
+        /* ------------------------------------
+           팝업 (Modal) 스타일 - 시원한 대형 사이즈
+        ------------------------------------ */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            display: none;
             align-items: center;
-            gap: 0.5rem;
+            justify-content: center;
+            z-index: 1000;
+            padding: 2rem;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            position: relative;
+            width: 100%;
+            max-width: 1000px; /* 대형 플레이어 너비 */
+            background: #000;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-video-box {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 비율 유지 */
+            height: 0;
+        }
+
+        .modal-video-box iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: -45px;
+            right: 0;
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 2rem;
+            cursor: pointer;
+            font-weight: 300;
+        }
+
+        .close-btn:hover {
+            color: var(--accent-blue);
         }
 
         footer {
@@ -168,71 +224,113 @@
 <body>
 
     <header>
-        <div class="header-tag">// PROJECT ARCHIVE</div>
-        <h1>브랜드 & 영상 시안 아카이브</h1>
-        <p>프로젝트 시안 및 보고서 모음 페이지입니다.</p>
+        <div class="header-tag">// VIDEO PORTFOLIO</div>
+        <h1>INTRO 시안</h1>
+        <p>카드를 클릭하면 시원한 대형 화면으로 시안이 재생됩니다.</p>
     </header>
 
     <main>
-        <div class="section-header">
-            <h2 class="section-title">작업 리스트</h2>
-            <span class="sort-badge">● 최신순 정렬됨</span>
-        </div>
+        <div class="video-grid">
 
-        <!-- 프로젝트 카드들이 스크립트에 의해 여기에 자동으로 동적 생성됩니다 -->
-        <div id="archiveGrid" class="archive-grid"></div>
+            <!-- 01 -->
+            <div class="video-card" onclick="openVideo('https://drive.google.com/file/d/1XQUyPvw47zlbxlZl2EoCC8048cSxqjU3/preview')">
+                <div class="thumb-cover"><div class="play-btn"></div></div>
+                <div class="video-info">
+                    <div class="video-tag">OPTION 01</div>
+                    <div class="video-title">INTRO_REF_01 (UI)</div>
+                </div>
+            </div>
+
+            <!-- 02 -->
+            <div class="video-card" onclick="openVideo('https://drive.google.com/file/d/1UbMfMe_cpEjlnA0p7qwraVWBCCnAUBzq/preview')">
+                <div class="thumb-cover"><div class="play-btn"></div></div>
+                <div class="video-info">
+                    <div class="video-tag">OPTION 02</div>
+                    <div class="video-title">INTRO_REF_02 (IP+THIS IS REAL CLASS)</div>
+                </div>
+            </div>
+
+            <!-- 03 -->
+            <div class="video-card" onclick="openVideo('https://drive.google.com/file/d/104jlXs0cKiWd2NYMDzkXYtW2SKvqDBa7/preview')">
+                <div class="thumb-cover"><div class="play-btn"></div></div>
+                <div class="video-info">
+                    <div class="video-tag">OPTION 03</div>
+                    <div class="video-title">INTRO_REF_03 (IP+리얼클래스)</div>
+                </div>
+            </div>
+
+            <!-- 04 -->
+            <div class="video-card" onclick="openVideo('https://drive.google.com/file/d/1V0wjN7piEey4J7itS5NxJ3WKhCkIQEh2/preview')">
+                <div class="thumb-cover"><div class="play-btn"></div></div>
+                <div class="video-info">
+                    <div class="video-tag">OPTION 04</div>
+                    <div class="video-title">INTRO_REF_04 (Jingle+Logo)</div>
+                </div>
+            </div>
+
+            <!-- 05 -->
+            <div class="video-card" onclick="openVideo('https://drive.google.com/file/d/1_6SoqztcF-yEX57FZN5kZw8FWudQH7Kk/preview')">
+                <div class="thumb-cover"><div class="play-btn"></div></div>
+                <div class="video-info">
+                    <div class="video-tag">OPTION 05</div>
+                    <div class="video-title">INTRO_REF_05 (Voice_Logo)</div>
+                </div>
+            </div>
+
+            <!-- 06 -->
+            <div class="video-card" onclick="openVideo('https://drive.google.com/file/d/14KG4XoCFnvr9e9l-oDRPmjsdVcpnCFAN/preview')">
+                <div class="thumb-cover"><div class="play-btn"></div></div>
+                <div class="video-info">
+                    <div class="video-tag">OPTION 06</div>
+                    <div class="video-title">INTRO_REF_06 (Voice_Logo ani.)</div>
+                </div>
+            </div>
+
+        </div>
     </main>
 
+    <!-- 대형 팝업(모달) 레이어 -->
+    <div id="videoModal" class="modal-overlay" onclick="closeVideo(event)">
+        <div class="modal-content">
+            <button class="close-btn" onclick="forceClose()">✕ 닫기</button>
+            <div class="modal-video-box">
+                <iframe id="modalIframe" src="" allow="autoplay" allowfullscreen></iframe>
+            </div>
+        </div>
+    </div>
+
     <footer>
-        &copy; 2026 WORK ARCHIVE. ALL RIGHTS RESERVED.
+        &copy; 2026 INTRO SHOWCASE. ALL RIGHTS RESERVED.
     </footer>
 
     <script>
-        // =========================================================
-        // 💡 [나중에 수정할 곳] 새로운 페이지가 추가되면 아래 목록에 더해주기만 하면 됩니다!
-        // YYMMDD 날짜 숫자를 기준으로 알아서 "최신 날짜"가 맨 위로 정렬됩니다.
-        // =========================================================
-        const projects = [
-            {
-                date: "260724", // YYMMDD 날짜 (숫자가 클수록 위로 갑니다)
-                title: "INTRO 시안 (영상 6종)",
-                desc: "인트로 레퍼런스 및 제작 영상 시안 6종 인덱스 모음",
-                link: "intro.html",
-                category: "VIDEO"
-            },
-            {
-                date: "260701", // 예시용 이전 작업물
-                title: "브랜드 문제점 분석 및 개선 보고서",
-                desc: "자사 브랜드 문제점 진단 및 리브랜딩 실행 로드맵",
-                link: "branding-analysis.html", // (또는 기존 만들어둔 html 파일명)
-                category: "REPORT"
+        const modal = document.getElementById('videoModal');
+        const iframe = document.getElementById('modalIframe');
+
+        function openVideo(videoUrl) {
+            iframe.src = videoUrl;
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden'; // 팝업 시 배경 스크롤 방지
+        }
+
+        function closeVideo(event) {
+            // 배경 바깥을 눌렀을 때만 닫기
+            if (event.target === modal) {
+                forceClose();
             }
-        ];
+        }
 
-        // 날짜 기준 내림차순 정렬 (최신 날짜가 항상 맨 위로)
-        projects.sort((a, b) => b.date - a.date);
+        function forceClose() {
+            modal.classList.remove('active');
+            iframe.src = ''; // 닫을 때 영상 소리 정지
+            document.body.style.overflow = 'auto';
+        }
 
-        // 카드 랜더링 함수
-        const container = document.getElementById('archiveGrid');
-        
-        projects.forEach(item => {
-            // YYMMDD 날짜를 보기 좋게 포맷팅 (26.07.24)
-            const formattedDate = `20${item.date.slice(0,2)}.${item.date.slice(2,4)}.${item.date.slice(4,6)}`;
-            
-            const cardHtml = `
-                <a href="${item.link}" class="archive-card">
-                    <div>
-                        <div class="card-header">
-                            <span class="card-date">${formattedDate}</span>
-                            <span class="card-tag">${item.category}</span>
-                        </div>
-                        <h3>${item.title}</h3>
-                        <p>${item.desc}</p>
-                    </div>
-                    <div class="card-link">시안 확인하기 &rarr;</div>
-                </a>
-            `;
-            container.innerHTML += cardHtml;
+        // ESC 키 누르면 팝업 닫기
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+                forceClose();
+            }
         });
     </script>
 </body>
