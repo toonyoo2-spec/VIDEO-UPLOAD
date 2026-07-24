@@ -846,7 +846,7 @@
         }
         function closeVideoUploadModal() { document.getElementById('videoModalUpload').classList.remove('active'); }
 
-        async function submitNewVideo() {
+async function submitNewVideo() {
             const date = document.getElementById('uploadTargetDate').value;
             const tag = document.getElementById('inputVidTag').value.trim();
             const title = document.getElementById('inputVidTitle').value.trim();
@@ -862,13 +862,24 @@
             document.getElementById('loadingSpinner').style.display = 'flex';
 
             try {
-                const presignedUrl = s3.getSignedUrl('putObject', {
-                    Bucket: R2_BUCKET_NAME,
+                // 🚀 핵심 수정: AWS SDK가 URL 앞에 'brandteam.'을 붙이지 못하도록 엔드포인트에 버킷 경로 포함 및 S3 설정 강제 지정
+                const customS3 = new AWS.S3({
+                    endpoint: new AWS.Endpoint(`https://6acdc5b002c918c06be9f2a0018f972b.r2.cloudflarestorage.com/${R2_BUCKET_NAME}`),
+                    accessKeyId: R2_ACCESS_KEY_ID,
+                    secretAccessKey: R2_SECRET_ACCESS_KEY,
+                    signatureVersion: 'v4',
+                    region: 'auto',
+                    s3BucketEndpoint: true // 버킷이 이미 엔드포인트에 포함되었음을 강제 선언 (서브도메인 추가 완전 차단)
+                });
+
+                // 1. Presigned URL 생성 (이제 https://6acdc5b002c.../brandteam/파일명 주소로 정확히 생성됨)
+                const presignedUrl = customS3.getSignedUrl('putObject', {
                     Key: fileName,
                     ContentType: file.type,
                     Expires: 3600
                 });
 
+                // 2. R2로 직접 PUT 업로드
                 const uploadRes = await fetch(presignedUrl, {
                     method: 'PUT',
                     headers: { 'Content-Type': file.type },
@@ -878,6 +889,42 @@
                 if (!uploadRes.ok) {
                     throw new Error(`R2 HTTP Upload Error: ${uploadRes.status}`);
                 }
+
+                // 3. DB 저장
+                const dbRes = await fetch(`${SUPABASE_URL}/rest/v1/archive_videos`, {
+                    method: 'POST',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify({
+                        project_date: date,
+                        tag: tag,
+                        title: title,
+                        is_single: true,
+                        full_url: fullUrl,
+                        mode: mode
+                    })
+                });
+
+                document.getElementById('loadingSpinner').style.display = 'none';
+
+                if (dbRes.ok) {
+                    alert('영상이 성공적으로 R2에 업로드되고 아카이브에 등록되었습니다!');
+                    closeVideoUploadModal();
+                    loadArchiveFromDB();
+                } else {
+                    alert('DB 저장 실패. Supabase 설정을 확인해 주세요.');
+                }
+
+            } catch (err) {
+                document.getElementById('loadingSpinner').style.display = 'none';
+                console.error("R2 업로드 최종 실패:", err);
+                alert("Cloudflare R2 업로드 중 오류가 발생했습니다. 개발자 도구 콘솔을 확인해 보세요.");
+            }
+        }
 
                 const dbRes = await fetch(`${SUPABASE_URL}/rest/v1/archive_videos`, {
                     method: 'POST',
