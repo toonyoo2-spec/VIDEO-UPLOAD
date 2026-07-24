@@ -24,290 +24,118 @@
         body { background-color: var(--bg-dark); color: var(--text-primary); line-height: 1.6; }
 
         /* Header */
-        header {
-            padding: 3.5rem 2rem 1.5rem;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+        header { padding: 3.5rem 2rem 1.5rem; max-width: 1200px; margin: 0 auto; }
+        .header-tag { color: var(--accent-red); font-size: 0.85rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
 
-        .header-tag {
-            color: var(--accent-red); font-size: 0.85rem; font-weight: 700;
-            letter-spacing: 2px; text-transform: uppercase;
-        }
-
-        /* ------------------------------------
-           상단 필터 & 날짜 선택 메뉴바 (Sticky)
-        ------------------------------------ */
+        /* Navigation Bar */
         .nav-bar-wrapper {
-            position: sticky;
-            top: 0;
-            background: rgba(10, 10, 10, 0.85);
-            backdrop-filter: blur(12px);
-            border-top: 1px solid var(--border-color);
-            border-bottom: 1px solid var(--border-color);
-            z-index: 100;
-            padding: 1rem 2rem;
+            position: sticky; top: 0;
+            background: rgba(10, 10, 10, 0.85); backdrop-filter: blur(12px);
+            border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);
+            z-index: 100; padding: 1rem 2rem;
         }
 
-        .nav-bar-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            gap: 0.8rem;
-        }
-
-        /* 연도 선택 탭 */
-        .year-tabs {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-        }
+        .nav-bar-container { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 0.8rem; }
+        .year-tabs { display: flex; gap: 0.5rem; align-items: center; }
 
         .tab-btn {
-            background: #18181b;
-            border: 1px solid var(--border-color);
-            color: var(--text-secondary);
-            padding: 0.4rem 1rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s ease;
+            background: #18181b; border: 1px solid var(--border-color);
+            color: var(--text-secondary); padding: 0.4rem 1rem; border-radius: 20px;
+            font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease;
         }
+        .tab-btn:hover { color: var(--text-primary); border-color: var(--border-hover); }
+        .tab-btn.active { background: var(--accent-red); color: #ffffff; border-color: var(--accent-red); }
 
-        .tab-btn:hover {
-            color: var(--text-primary);
-            border-color: var(--border-hover);
-        }
-
-        .tab-btn.active {
-            background: var(--accent-red);
-            color: #ffffff;
-            border-color: var(--accent-red);
-        }
-
-        /* 날짜/프로젝트 바로가기 목록 */
-        .project-quick-links {
-            display: flex;
-            gap: 0.5rem;
-            overflow-x: auto;
-            padding-bottom: 0.2rem;
-            scrollbar-width: none; /* Firefox */
-        }
-
-        .project-quick-links::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+        .project-quick-links { display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.2rem; scrollbar-width: none; }
+        .project-quick-links::-webkit-scrollbar { display: none; }
 
         .quick-link-btn {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border-color);
-            color: var(--text-primary);
-            padding: 0.35rem 0.85rem;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            white-space: nowrap;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
+            background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color);
+            color: var(--text-primary); padding: 0.35rem 0.85rem; border-radius: 6px;
+            font-size: 0.8rem; font-weight: 600; white-space: nowrap; cursor: pointer; transition: all 0.2s;
+            display: flex; align-items: center; gap: 0.4rem;
         }
+        .quick-link-btn:hover { border-color: var(--accent-red); background: rgba(239, 68, 68, 0.1); }
+        .quick-link-btn .date-label { color: var(--accent-red); font-family: monospace; font-weight: 700; }
 
-        .quick-link-btn:hover {
-            border-color: var(--accent-red);
-            background: rgba(239, 68, 68, 0.1);
-        }
-
-        .quick-link-btn .date-label {
-            color: var(--accent-red);
-            font-family: monospace;
-            font-weight: 700;
-        }
-
-        /* Main Container */
+        /* Main Grid */
         main { max-width: 1200px; margin: 3rem auto; padding: 0 2rem; }
+        .project-section { margin-bottom: 4.5rem; scroll-margin-top: 130px; }
 
-        /* 날짜별 프로젝트 묶음 섹션 */
-        .project-section {
-            margin-bottom: 4.5rem;
-            scroll-margin-top: 130px; /* 메인 스티키 헤더 여백 고려 */
-        }
+        .section-header { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); }
+        .date-badge { font-size: 1.1rem; font-weight: 800; color: #ffffff; background: #1e1e1e; padding: 0.3rem 0.8rem; border-radius: 6px; border: 1px solid var(--border-hover); font-family: monospace; }
+        .section-title { font-size: 1.3rem; font-weight: 700; color: var(--text-primary); }
 
-        .section-header {
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 1px solid var(--border-color);
-        }
+        .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.5rem; align-items: start; }
+        .video-card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; cursor: pointer; transition: border-color 0.2s, transform 0.2s; }
+        .video-card:hover { border-color: var(--accent-red); transform: translateY(-4px); }
 
-        .date-badge {
-            font-size: 1.1rem;
-            font-weight: 800;
-            color: #ffffff;
-            background: #1e1e1e;
-            padding: 0.3rem 0.8rem;
-            border-radius: 6px;
-            border: 1px solid var(--border-hover);
-            font-family: monospace;
-        }
-
-        .section-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-
-        /* 영상 그리드 */
-        .video-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 1.5rem;
-            align-items: start;
-        }
-
-        .video-card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: border-color 0.2s, transform 0.2s;
-        }
-
-        .video-card:hover {
-            border-color: var(--accent-red);
-            transform: translateY(-4px);
-        }
-
-        .thumb-cover {
-            position: relative;
-            width: 100%;
-            background: #171717;
-            overflow: hidden;
-        }
-
+        .thumb-cover { position: relative; width: 100%; background: #171717; overflow: hidden; }
         .thumb-cover.landscape { padding-bottom: 56.25%; }
         .thumb-cover.portrait { padding-bottom: 140%; }
 
-        .thumb-img {
-            position: absolute; top: 0; left: 0;
-            width: 100%; height: 100%;
-            object-fit: cover;
-            transition: transform 0.3s ease;
-        }
-
+        .thumb-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease; }
         .video-card:hover .thumb-img { transform: scale(1.04); }
 
         .play-btn {
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 52px; height: 52px;
-            background: rgba(239, 68, 68, 0.9);
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            transition: transform 0.2s, background 0.2s;
-            z-index: 2;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 52px; height: 52px; background: rgba(239, 68, 68, 0.9); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; transition: transform 0.2s, background 0.2s; z-index: 2;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
-
-        .play-btn::after {
-            content: ""; display: block; width: 0; height: 0;
-            border-style: solid; border-width: 7px 0 7px 12px;
-            border-color: transparent transparent transparent #ffffff;
-            margin-left: 2px;
-        }
-
-        .video-card:hover .play-btn {
-            transform: translate(-50%, -50%) scale(1.1);
-            background: #dc2626;
-        }
+        .play-btn::after { content: ""; display: block; width: 0; height: 0; border-style: solid; border-width: 7px 0 7px 12px; border-color: transparent transparent transparent #ffffff; margin-left: 2px; }
+        .video-card:hover .play-btn { transform: translate(-50%, -50%) scale(1.1); background: #dc2626; }
 
         .video-info { padding: 1rem; }
         .video-tag { font-size: 0.75rem; font-weight: 700; color: var(--accent-red); margin-bottom: 0.2rem; }
         .video-title { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); }
 
         /* ------------------------------------
-           세로 극대화 모달 팝업
+           팝업 스마트 모달 & 버전 선택 탭
         ------------------------------------ */
         .modal-overlay {
-            position: fixed; top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            background: rgba(0, 0, 0, 0.94);
-            backdrop-filter: blur(12px);
-            display: none;
-            align-items: center; justify-content: center;
-            z-index: 9999;
-            padding: 1rem;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.94); backdrop-filter: blur(12px);
+            display: none; align-items: center; justify-content: center;
+            z-index: 9999; padding: 1rem;
         }
-
         .modal-overlay.active { display: flex; }
 
         .modal-container {
-            position: relative;
-            background: #000;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            transition: all 0.25s ease;
+            position: relative; background: #000; border-radius: 12px;
+            border: 1px solid var(--border-color); overflow: hidden;
+            display: flex; flex-direction: column; transition: all 0.25s ease;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9);
         }
 
-        .modal-container.landscape {
-            width: 92vw;
-            max-width: 1200px;
-            height: calc(92vw * 0.5625);
-            max-height: 675px;
-        }
-
-        .modal-container.portrait {
-            height: 94vh;
-            width: calc(94vh * 0.5625);
-            max-width: 90vw;
-        }
+        .modal-container.landscape { width: 92vw; max-width: 1200px; height: calc(92vw * 0.5625); max-height: 675px; }
+        .modal-container.portrait { height: 94vh; width: calc(94vh * 0.5625); max-width: 90vw; }
 
         .modal-header {
-            height: 42px;
-            padding: 0 1rem;
-            background: #121212;
+            height: 48px; padding: 0 1rem; background: #121212;
             border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            display: flex; align-items: center; justify-content: space-between;
         }
 
-        .modal-title { font-size: 0.85rem; font-weight: 700; color: var(--text-primary); }
-
-        .close-btn {
-            background: none; border: none;
-            color: var(--text-secondary);
-            font-size: 1.2rem; cursor: pointer;
-            line-height: 1;
+        .modal-version-tabs {
+            display: flex; gap: 0.4rem; background: #000; padding: 3px; border-radius: 6px; border: 1px solid var(--border-color);
         }
 
+        .version-btn {
+            background: none; border: none; color: var(--text-secondary);
+            padding: 0.25rem 0.6rem; font-size: 0.75rem; font-weight: 700;
+            border-radius: 4px; cursor: pointer; transition: all 0.2s;
+        }
+
+        .version-btn.active { background: var(--accent-red); color: #ffffff; }
+
+        .close-btn { background: none; border: none; color: var(--text-secondary); font-size: 1.2rem; cursor: pointer; line-height: 1; }
         .close-btn:hover { color: #ffffff; }
 
-        .modal-body {
-            position: relative;
-            flex: 1;
-            width: 100%; height: 100%;
-            background: #000;
-        }
+        .modal-body { position: relative; flex: 1; width: 100%; height: 100%; background: #000; }
+        .modal-body iframe { width: 100%; height: 100%; border: 0; }
 
-        .modal-body iframe {
-            width: 100%; height: 100%;
-            border: 0;
-        }
-
-        footer {
-            max-width: 1200px; margin: 5rem auto 2rem; padding: 2rem;
-            border-top: 1px solid var(--border-color); color: var(--text-secondary);
-            font-size: 0.85rem; text-align: center;
-        }
+        footer { max-width: 1200px; margin: 5rem auto 2rem; padding: 2rem; border-top: 1px solid var(--border-color); color: var(--text-secondary); font-size: 0.85rem; text-align: center; }
     </style>
 </head>
 <body>
@@ -316,26 +144,26 @@
         <div class="header-tag">// BRAND TEAM MEDIA</div>
     </header>
 
-    <!-- 스티키 메뉴바 (연도 필터 + 날짜별 바로가기) -->
     <div class="nav-bar-wrapper">
         <div class="nav-bar-container">
-            <!-- 연도 선택 탭 -->
             <div id="yearTabs" class="year-tabs">
                 <button class="tab-btn active" onclick="filterYear('ALL')">ALL</button>
             </div>
-            <!-- 날짜/시안 바로가기 버튼 목록 -->
             <div id="quickLinks" class="project-quick-links"></div>
         </div>
     </div>
 
-    <!-- 메인 콘텐츠 영역 -->
     <main id="archiveContainer"></main>
 
-    <!-- 팝업 모달 -->
+    <!-- 모달 팝업 -->
     <div id="videoModal" class="modal-overlay" onclick="closeVideo(event)">
         <div id="modalContainer" class="modal-container portrait">
             <div class="modal-header">
-                <span id="modalTitle" class="modal-title">TITLE</span>
+                <!-- 팝업 내 버전 스위치 탭 -->
+                <div class="modal-version-tabs">
+                    <button id="btnIntro" class="version-btn active" onclick="switchVersion('intro')">⚡️ 1초 INTRO</button>
+                    <button id="btnFull" class="version-btn" onclick="switchVersion('full')">🎬 FULL 버전</button>
+                </div>
                 <button class="close-btn" onclick="forceClose()">✕</button>
             </div>
             <div class="modal-body">
@@ -350,66 +178,51 @@
 
     <script>
         // =========================================================
-        // 💡 [프로젝트 아카이브 데이터 관리]
-        // date 형식: YYMMDD (예: 260724 -> 2026년 07월 24일)
+        // 💡 [데이터 항목 설명]
+        // - id: FULL 버전 동영상 ID
+        // - introId: 1초 요약 INTRO 동영상 ID (없으면 FULL 버전만 재생)
         // =========================================================
         const projectsArchive = [
             {
                 date: "260724",
                 title: "INTRO 시안",
                 items: [
-                    { id: "eQy7QrqpzZ8", tag: "OPTION 01", title: "INTRO_REF_01 (UI)", mode: "portrait" },
-                    { id: "RDPG3kvhlDc", tag: "OPTION 02", title: "INTRO_REF_02 (IP+THIS IS REAL CLASS)", mode: "portrait" },
-                    { id: "30s3hqil1TQ", tag: "OPTION 03", title: "INTRO_REF_03 (IP+리얼클래스)", mode: "portrait" },
-                    { id: "eZ8gaKGtlcA", tag: "OPTION 04", title: "INTRO_REF_04 (Jingle+Logo)", mode: "portrait" },
-                    { id: "M63IcBJdrBs", tag: "OPTION 05", title: "INTRO_REF_05 (Voice_Logo)", mode: "portrait" },
-                    { id: "WVwbRkNmqeI", tag: "OPTION 06", title: "INTRO_REF_06 (Voice_Logo ani.)", mode: "portrait" }
+                    { id: "eQy7QrqpzZ8", introId: "eQy7QrqpzZ8", tag: "OPTION 01", title: "INTRO_REF_01 (UI)", mode: "portrait" },
+                    { id: "RDPG3kvhlDc", introId: "RDPG3kvhlDc", tag: "OPTION 02", title: "INTRO_REF_02 (IP+THIS IS REAL CLASS)", mode: "portrait" },
+                    { id: "30s3hqil1TQ", introId: "30s3hqil1TQ", tag: "OPTION 03", title: "INTRO_REF_03 (IP+리얼클래스)", mode: "portrait" },
+                    { id: "eZ8gaKGtlcA", introId: "eZ8gaKGtlcA", tag: "OPTION 04", title: "INTRO_REF_04 (Jingle+Logo)", mode: "portrait" },
+                    { id: "M63IcBJdrBs", introId: "M63IcBJdrBs", tag: "OPTION 05", title: "INTRO_REF_05 (Voice_Logo)", mode: "portrait" },
+                    { id: "WVwbRkNmqeI", introId: "WVwbRkNmqeI", tag: "OPTION 06", title: "INTRO_REF_06 (Voice_Logo ani.)", mode: "portrait" }
                 ]
             }
-            /* 나중에 2027년 및 타 날짜 데이터 추가 예시:
-            ,{
-                date: "270115",
-                title: "신년 캠페인 시안",
-                items: [ ... ]
-            }
-            */
         ];
 
-        // 날짜 기준 최신순 정렬 (내림차순)
+        // 날짜 기준 최신순 정렬
         projectsArchive.sort((a, b) => Number(b.date) - Number(a.date));
 
-        // YYMMDD 날짜 구문 분석 도구 함수
         function parseDate(dateStr) {
             const year = '20' + dateStr.substring(0, 2);
             const month = dateStr.substring(2, 4);
             const day = dateStr.substring(4, 6);
-            return { year, month, day, formattedFull: `${year}.${month}.${day}`, formattedShort: `${month}.${day}` };
+            return { year, month, day, formattedFull: `${year}.${month}.${day}` };
         }
 
-        // 초기 화면 랜더링
         const container = document.getElementById('archiveContainer');
         const yearTabsContainer = document.getElementById('yearTabs');
         const quickLinksContainer = document.getElementById('quickLinks');
-
         let currentFilterYear = 'ALL';
 
         function renderArchive() {
             container.innerHTML = '';
             quickLinksContainer.innerHTML = '';
-
-            // 연도 목록 수집
             const yearsSet = new Set();
 
-            projectsArchive.forEach((group, index) => {
+            projectsArchive.forEach((group) => {
                 const dateInfo = parseDate(group.date);
                 yearsSet.add(dateInfo.year);
 
-                // 현재 필터 적용 확인
-                if (currentFilterYear !== 'ALL' && dateInfo.year !== currentFilterYear) {
-                    return;
-                }
+                if (currentFilterYear !== 'ALL' && dateInfo.year !== currentFilterYear) return;
 
-                // 1. 바로가기 버튼 생성
                 const qLink = document.createElement('button');
                 qLink.className = 'quick-link-btn';
                 qLink.innerHTML = `<span class="date-label">${dateInfo.formattedFull}</span> ${group.title}`;
@@ -419,17 +232,17 @@
                 };
                 quickLinksContainer.appendChild(qLink);
 
-                // 2. 프로젝트 섹션 생성
                 const section = document.createElement('section');
                 section.className = 'project-section';
                 section.id = `section-${group.date}`;
 
                 let gridCardsHtml = '';
                 group.items.forEach(item => {
+                    const jsonItem = JSON.stringify(item).replace(/"/g, '&quot;');
                     gridCardsHtml += `
-                        <div class="video-card" onclick="openVideo('${item.id}', '${item.title}', '${item.mode}')">
+                        <div class="video-card" onclick="openVideoModal(${jsonItem})">
                             <div class="thumb-cover ${item.mode}">
-                                <img src="https://img.youtube.com/vi/${item.id}/hqdefault.jpg" class="thumb-img" alt="thumbnail">
+                                <img src="https://img.youtube.com/vi/${item.introId || item.id}/hqdefault.jpg" class="thumb-img" alt="thumbnail">
                                 <div class="play-btn"></div>
                             </div>
                             <div class="video-info">
@@ -445,19 +258,14 @@
                         <span class="date-badge">${dateInfo.formattedFull}</span>
                         <h2 class="section-title">${group.title}</h2>
                     </div>
-                    <div class="video-grid">
-                        ${gridCardsHtml}
-                    </div>
+                    <div class="video-grid">${gridCardsHtml}</div>
                 `;
-
                 container.appendChild(section);
             });
 
-            // 연도 탭 버튼 생성 (최초 1회 설정)
             renderYearTabs(Array.from(yearsSet).sort((a, b) => b - a));
         }
 
-        // 연도 탭 랜더링
         function renderYearTabs(years) {
             yearTabsContainer.innerHTML = `<button class="tab-btn ${currentFilterYear === 'ALL' ? 'active' : ''}" onclick="filterYear('ALL')">ALL</button>`;
             years.forEach(yr => {
@@ -469,45 +277,64 @@
             });
         }
 
-        // 연도 필터링 동작
         function filterYear(year) {
             currentFilterYear = year;
             renderArchive();
         }
 
-        // 초기 구동
         renderArchive();
 
-        // 팝업 플레이어 제어 로직
+        // 팝업 제어 및 스위칭 상태 관리
         const modal = document.getElementById('videoModal');
         const modalContainer = document.getElementById('modalContainer');
         const iframe = document.getElementById('modalIframe');
-        const modalTitle = document.getElementById('modalTitle');
+        const btnIntro = document.getElementById('btnIntro');
+        const btnFull = document.getElementById('btnFull');
 
-        function openVideo(videoId, title, mode = 'portrait') {
-            modalTitle.textContent = title;
-            modalContainer.className = 'modal-container ' + mode;
-            iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
+        let currentActiveItem = null;
+
+        function openVideoModal(item) {
+            currentActiveItem = item;
+            modalContainer.className = 'modal-container ' + item.mode;
+            
+            // 기본 1초 INTRO 재생 (introId가 있으면 intro, 없으면 full)
+            if (item.introId) {
+                switchVersion('intro');
+            } else {
+                switchVersion('full');
+            }
+
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
         }
 
-        function closeVideo(event) {
-            if (event.target === modal) {
-                forceClose();
+        function switchVersion(type) {
+            if (!currentActiveItem) return;
+
+            if (type === 'intro' && currentActiveItem.introId) {
+                iframe.src = `https://www.youtube.com/embed/${currentActiveItem.introId}?autoplay=1&rel=0`;
+                btnIntro.classList.add('active');
+                btnFull.classList.remove('active');
+            } else {
+                iframe.src = `https://www.youtube.com/embed/${currentActiveItem.id}?autoplay=1&rel=0`;
+                btnFull.classList.add('active');
+                btnIntro.classList.remove('active');
             }
+        }
+
+        function closeVideo(event) {
+            if (event.target === modal) forceClose();
         }
 
         function forceClose() {
             modal.classList.remove('active');
             iframe.src = '';
+            currentActiveItem = null;
             document.body.style.overflow = 'auto';
         }
 
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && modal.classList.contains('active')) {
-                forceClose();
-            }
+            if (e.key === 'Escape' && modal.classList.contains('active')) forceClose();
         });
     </script>
 </body>
