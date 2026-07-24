@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PROJECT ARCHIVE</title>
+    <style>
+        /* Black Eight 스타일 다크 테마 */
+        :root {
+            --bg-dark: #0a0a0a;
+            --card-bg: #121212;
+            --border-color: #262626;
+            --border-hover: #525252;
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        header {
+            padding: 3.5rem 2rem 2.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header-tag {
+            color: var(--accent-blue);
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 3rem auto;
+            padding: 0 2rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .sort-badge {
+            font-size: 0.8rem;
+            color: var(--accent-green);
+            background: rgba(16, 185, 129, 0.1);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        /* 메인 프로젝트 그리드 */
+        .archive-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .archive-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 2rem;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+
+        .archive-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-4px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .card-date {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+            font-family: monospace;
+        }
+
+        .card-tag {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            background: #1a1a1a;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        .archive-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-primary);
+        }
+
+        .archive-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+        }
+
+        .card-link {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        footer {
+            max-width: 1200px;
+            margin: 5rem auto 2rem;
+            padding: 2rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-tag">// PROJECT ARCHIVE</div>
+        <h1>브랜드 & 영상 시안 아카이브</h1>
+        <p>프로젝트 시안 및 보고서 모음 페이지입니다.</p>
+    </header>
+
+    <main>
+        <div class="section-header">
+            <h2 class="section-title">작업 리스트</h2>
+            <span class="sort-badge">● 최신순 정렬됨</span>
+        </div>
+
+        <!-- 프로젝트 카드들이 스크립트에 의해 여기에 자동으로 동적 생성됩니다 -->
+        <div id="archiveGrid" class="archive-grid"></div>
+    </main>
+
+    <footer>
+        &copy; 2026 WORK ARCHIVE. ALL RIGHTS RESERVED.
+    </footer>
+
+    <script>
+        // =========================================================
+        // 💡 [나중에 수정할 곳] 새로운 페이지가 추가되면 아래 목록에 더해주기만 하면 됩니다!
+        // YYMMDD 날짜 숫자를 기준으로 알아서 "최신 날짜"가 맨 위로 정렬됩니다.
+        // =========================================================
+        const projects = [
+            {
+                date: "260724", // YYMMDD 날짜 (숫자가 클수록 위로 갑니다)
+                title: "INTRO 시안 (영상 6종)",
+                desc: "인트로 레퍼런스 및 제작 영상 시안 6종 인덱스 모음",
+                link: "intro.html",
+                category: "VIDEO"
+            },
+            {
+                date: "260701", // 예시용 이전 작업물
+                title: "브랜드 문제점 분석 및 개선 보고서",
+                desc: "자사 브랜드 문제점 진단 및 리브랜딩 실행 로드맵",
+                link: "branding-analysis.html", // (또는 기존 만들어둔 html 파일명)
+                category: "REPORT"
+            }
+        ];
+
+        // 날짜 기준 내림차순 정렬 (최신 날짜가 항상 맨 위로)
+        projects.sort((a, b) => b.date - a.date);
+
+        // 카드 랜더링 함수
+        const container = document.getElementById('archiveGrid');
+        
+        projects.forEach(item => {
+            // YYMMDD 날짜를 보기 좋게 포맷팅 (26.07.24)
+            const formattedDate = `20${item.date.slice(0,2)}.${item.date.slice(2,4)}.${item.date.slice(4,6)}`;
+            
+            const cardHtml = `
+                <a href="${item.link}" class="archive-card">
+                    <div>
+                        <div class="card-header">
+                            <span class="card-date">${formattedDate}</span>
+                            <span class="card-tag">${item.category}</span>
+                        </div>
+                        <h3>${item.title}</h3>
+                        <p>${item.desc}</p>
+                    </div>
+                    <div class="card-link">시안 확인하기 &rarr;</div>
+                </a>
+            `;
+            container.innerHTML += cardHtml;
+        });
+    </script>
+</body>
+</html>
