@@ -50,7 +50,7 @@
         .nav-bar-container { display: flex; flex-direction: column; gap: 0.6rem; }
         .nav-row { display: flex; align-items: center; justify-content: flex-start; gap: 0.5rem; flex-wrap: wrap; width: 100%; }
         
-        /* 🖱️ 드래그 & 마우스 휠 스크롤 완벽 대응 스타일 */
+        /* 🖱️ 드래그 & 마우스 휠 스크롤 지원 */
         .nav-row-scroll { 
             display: flex; align-items: center; justify-content: flex-start; gap: 0.5rem; 
             overflow-x: auto; white-space: nowrap; scrollbar-width: none; 
@@ -328,22 +328,11 @@
     <script>
         const R2_BUCKET_NAME = "brandteam"; 
         const R2_PUBLIC_DOMAIN = "https://pub-427fa438eaa44e659bfdd77141c7ca95.r2.dev/"; 
-        const R2_ENDPOINT = "https://6acdc5b002c918c06be9f2a0018f972b.r2.cloudflarestorage.com"; 
-        
-        const R2_ACCESS_KEY_ID = "b9a3a78cc0e4b1aebebe4e219ded3c98"; 
-        const R2_SECRET_ACCESS_KEY = "ebfa3c9761294468b3f3122a1ff53f2b28e6074791223393d5632df06b54721b"; 
-
         const SUPABASE_URL = "https://kblwddlquwlvumhwkirl.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtibHdkZGxxdXdsdnVtaHdraXJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3Mzg1NjksImV4cCI6MjEwMDMxNDU2OX0.OWH0eJXCGcJzjaMHqXWsurNuOEg4kNLuxpac6bxod1E";
 
-        const s3 = new AWS.S3({
-            endpoint: R2_ENDPOINT,
-            accessKeyId: R2_ACCESS_KEY_ID,
-            secretAccessKey: R2_SECRET_ACCESS_KEY,
-            signatureVersion: 'v4',
-            region: 'auto',
-            s3ForcePathStyle: true
-        });
+        const R2_ACCESS_KEY_ID = "b9a3a78cc0e4b1aebebe4e219ded3c98"; 
+        const R2_SECRET_ACCESS_KEY = "ebfa3c9761294468b3f3122a1ff53f2b28e6074791223393d5632df06b54721b"; 
 
         const ADMIN_FLAG_KEY = 'socra_admin_flag';
         let isAdmin = localStorage.getItem(ADMIN_FLAG_KEY) === 'true';
@@ -564,12 +553,10 @@
                 const dateInfo = parseDate(group.date);
                 yearsSet.add(dateInfo.year);
 
-                // 연도 필터링
                 if (currentFilterYear !== 'ALL') {
                     if (dateInfo.year !== currentFilterYear) return;
-                    availableMonthsSet.add(parseInt(dateInfo.month, 10)); // 선택된 연도 내 존재하는 월 수집
+                    availableMonthsSet.add(parseInt(dateInfo.month, 10));
 
-                    // 월 필터링
                     if (currentFilterMonth !== 'ALL' && parseInt(dateInfo.month, 10) !== parseInt(currentFilterMonth, 10)) {
                         return;
                     }
@@ -645,7 +632,6 @@
             renderMonthTabs(Array.from(availableMonthsSet).sort((a, b) => a - b));
         }
 
-        // 📅 연도 탭 렌더링
         function renderYearTabs(years) {
             const yearTabsContainer = document.getElementById('yearTabs');
             const btnAll = document.getElementById('btnAll');
@@ -661,7 +647,6 @@
             });
         }
 
-        // 🗓️ 월(Month) 탭 렌더링
         function renderMonthTabs(months) {
             const monthTabsContainer = document.getElementById('monthTabs');
             monthTabsContainer.innerHTML = '';
@@ -673,14 +658,12 @@
 
             monthTabsContainer.style.display = 'flex';
 
-            // 'ALL' 월 선택 버튼
             const btnAllMonth = document.createElement('button');
             btnAllMonth.className = `month-btn ${currentFilterMonth === 'ALL' ? 'active' : ''}`;
             btnAllMonth.textContent = 'ALL';
             btnAllMonth.onclick = () => filterMonth('ALL');
             monthTabsContainer.appendChild(btnAllMonth);
 
-            // 해당 연도에 존재하는 월만 생성
             months.forEach(m => {
                 const btn = document.createElement('button');
                 btn.className = `month-btn ${parseInt(currentFilterMonth, 10) === m ? 'active' : ''}`;
@@ -692,7 +675,7 @@
 
         function filterYear(year) {
             currentFilterYear = year;
-            currentFilterMonth = 'ALL'; // 연도가 바뀌면 월 필터 초기화
+            currentFilterMonth = 'ALL';
             renderArchive();
         }
 
@@ -846,7 +829,8 @@
         }
         function closeVideoUploadModal() { document.getElementById('videoModalUpload').classList.remove('active'); }
 
-async function submitNewVideo() {
+        // 🚀 서브도메인 SSL 에러 방지용 R2 전용 AWS SDK 객체 생성 및 업로드
+        async function submitNewVideo() {
             const date = document.getElementById('uploadTargetDate').value;
             const tag = document.getElementById('inputVidTag').value.trim();
             const title = document.getElementById('inputVidTitle').value.trim();
@@ -862,24 +846,22 @@ async function submitNewVideo() {
             document.getElementById('loadingSpinner').style.display = 'flex';
 
             try {
-                // 🚀 핵심 수정: AWS SDK가 URL 앞에 'brandteam.'을 붙이지 못하도록 엔드포인트에 버킷 경로 포함 및 S3 설정 강제 지정
+                // 서브도메인 뒤섞임 방지를 위해 엔드포인트에 버킷 경로를 포함시키고 s3BucketEndpoint 지정
                 const customS3 = new AWS.S3({
                     endpoint: new AWS.Endpoint(`https://6acdc5b002c918c06be9f2a0018f972b.r2.cloudflarestorage.com/${R2_BUCKET_NAME}`),
                     accessKeyId: R2_ACCESS_KEY_ID,
                     secretAccessKey: R2_SECRET_ACCESS_KEY,
                     signatureVersion: 'v4',
                     region: 'auto',
-                    s3BucketEndpoint: true // 버킷이 이미 엔드포인트에 포함되었음을 강제 선언 (서브도메인 추가 완전 차단)
+                    s3BucketEndpoint: true
                 });
 
-                // 1. Presigned URL 생성 (이제 https://6acdc5b002c.../brandteam/파일명 주소로 정확히 생성됨)
                 const presignedUrl = customS3.getSignedUrl('putObject', {
                     Key: fileName,
                     ContentType: file.type,
                     Expires: 3600
                 });
 
-                // 2. R2로 직접 PUT 업로드
                 const uploadRes = await fetch(presignedUrl, {
                     method: 'PUT',
                     headers: { 'Content-Type': file.type },
@@ -890,7 +872,6 @@ async function submitNewVideo() {
                     throw new Error(`R2 HTTP Upload Error: ${uploadRes.status}`);
                 }
 
-                // 3. DB 저장
                 const dbRes = await fetch(`${SUPABASE_URL}/rest/v1/archive_videos`, {
                     method: 'POST',
                     headers: {
@@ -922,42 +903,7 @@ async function submitNewVideo() {
             } catch (err) {
                 document.getElementById('loadingSpinner').style.display = 'none';
                 console.error("R2 업로드 최종 실패:", err);
-                alert("Cloudflare R2 업로드 중 오류가 발생했습니다. 개발자 도구 콘솔을 확인해 보세요.");
-            }
-        }
-
-                const dbRes = await fetch(`${SUPABASE_URL}/rest/v1/archive_videos`, {
-                    method: 'POST',
-                    headers: {
-                        'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                        'Content-Type': 'application/json',
-                        'Prefer': 'return=minimal'
-                    },
-                    body: JSON.stringify({
-                        project_date: date,
-                        tag: tag,
-                        title: title,
-                        is_single: true,
-                        full_url: fullUrl,
-                        mode: mode
-                    })
-                });
-
-                document.getElementById('loadingSpinner').style.display = 'none';
-
-                if (dbRes.ok) {
-                    alert('영상이 성공적으로 R2에 업로드되고 아카이브에 등록되었습니다!');
-                    closeVideoUploadModal();
-                    loadArchiveFromDB();
-                } else {
-                    alert('DB 저장 실패. Supabase 설정을 확인해 주세요.');
-                }
-
-            } catch (err) {
-                document.getElementById('loadingSpinner').style.display = 'none';
-                console.error("R2 업로드 최종 실패:", err);
-                alert("Cloudflare R2 업로드 중 오류가 발생했습니다.");
+                alert("Cloudflare R2 업로드 중 오류가 발생했습니다. 콘솔을 확인해 보세요.");
             }
         }
 
@@ -1089,7 +1035,7 @@ async function submitNewVideo() {
             document.body.style.overflow = 'auto';
         }
 
-        // 🖱️ 상단 Quick Links 영역 드래그 및 마우스 휠 스크롤 이벤트 바인딩
+        // 🖱️ 상단 Quick Links 영역 드래그 & 휠 가로 스크롤 이벤트 바인딩
         function setupQuickLinksScroll() {
             const slider = document.getElementById('quickLinks');
             let isDown = false;
@@ -1110,7 +1056,6 @@ async function submitNewVideo() {
                 slider.scrollLeft = scrollLeft - walk;
             });
 
-            // 마우스 휠을 위/아래로 굴릴 때 좌/우 스크롤 처리
             slider.addEventListener('wheel', (e) => {
                 if (e.deltaY !== 0) {
                     e.preventDefault();
