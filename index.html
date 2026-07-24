@@ -33,9 +33,7 @@
         header { padding-top: 3.5rem; padding-bottom: 1.8rem; }
         .header-tag { color: var(--accent-red); font-size: 2.6rem; font-weight: 800; letter-spacing: -1px; }
 
-        /* ------------------------------------
-           3줄 세로 고정 + 3행 가로 스크롤 내비게이션
-        ------------------------------------ */
+        /* Navigation Bar (3줄 구조) */
         .nav-bar-wrapper {
             position: sticky; top: 0;
             background: rgba(10, 10, 10, 0.88); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
@@ -51,7 +49,6 @@
             gap: 0.6rem; 
         }
 
-        /* 1, 2행 일반 행 */
         .nav-row {
             display: flex;
             align-items: center;
@@ -61,7 +58,7 @@
             width: 100%;
         }
 
-        /* 3행 전용: 가로 드래그/터치 스크롤 지원 */
+        /* 3행 전용: 가로 드래그/터치 스크롤 */
         .nav-row-scroll {
             display: flex;
             align-items: center;
@@ -94,7 +91,7 @@
             transition: background 0.2s, border-color 0.2s;
             box-sizing: border-box;
             margin: 0 !important;
-            flex-shrink: 0; /* 줄바꿈 방지 */
+            flex-shrink: 0;
         }
 
         .tab-btn {
@@ -324,16 +321,12 @@
         <div class="header-tag">Socra Brandteam Archive</div>
     </header>
 
-    <!-- 3줄 구조 내비게이션 바 -->
     <div class="nav-bar-wrapper">
         <div class="nav-bar-container grid-layout-align">
-            <!-- 1행: ALL -->
             <div class="nav-row">
                 <button id="btnAll" class="tab-btn active" onclick="filterYear('ALL')">ALL</button>
             </div>
-            <!-- 2행: 연도 목록 -->
             <div id="yearTabs" class="nav-row"></div>
-            <!-- 3행: 해당일 프로젝트 바로가기 (가로 스크롤 유효) -->
             <div id="quickLinks" class="nav-row-scroll"></div>
         </div>
     </div>
@@ -356,7 +349,8 @@
                     </div>
                     <div class="column-media" onclick="togglePlay('videoLeft', 'overlayLeft')">
                         <div id="overlayLeft" class="overlay-play-btn"></div>
-                        <video id="videoLeft" playsinline></video>
+                        <!-- 모바일 썸네일 강제 로드 설정 (preload="auto" 및 playsinline) -->
+                        <video id="videoLeft" preload="auto" playsinline></video>
                         <div class="video-control-bar" onclick="event.stopPropagation();">
                             <div class="progress-container" onclick="seekVideo(event, 'videoLeft')">
                                 <div class="progress-bg">
@@ -375,7 +369,8 @@
                     </div>
                     <div class="column-media" onclick="togglePlay('videoRight', 'overlayRight')">
                         <div id="overlayRight" class="overlay-play-btn"></div>
-                        <video id="videoRight" playsinline></video>
+                        <!-- 모바일 썸네일 강제 로드 설정 (preload="auto" 및 playsinline) -->
+                        <video id="videoRight" preload="auto" playsinline></video>
                         <div class="video-control-bar" onclick="event.stopPropagation();">
                             <div class="progress-container" onclick="seekVideo(event, 'videoRight')">
                                 <div class="progress-bg">
@@ -467,7 +462,8 @@
                     gridCardsHtml += `
                         <div class="video-card" onclick="openDualModal(${jsonItem})">
                             <div class="thumb-cover ${item.mode}">
-                                <video src="${thumbSource}#t=0.1" class="thumb-video" preload="metadata" muted></video>
+                                <!-- 모바일 브라우저 썸네일 강제 로드용 속성 추가 -->
+                                <video src="${thumbSource}#t=0.1" class="thumb-video" preload="auto" muted playsinline></video>
                                 <div class="play-btn"></div>
                             </div>
                             <div class="video-info">
@@ -515,7 +511,6 @@
 
         renderArchive();
 
-        // 3행 전용 마우스 드래그 가로 스크롤 제어
         const quickRow = document.getElementById('quickLinks');
         let isMouseDown = false, startX, scrollLeft, isDragging = false;
 
@@ -539,7 +534,6 @@
 
         function handleButtonClick(action) { if (!isDragging) action(); }
 
-        // 모달 제어
         const modal = document.getElementById('videoModal');
         const modalHeaderTitle = document.getElementById('modalHeaderTitle');
         const modalBodyDual = document.getElementById('modalBodyDual');
@@ -571,6 +565,10 @@
                 videoLeft.src = item.introUrl;
                 videoRight.src = item.fullUrl;
             }
+
+            // 모바일 로딩 직후 첫 프레임 강제 지정 (currentTime = 0.1)
+            videoRight.currentTime = 0.1;
+            if(!item.isSingle) videoLeft.currentTime = 0.1;
 
             overlayLeft.classList.remove('hidden');
             overlayRight.classList.remove('hidden');
