@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PROJECT ARCHIVE</title>
 
-    <!-- 유튜브 사전 연결 -->
     <link rel="dns-prefetch" href="https://www.youtube.com">
     <link rel="preconnect" href="https://www.youtube.com" crossorigin>
 
@@ -28,7 +27,7 @@
         header { padding: 3.5rem 2rem 1.5rem; max-width: 1200px; margin: 0 auto; }
         .header-tag { color: var(--accent-red); font-size: 0.85rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
 
-        /* Sticky Navigation Bar */
+        /* Navigation Bar */
         .nav-bar-wrapper {
             position: sticky; top: 0;
             background: rgba(10, 10, 10, 0.85); backdrop-filter: blur(12px);
@@ -92,7 +91,7 @@
         .video-title { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); }
 
         /* ------------------------------------
-           좌우 분할(Dual) 팝업 모달
+           유튜브 UI 숨김 처리 크롭 팝업
         ------------------------------------ */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -122,64 +121,42 @@
         .close-btn { background: none; border: none; color: var(--text-secondary); font-size: 1.3rem; cursor: pointer; line-height: 1; }
         .close-btn:hover { color: #ffffff; }
 
-        /* 듀얼 영상 본문 영역 */
         .modal-body-dual {
-            flex: 1;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            padding: 1rem;
-            background: #000000;
-            overflow: hidden;
+            flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding: 1rem; background: #000000; overflow: hidden;
         }
 
         @media (max-width: 768px) {
-            .modal-body-dual {
-                grid-template-columns: 1fr;
-                overflow-y: auto;
-            }
+            .modal-body-dual { grid-template-columns: 1fr; overflow-y: auto; }
         }
 
         .dual-column {
-            display: flex;
-            flex-direction: column;
-            background: #121212;
-            border-radius: 10px;
-            border: 1px solid var(--border-color);
-            overflow: hidden;
+            display: flex; flex-direction: column; background: #121212;
+            border-radius: 10px; border: 1px solid var(--border-color); overflow: hidden;
         }
 
         .column-header {
-            padding: 0.6rem 1rem;
-            background: #18181b;
-            border-bottom: 1px solid var(--border-color);
-            font-size: 0.85rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            padding: 0.6rem 1rem; background: #18181b; border-bottom: 1px solid var(--border-color);
+            font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; justify-content: space-between;
         }
 
-        .column-header .badge {
-            font-size: 0.7rem;
-            padding: 0.15rem 0.5rem;
-            border-radius: 4px;
-            font-weight: 800;
-        }
-
+        .column-header .badge { font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 4px; font-weight: 800; }
         .left-badge { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.4); }
         .right-badge { background: rgba(59, 130, 246, 0.2); color: var(--accent-blue); border: 1px solid rgba(59, 130, 246, 0.4); }
 
+        /* UI 가림용 스카이라이트 컨테이너 */
         .column-media {
-            flex: 1;
-            width: 100%;
-            height: 100%;
-            background: #000;
+            position: relative;
+            flex: 1; width: 100%; height: 100%; background: #000;
+            overflow: hidden;
         }
 
+        /* iframe을 위아래로 약간 늘려서 상단 타이틀 UI를 상자 밖으로 잘라냄 */
         .column-media iframe {
+            position: absolute;
+            top: -55px; /* 상단 유튜브 제목 바 영역 잘라내기 */
+            left: 0;
             width: 100%;
-            height: 100%;
+            height: calc(100% + 110px); /* 잘라낸 만큼 높이 보정 */
             border: 0;
         }
 
@@ -211,7 +188,7 @@
                 <button class="close-btn" onclick="forceClose()">✕</button>
             </div>
             <div class="modal-body-dual">
-                <!-- 좌측: INTRO 번호 -->
+                <!-- 좌측 INTRO -->
                 <div class="dual-column">
                     <div class="column-header">
                         <span id="leftTitle">INTRO_01</span>
@@ -222,7 +199,7 @@
                     </div>
                 </div>
 
-                <!-- 우측: INTRO 번호 예시영상 -->
+                <!-- 우측 예시영상 -->
                 <div class="dual-column">
                     <div class="column-header">
                         <span id="rightTitle">INTRO_01 예시영상</span>
@@ -241,12 +218,6 @@
     </footer>
 
     <script>
-        // =========================================================
-        // 💡 [프로젝트 아카이브 데이터]
-        // numKey: 표기할 인트로 번호 (예: "01", "02")
-        // introId: 좌측 1초 인트로 영상 ID
-        // id: 우측 풀버전 적용 예시영상 ID
-        // =========================================================
         const projectsArchive = [
             {
                 date: "260724",
@@ -262,7 +233,6 @@
             }
         ];
 
-        // 날짜 기준 최신순 정렬
         projectsArchive.sort((a, b) => Number(b.date) - Number(a.date));
 
         function parseDate(dateStr) {
@@ -349,9 +319,7 @@
 
         renderArchive();
 
-        // ------------------------------------
-        // 듀얼 팝업 열기 제어
-        // ------------------------------------
+        // 팝업 오버레이
         const modal = document.getElementById('videoModal');
         const modalHeaderTitle = document.getElementById('modalHeaderTitle');
         const leftTitle = document.getElementById('leftTitle');
@@ -361,16 +329,12 @@
 
         function openDualModal(item) {
             modalHeaderTitle.textContent = item.title;
-            
-            // 표기 타이틀 세팅 (요청 표기 형식 적용)
             leftTitle.textContent = `INTRO_${item.numKey}`;
             rightTitle.textContent = `INTRO_${item.numKey} 예시영상`;
 
-            // 좌측: 1초 인트로 유튜브 세팅
-            iframeLeft.src = `https://www.youtube.com/embed/${item.introId}?rel=0`;
-
-            // 우측: 인트로 적용 예시영상 유튜브 세팅
-            iframeRight.src = `https://www.youtube.com/embed/${item.id}?rel=0`;
+            // controls=0 & modestbranding=1 옵션을 추가하여 컨트롤바 최소화
+            iframeLeft.src = `https://www.youtube.com/embed/${item.introId}?autoplay=1&controls=0&rel=0&modestbranding=1`;
+            iframeRight.src = `https://www.youtube.com/embed/${item.id}?autoplay=1&controls=0&rel=0&modestbranding=1`;
 
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
