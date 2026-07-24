@@ -164,7 +164,6 @@
             display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
         }
 
-        /* 💡 타이틀 길어질 때 1줄 고정 및 말줄임표 처리 */
         .modal-header-title { 
             font-size: 0.95rem; 
             font-weight: 800; 
@@ -184,12 +183,11 @@
 
         .modal-body-dual.single-mode {
             grid-template-columns: 1fr;
-            max-width: 500px;
+            max-width: 900px;
             margin: 0 auto;
             width: 100%;
         }
 
-        /* 💡 좌우 영상 크기/높이 완벽 대칭 통일 레이아웃 설정 */
         .dual-column {
             display: flex; 
             flex-direction: column; 
@@ -197,11 +195,11 @@
             border-radius: 10px; 
             border: 1px solid var(--border-color); 
             overflow: hidden;
-            height: 100%; /* 부모 영역에 꽉 차도록 고정 */
+            height: 100%;
         }
 
         .column-header {
-            height: 44px; /* 상단 헤더 높이 고정 */
+            height: 44px;
             padding: 0 1rem; 
             background: #18181b; 
             border-bottom: 1px solid var(--border-color);
@@ -213,7 +211,6 @@
             flex-shrink: 0;
         }
 
-        /* 💡 컬럼 내부 타이틀도 1줄 고정 및 말줄임표 처리 */
         .column-header-text {
             white-space: nowrap;
             overflow: hidden;
@@ -422,6 +419,20 @@
         const SUPABASE_STORAGE_URL = "https://kblwddlquwlvumhwkirl.supabase.co/storage/v1/object/public/videos/";
 
         const projectsArchive = [
+            {
+                date: "260625",
+                title: "IP VIDEO TEST",
+                items: [
+                    { 
+                        tag: "OPTION 01", 
+                        title: "IP VIDEO TEST", 
+                        isSingle: true, 
+                        rightTitle: "IP VIDEO TEST",
+                        fullUrl: SUPABASE_STORAGE_URL + encodeURIComponent("0625 TEST_.mp4"), 
+                        mode: "landscape" 
+                    }
+                ]
+            },
             {
                 date: "260724",
                 title: "INTRO 시안",
