@@ -30,7 +30,24 @@
         }
 
         header { padding-top: 3.5rem; padding-bottom: 1.8rem; }
-        .header-tag { color: var(--accent-red); font-size: 2.6rem; font-weight: 800; letter-spacing: -1px; }
+        .header-tag { color: var(--accent-red); font-size: 2.6rem; font-weight: 800; letter-spacing: -1px; display: inline-block; }
+
+        /* 클릭하면 바로 수정 가능한 텍스트 공통 스타일 */
+        .editable {
+            outline: none;
+            cursor: text;
+            border-radius: 4px;
+            padding: 0.1rem 0.3rem;
+            margin: -0.1rem -0.3rem;
+            transition: background 0.15s, box-shadow 0.15s;
+        }
+        .editable:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+        .editable:focus {
+            background: rgba(239, 68, 68, 0.1);
+            box-shadow: 0 0 0 1px var(--accent-red);
+        }
 
         .nav-bar-wrapper {
             position: sticky; top: 0;
@@ -370,7 +387,7 @@
 <body>
 
     <header class="grid-layout-align">
-        <div class="header-tag">Socra Brandteam Archive</div>
+        <div class="header-tag editable" contenteditable="true" spellcheck="false" id="mainHeaderTitle">Socra Brandteam Archive</div>
     </header>
 
     <div class="nav-bar-wrapper">
@@ -584,7 +601,7 @@
                 section.id = `section-${group.date}`;
 
                 let gridCardsHtml = '';
-                group.items.forEach(item => {
+                group.items.forEach((item, idx) => {
                     const jsonItem = JSON.stringify(item).replace(/"/g, '&quot;');
                     const formattedTitle = formatTitleWithBreak(item.title);
                     const thumbSource = item.isSingle ? item.fullUrl : item.introUrl;
@@ -598,7 +615,10 @@
                             </div>
                             <div class="video-info">
                                 <div class="video-tag">${item.tag}</div>
-                                <div class="video-title">${formattedTitle}</div>
+                                <div class="video-title editable" contenteditable="true" spellcheck="false"
+                                     data-date="${group.date}" data-idx="${idx}"
+                                     onclick="event.stopPropagation()"
+                                     onblur="saveItemTitle(this)">${formattedTitle}</div>
                             </div>
                         </div>
                     `;
@@ -607,7 +627,8 @@
                 section.innerHTML = `
                     <div class="section-header">
                         <span class="date-badge">${dateInfo.formattedFull}</span>
-                        <h2 class="section-title">${group.title}</h2>
+                        <h2 class="section-title editable" contenteditable="true" spellcheck="false"
+                            data-date="${group.date}" onblur="saveSectionTitle(this)">${group.title}</h2>
                     </div>
                     <div class="video-grid">${gridCardsHtml}</div>
                 `;
@@ -615,6 +636,26 @@
             });
 
             renderYearTabs(Array.from(yearsSet).sort((a, b) => b - a));
+        }
+
+        // 섹션(그룹) 타이틀 저장
+        function saveSectionTitle(el) {
+            const date = el.dataset.date;
+            const group = projectsArchive.find(g => g.date === date);
+            if (group) {
+                group.title = el.textContent.trim();
+                renderArchive(); // 퀵링크 버튼에도 반영되도록 다시 그리기
+            }
+        }
+
+        // 카드(비디오) 타이틀 저장
+        function saveItemTitle(el) {
+            const date = el.dataset.date;
+            const idx = Number(el.dataset.idx);
+            const group = projectsArchive.find(g => g.date === date);
+            if (group && group.items[idx]) {
+                group.items[idx].title = el.innerHTML.trim(); // <br> 줄바꿈 유지
+            }
         }
 
         function renderYearTabs(years) {
