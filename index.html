@@ -376,9 +376,8 @@
     <div class="nav-bar-wrapper">
         <div class="nav-bar-container grid-layout-align">
             <div class="nav-row">
-               <button id="btnAll" class="tab-btn active" onclick="filterYear('ALL')">ALL</button>
-              <div id="yearTabs" style="display:contents;"></div>
-              </div>
+                <button id="btnAll" class="tab-btn active" onclick="filterYear('ALL')">ALL</button>
+            </div>
             <div id="yearTabs" class="nav-row"></div>
             <div id="quickLinks" class="nav-row-scroll"></div>
         </div>
@@ -415,7 +414,7 @@
                 </div>
 
                 <div id="rightColumn" class="dual-column">
-                    <div class="column-header">
+                    <div id="rightColumnHeader" class="column-header">
                         <span id="rightTitle" class="column-header-text">INTRO_REF_02 (IP+THIS IS REAL CLASS)</span>
                         <span class="badge right-badge">FULL EXAMPLE</span>
                     </div>
@@ -661,6 +660,7 @@
         const modalBodyDual = document.getElementById('modalBodyDual');
         const leftColumn = document.getElementById('leftColumn');
         const rightColumn = document.getElementById('rightColumn');
+        const rightColumnHeader = document.getElementById('rightColumnHeader');
         const leftTitle = document.getElementById('leftTitle');
         const rightTitle = document.getElementById('rightTitle');
 
@@ -710,7 +710,7 @@
                 modalBodyDual.classList.add('single-mode');
                 leftColumn.style.display = 'none';
                 rightColumn.style.display = 'flex';
-                rightTitle.textContent = item.rightTitle;
+                rightColumnHeader.style.display = 'none'; // 영상 1개일 땐 타이틀 중복 표시 없이 바로 영상만
                 videoRight.src = item.fullUrl;
 
                 modalContainerEl.classList.add('fit-video');
@@ -726,6 +726,7 @@
                 modalContainerEl.classList.remove('fit-video');
                 modalContainerEl.style.width = '';
                 modalContainerEl.style.height = '';
+                rightColumnHeader.style.display = 'flex'; // 좌우비교 모드에서는 각 컬럼 헤더 유지
 
                 leftTitle.textContent = item.leftTitle;
                 rightTitle.textContent = item.rightTitle;
