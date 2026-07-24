@@ -265,21 +265,16 @@
     </div>
 
     <script>
-        // ==========================================
-        // 🔑 Cloudflare R2 & API Token 적용 완료
-        // ==========================================
-        const R2_BUCKET_NAME = "brandteam"; // 스크린샷에 확인된 버킷 명칭 반영
+        const R2_BUCKET_NAME = "brandteam"; 
         const R2_PUBLIC_DOMAIN = "https://pub-427fa438eaa44e659bfdd77141c7ca95.r2.dev/"; 
         const R2_ENDPOINT = "https://6acdc5b002c918c06be9f2a0018f972b.r2.cloudflarestorage.com"; 
         
-        // 🔑 전달해주신 API 토큰 값 자동 적용
         const R2_ACCESS_KEY_ID = "b9a3a78cc0e4b1aebebe4e219ded3c98"; 
         const R2_SECRET_ACCESS_KEY = "ebfa3c9761294468b3f3122a1ff53f2b28e6074791223393d5632df06b54721b"; 
 
         const SUPABASE_URL = "https://kblwddlquwlvumhwkirl.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtibHdkZGxxdXdsdnVtaHdraXJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3Mzg1NjksImV4cCI6MjEwMDMxNDU2OX0.OWH0eJXCGcJzjaMHqXWsurNuOEg4kNLuxpac6bxod1E";
 
-        // AWS S3 객체 생성 (R2 호환)
         const s3 = new AWS.S3({
             endpoint: R2_ENDPOINT,
             accessKeyId: R2_ACCESS_KEY_ID,
@@ -288,7 +283,6 @@
             region: 'auto'
         });
 
-        const ADMIN_PASSWORD = "socra2026!";
         const ADMIN_FLAG_KEY = 'socra_admin_flag';
         let isAdmin = localStorage.getItem(ADMIN_FLAG_KEY) === 'true';
 
@@ -388,7 +382,8 @@
         let displayArchive = [];
         let currentFilterYear = 'ALL';
 
-        function handleAdminToggle() {
+        // 🔒 Supabase DB 기반 인증
+        async function handleAdminToggle() {
             if (isAdmin) {
                 if (confirm('관리자 모드를 종료할까요?')) {
                     isAdmin = false;
@@ -397,14 +392,27 @@
                     renderArchive();
                 }
             } else {
-                const pw = prompt('관리자 비밀번호를 입력하세요');
-                if (pw === ADMIN_PASSWORD) {
-                    isAdmin = true;
-                    localStorage.setItem(ADMIN_FLAG_KEY, 'true');
-                    applyAdminMode();
-                    renderArchive();
-                } else if (pw !== null) {
-                    alert('비밀번호가 틀렸습니다.');
+                const inputPw = prompt('관리자 비밀번호를 입력하세요');
+                if (!inputPw) return;
+
+                try {
+                    const res = await fetch(`${SUPABASE_URL}/rest/v1/admin_config?password_hash=eq.${encodeURIComponent(inputPw)}&select=*`, {
+                        headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+                    });
+                    const data = await res.json();
+
+                    if (Array.isArray(data) && data.length > 0) {
+                        isAdmin = true;
+                        localStorage.setItem(ADMIN_FLAG_KEY, 'true');
+                        applyAdminMode();
+                        renderArchive();
+                        alert('관리자로 인증되었습니다.');
+                    } else {
+                        alert('비밀번호가 틀렸습니다.');
+                    }
+                } catch (e) {
+                    console.error("인증 실패:", e);
+                    alert('인증 처리 중 오류가 발생했습니다.');
                 }
             }
         }
