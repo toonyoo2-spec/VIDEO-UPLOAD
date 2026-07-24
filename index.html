@@ -173,9 +173,10 @@
             flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding: 1rem; background: #000000; overflow: hidden;
         }
 
+        /* 1번 같은 단일 모드일 때 그리드 구조를 1개로 변경 및 중앙 정렬 */
         .modal-body-dual.single-mode {
             grid-template-columns: 1fr;
-            max-width: 500px;
+            max-width: 480px;
             margin: 0 auto;
             width: 100%;
         }
@@ -342,9 +343,10 @@
                 <button class="close-btn" onclick="forceClose()">✕</button>
             </div>
             <div id="modalBodyDual" class="modal-body-dual">
+                <!-- 좌측 영상 영역 -->
                 <div id="leftColumn" class="dual-column">
                     <div class="column-header">
-                        <span id="leftTitle">INTRO_02</span>
+                        <span id="leftTitle">INTRO_01</span>
                         <span class="badge left-badge">ONLY INTRO</span>
                     </div>
                     <div class="column-media" onclick="togglePlay('videoLeft', 'overlayLeft')">
@@ -361,9 +363,10 @@
                     </div>
                 </div>
 
+                <!-- 우측 영상 영역 -->
                 <div id="rightColumn" class="dual-column">
                     <div class="column-header">
-                        <span id="rightTitle">INTRO_REF_02 (IP+THIS IS REAL CLASS)</span>
+                        <span id="rightTitle">INTRO_REF_01 (UI)</span>
                         <span class="badge right-badge">FULL EXAMPLE</span>
                     </div>
                     <div class="column-media" onclick="togglePlay('videoRight', 'overlayRight')">
@@ -405,7 +408,7 @@
                     },
                     { 
                         tag: "OPTION 02", 
-                        title: "INTRO_REF_02 (IP+THIS IS REAL CLASS)", 
+                        title: "INTRO_REF_02<br>(IP+THIS IS REAL CLASS)", 
                         leftTitle: "INTRO_02", 
                         rightTitle: "INTRO_REF_02 (IP+THIS IS REAL CLASS)", 
                         introUrl: SUPABASE_STORAGE_URL + "INTRO_02.mp4", 
@@ -423,7 +426,7 @@
                     },
                     { 
                         tag: "OPTION 03", 
-                        title: "INTRO_REF_03 (IP+리얼클래스)", 
+                        title: "INTRO_REF_03<br>(IP+리얼클래스)", 
                         leftTitle: "INTRO_03", 
                         rightTitle: "INTRO_REF_03 (IP+리얼클래스)", 
                         introUrl: SUPABASE_STORAGE_URL + "INTRO_03.mp4", 
@@ -432,7 +435,7 @@
                     },
                     { 
                         tag: "OPTION 04", 
-                        title: "INTRO_REF_04 (Jingle+Logo)", 
+                        title: "INTRO_REF_04<br>(Jingle+Logo)", 
                         leftTitle: "INTRO_04", 
                         rightTitle: "INTRO_REF_04 (Jingle+Logo)", 
                         introUrl: SUPABASE_STORAGE_URL + "INTRO_04.mp4", 
@@ -441,7 +444,7 @@
                     },
                     { 
                         tag: "OPTION 05", 
-                        title: "INTRO_REF_05 (Voice_Logo)", 
+                        title: "INTRO_REF_05<br>(Voice_Logo)", 
                         leftTitle: "INTRO_05", 
                         rightTitle: "INTRO_REF_05 (Voice_Logo)", 
                         introUrl: SUPABASE_STORAGE_URL + "INTRO_05.mp4", 
@@ -450,7 +453,7 @@
                     },
                     { 
                         tag: "OPTION 06", 
-                        title: "INTRO_REF_06 (Voice_Logo ani.)", 
+                        title: "INTRO_REF_06<br>(Voice_Logo ani.)", 
                         leftTitle: "INTRO_06", 
                         rightTitle: "INTRO_REF_06 (Voice_Logo ani.)", 
                         introUrl: SUPABASE_STORAGE_URL + "INTRO_06.mp4", 
@@ -471,7 +474,6 @@
         }
 
         function formatTitleWithBreak(title) {
-            // HTML 태그(<br>)가 포함되어 있으면 그대로 반환하고, 아니면 기존처럼 소괄호 앞 줄바꿈 적용
             if (title.includes('<br>')) return title;
             return title.replace(/\s*(\()/g, '<br>$1');
         }
@@ -593,6 +595,7 @@
         const modalHeaderTitle = document.getElementById('modalHeaderTitle');
         const modalBodyDual = document.getElementById('modalBodyDual');
         const leftColumn = document.getElementById('leftColumn');
+        const rightColumn = document.getElementById('rightColumn');
         const leftTitle = document.getElementById('leftTitle');
         const rightTitle = document.getElementById('rightTitle');
 
@@ -608,13 +611,17 @@
             resetProgressUI('fillRight', 'timeRight');
 
             if (item.isSingle) {
+                // 1번처럼 단일 영상인 경우 좌측 컬럼 숨기고 우측만 표출
                 modalBodyDual.classList.add('single-mode');
                 leftColumn.style.display = 'none';
+                rightColumn.style.display = 'flex';
                 rightTitle.textContent = item.rightTitle;
                 videoRight.src = item.fullUrl;
             } else {
+                // 2번 이후부터는 좌우 듀얼 컬럼 정상 표출
                 modalBodyDual.classList.remove('single-mode');
                 leftColumn.style.display = 'flex';
+                rightColumn.style.display = 'flex';
                 
                 leftTitle.textContent = item.leftTitle;
                 rightTitle.textContent = item.rightTitle;
