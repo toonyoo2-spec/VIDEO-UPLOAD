@@ -387,7 +387,8 @@
 <body>
 
     <header class="grid-layout-align">
-        <div class="header-tag editable" contenteditable="true" spellcheck="false" id="mainHeaderTitle">Socra Brandteam Archive</div>
+        <div class="header-tag editable" contenteditable="true" spellcheck="false" id="mainHeaderTitle"
+             onblur="saveToServer()">Socra Brandteam Archive</div>
     </header>
 
     <div class="nav-bar-wrapper">
@@ -459,6 +460,9 @@
 
     <script>
         const SUPABASE_STORAGE_URL = "https://kblwddlquwlvumhwkirl.supabase.co/storage/v1/object/public/videos/";
+        const SUPABASE_URL = "https://kblwddlquwlvumhwkirl.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtibHdkZGxxdXdsdnVtaHdraXJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3Mzg1NjksImV4cCI6MjEwMDMxNDU2OX0.OWH0eJXCGcJzjaMHqXWsurNuOEg4kNLuxpac6bxod1E";
+        const SUPABASE_REST_URL = `${SUPABASE_URL}/rest/v1/archive_content`;
 
         const projectsArchive = [
             {
@@ -555,6 +559,61 @@
 
         projectsArchive.sort((a, b) => Number(b.date) - Number(a.date));
 
+        // 모든 사용자에게 공유되는 서버(Supabase) 저장/불러오기
+        async function saveToServer() {
+            const payload = {
+                headerTitle: document.getElementById('mainHeaderTitle').textContent,
+                groups: projectsArchive.map(g => ({
+                    date: g.date,
+                    title: g.title,
+                    items: g.items.map(it => it.title)
+                }))
+            };
+            try {
+                await fetch(`${SUPABASE_REST_URL}?id=eq.main`, {
+                    method: 'PATCH',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify({ data: payload })
+                });
+            } catch (e) {
+                console.error('서버 저장 실패:', e);
+            }
+        }
+
+        async function loadFromServer() {
+            try {
+                const res = await fetch(`${SUPABASE_REST_URL}?id=eq.main&select=data`, {
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    }
+                });
+                const rows = await res.json();
+                const saved = rows && rows[0] && rows[0].data;
+                if (saved && saved.groups) {
+                    saved.groups.forEach(sg => {
+                        const group = projectsArchive.find(g => g.date === sg.date);
+                        if (group) {
+                            group.title = sg.title;
+                            sg.items.forEach((t, idx) => {
+                                if (group.items[idx]) group.items[idx].title = t;
+                            });
+                        }
+                    });
+                }
+                if (saved && saved.headerTitle) {
+                    document.getElementById('mainHeaderTitle').textContent = saved.headerTitle;
+                }
+            } catch (e) {
+                console.error('서버 불러오기 실패:', e);
+            }
+        }
+
         function parseDate(dateStr) {
             const year = '20' + dateStr.substring(0, 2);
             const month = dateStr.substring(2, 4);
@@ -644,6 +703,7 @@
             const group = projectsArchive.find(g => g.date === date);
             if (group) {
                 group.title = el.textContent.trim();
+                saveToServer();
                 renderArchive(); // 퀵링크 버튼에도 반영되도록 다시 그리기
             }
         }
@@ -655,6 +715,7 @@
             const group = projectsArchive.find(g => g.date === date);
             if (group && group.items[idx]) {
                 group.items[idx].title = el.innerHTML.trim(); // <br> 줄바꿈 유지
+                saveToServer();
             }
         }
 
@@ -680,7 +741,10 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        renderArchive();
+        (async function init() {
+            await loadFromServer();
+            renderArchive();
+        })();
 
         const quickRow = document.getElementById('quickLinks');
         let isMouseDown = false, startX, scrollLeft, isDragging = false;
