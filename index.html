@@ -454,7 +454,7 @@
     </div>
 
     <footer class="grid-layout-align">
-        &copy; © 2026 SOCRA BRAND TEAM, built by Kwanyun
+        &copy; 2026 SOCRA BRAND TEAM. ALL RIGHTS RESERVED. by Kwanyun <span style="color:var(--text-secondary);">by Kwanyun</span>
         &nbsp;·&nbsp;
         <span id="adminToggleBtn" style="cursor:pointer; text-decoration:underline; color:var(--text-secondary);" onclick="handleAdminToggle()">관리자 로그인</span>
     </footer>
@@ -466,7 +466,7 @@
         const SUPABASE_REST_URL = `${SUPABASE_URL}/rest/v1/archive_content`;
 
         // ===== 관리자 모드 (비밀번호로 편집 잠금/해제) =====
-        const ADMIN_PASSWORD = "kwan4575"; // 원하는 비밀번호로 바꾸세요
+        const ADMIN_PASSWORD = "socra2026!"; // 원하는 비밀번호로 바꾸세요
         const ADMIN_FLAG_KEY = 'socra_admin_flag';
         let isAdmin = localStorage.getItem(ADMIN_FLAG_KEY) === 'true';
 
@@ -611,7 +611,7 @@
                 groups: projectsArchive.map(g => ({
                     date: g.date,
                     title: g.title,
-                    items: g.items.map(it => it.title)
+                    items: g.items.map(it => ({ title: it.title, tag: it.tag }))
                 }))
             };
             try {
@@ -645,8 +645,15 @@
                         const group = projectsArchive.find(g => g.date === sg.date);
                         if (group) {
                             group.title = sg.title;
-                            sg.items.forEach((t, idx) => {
-                                if (group.items[idx]) group.items[idx].title = t;
+                            sg.items.forEach((savedItem, idx) => {
+                                if (!group.items[idx]) return;
+                                if (typeof savedItem === 'string') {
+                                    // 구버전 데이터 호환 (title만 저장되어 있던 경우)
+                                    group.items[idx].title = savedItem;
+                                } else {
+                                    group.items[idx].title = savedItem.title;
+                                    if (savedItem.tag !== undefined) group.items[idx].tag = savedItem.tag;
+                                }
                             });
                         }
                     });
@@ -712,6 +719,9 @@
                     const titleEditAttrs = isAdmin
                         ? `class="video-title editable" contenteditable="true" spellcheck="false" data-date="${group.date}" data-idx="${idx}" onclick="event.stopPropagation()" onblur="saveItemTitle(this)"`
                         : `class="video-title"`;
+                    const tagEditAttrs = isAdmin
+                        ? `class="video-tag editable" contenteditable="true" spellcheck="false" data-date="${group.date}" data-idx="${idx}" onclick="event.stopPropagation()" onblur="saveItemTag(this)"`
+                        : `class="video-tag"`;
                     
                     gridCardsHtml += `
                         <div class="video-card" onclick="openDualModal(${jsonItem})">
@@ -721,7 +731,7 @@
                                 <div class="play-btn"></div>
                             </div>
                             <div class="video-info">
-                                <div class="video-tag">${item.tag}</div>
+                                <div ${tagEditAttrs}>${item.tag}</div>
                                 <div ${titleEditAttrs}>${formattedTitle}</div>
                             </div>
                         </div>
@@ -751,6 +761,17 @@
                 group.title = el.textContent.trim();
                 saveToServer();
                 renderArchive(); // 퀵링크 버튼에도 반영되도록 다시 그리기
+            }
+        }
+
+        // 카드(빨간 태그) 저장
+        function saveItemTag(el) {
+            const date = el.dataset.date;
+            const idx = Number(el.dataset.idx);
+            const group = projectsArchive.find(g => g.date === date);
+            if (group && group.items[idx]) {
+                group.items[idx].tag = el.textContent.trim();
+                saveToServer();
             }
         }
 
