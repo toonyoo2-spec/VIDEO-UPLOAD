@@ -826,73 +826,65 @@
         function closeVideoUploadModal() { document.getElementById('videoModalUpload').classList.remove('active'); }
 
         // 🚀 AWS SDK 버그를 완전 회피하는 브라우저 표준 Fetch 직연동 R2 업로드
-        async function submitNewVideo() {
-            const date = document.getElementById('uploadTargetDate').value;
-            const tag = document.getElementById('inputVidTag').value.trim();
-            const title = document.getElementById('inputVidTitle').value.trim();
-            const mode = document.getElementById('selectVidMode').value;
-            const fileInput = document.getElementById('inputFileVideo');
+      async function submitNewVideo() {
+    const date = document.getElementById('uploadTargetDate').value;
+    const tag = document.getElementById('inputVidTag').value.trim();
+    const title = document.getElementById('inputVidTitle').value.trim();
+    const mode = document.getElementById('selectVidMode').value;
+    const fileInput = document.getElementById('inputFileVideo');
 
-            if (!tag || !title || fileInput.files.length === 0) return alert('모든 정보와 파일 선택을 완료해주세요.');
+    if (!tag || !title || fileInput.files.length === 0) return alert('모든 정보와 파일 선택을 완료해주세요.');
 
-            const file = fileInput.files[0];
-            const fileName = `${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
-            const fullUrl = R2_PUBLIC_DOMAIN + fileName;
+    const file = fileInput.files[0];
+    document.getElementById('loadingSpinner').style.display = 'flex';
 
-            document.getElementById('loadingSpinner').style.display = 'flex';
+    try {
+        // 1단계: Worker에게 서명된 업로드 URL 요청
+        const presignRes = await fetch(WORKER_PRESIGN_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fileName: file.name, contentType: file.type })
+        });
+        if (!presignRes.ok) throw new Error('프리사인드 URL 발급 실패');
+        const { uploadUrl, fileName } = await presignRes.json();
 
-            try {
-                // 정확한 R2 버킷 엔드포인트 생성 (도메인 변형 없음)
-                const targetEndpoint = `https://6acdc5b002c918c06be9f2a0018f972b.r2.cloudflarestorage.com/${R2_BUCKET_NAME}/${fileName}`;
+        // 2단계: 브라우저가 R2로 직접 업로드 (서명된 URL 사용)
+        const uploadRes = await fetch(uploadUrl, {
+            method: 'PUT',
+            headers: { 'Content-Type': file.type },
+            body: file
+        });
+        if (!uploadRes.ok) throw new Error(`R2 업로드 실패: ${uploadRes.status}`);
 
-                // 브라우저 표준 fetch 통신
-                const uploadRes = await fetch(targetEndpoint, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': file.type
-                    },
-                    body: file
-                });
+        const fullUrl = R2_PUBLIC_DOMAIN + fileName;
 
-                if (!uploadRes.ok && uploadRes.status !== 0) {
-                    throw new Error(`R2 HTTP Upload Status: ${uploadRes.status}`);
-                }
+        // 3단계: Supabase에 메타데이터 등록 (기존과 동일)
+        const dbRes = await fetch(`${SUPABASE_URL}/rest/v1/archive_videos`, {
+            method: 'POST',
+            headers: {
+                'apikey': SUPABASE_ANON_KEY,
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                'Content-Type': 'application/json',
+                'Prefer': 'return=minimal'
+            },
+            body: JSON.stringify({ project_date: date, tag, title, is_single: true, full_url: fullUrl, mode })
+        });
 
-                // Supabase DB 정보 등록
-                const dbRes = await fetch(`${SUPABASE_URL}/rest/v1/archive_videos`, {
-                    method: 'POST',
-                    headers: {
-                        'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                        'Content-Type': 'application/json',
-                        'Prefer': 'return=minimal'
-                    },
-                    body: JSON.stringify({
-                        project_date: date,
-                        tag: tag,
-                        title: title,
-                        is_single: true,
-                        full_url: fullUrl,
-                        mode: mode
-                    })
-                });
+        document.getElementById('loadingSpinner').style.display = 'none';
 
-                document.getElementById('loadingSpinner').style.display = 'none';
-
-                if (dbRes.ok) {
-                    alert('영상이 성공적으로 R2에 업로드되고 아카이브에 등록되었습니다!');
-                    closeVideoUploadModal();
-                    loadArchiveFromDB();
-                } else {
-                    alert('DB 저장 실패. Supabase 설정을 확인해 주세요.');
-                }
-
-            } catch (err) {
-                document.getElementById('loadingSpinner').style.display = 'none';
-                console.error("R2 업로드 최종 실패:", err);
-                alert("Cloudflare R2 업로드 중 오류가 발생했습니다. 개발자 도구 콘솔을 확인해 보세요.");
-            }
+        if (dbRes.ok) {
+            alert('영상이 성공적으로 업로드되고 아카이브에 등록되었습니다!');
+            closeVideoUploadModal();
+            loadArchiveFromDB();
+        } else {
+            alert('DB 저장 실패. Supabase 설정을 확인해 주세요.');
         }
+    } catch (err) {
+        document.getElementById('loadingSpinner').style.display = 'none';
+        console.error("업로드 실패:", err);
+        alert("업로드 중 오류가 발생했습니다: " + err.message);
+    }
+}
 
         const modal = document.getElementById('videoModal');
         const modalHeaderTitle = document.getElementById('modalHeaderTitle');
