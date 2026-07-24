@@ -29,11 +29,9 @@
             padding-right: 2rem;
         }
 
-        /* Header Area */
         header { padding-top: 3.5rem; padding-bottom: 1.8rem; }
         .header-tag { color: var(--accent-red); font-size: 2.6rem; font-weight: 800; letter-spacing: -1px; }
 
-        /* Navigation Bar (3줄 구조) */
         .nav-bar-wrapper {
             position: sticky; top: 0;
             background: rgba(10, 10, 10, 0.88); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
@@ -58,7 +56,6 @@
             width: 100%;
         }
 
-        /* 3행 전용: 가로 드래그/터치 스크롤 */
         .nav-row-scroll {
             display: flex;
             align-items: center;
@@ -107,23 +104,47 @@
             font-weight: 600; white-space: nowrap;
         }
         .quick-link-btn:hover { color: var(--text-primary); border-color: var(--accent-red); background: rgba(239, 68, 68, 0.08); }
-        .quick-link-btn .date-label { color: var(--accent-red); font-family: monospace; font-weight: 700; }
+        .quick-link-btn .date-label {
+            color: var(--accent-red);
+            font-family: "SF Mono", "Menlo", "Consolas", monospace;
+            font-weight: 700;
+            font-size: 0.85rem;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 0.02em;
+        }
 
-        /* Main Grid Area */
         main { margin-top: 2.5rem; margin-bottom: 2.5rem; }
         .project-section { margin-bottom: 4.5rem; scroll-margin-top: 180px; }
 
         .section-header { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); }
-        .date-badge { font-size: 1rem; font-weight: 800; color: #ffffff; background: #18181b; padding: 0.3rem 0.75rem; border-radius: 6px; border: 1px solid var(--border-hover); font-family: monospace; }
+        .date-badge {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #ffffff;
+            background: #18181b;
+            padding: 0.3rem 0.75rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-hover);
+            font-family: "SF Mono", "Menlo", "Consolas", monospace;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 0.02em;
+        }
         .section-title { font-size: 1.25rem; font-weight: 700; color: var(--text-primary); }
 
         .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.5rem; align-items: start; }
         .video-card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; cursor: pointer; transition: border-color 0.2s, transform 0.2s; }
         .video-card:hover { border-color: var(--accent-red); transform: translateY(-4px); }
 
-        .thumb-cover { position: relative; width: 100%; background: #171717; overflow: hidden; }
-        .thumb-cover.landscape { padding-bottom: 56.25%; }
-        .thumb-cover.portrait { padding-bottom: 140%; }
+        .thumb-cover {
+            position: relative;
+            width: 100%;
+            background: #171717;
+            overflow: hidden;
+            aspect-ratio: 16 / 9; /* 기본값. 영상 메타데이터 로드 후 JS가 실제 비율로 교체함 */
+            transition: aspect-ratio 0.15s ease;
+        }
+        .thumb-cover.landscape { aspect-ratio: 16 / 9; }
+        .thumb-cover.portrait { aspect-ratio: 9 / 16; }
 
         .thumb-video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
 
@@ -140,7 +161,6 @@
         .video-tag { font-size: 0.75rem; font-weight: 700; color: var(--accent-red); margin-bottom: 0.2rem; }
         .video-title { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); line-height: 1.4; }
 
-        /* Modal Area */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
@@ -156,6 +176,12 @@
             width: 95vw; max-width: 1000px;
             height: 90vh; max-height: 820px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9);
+            transition: width 0.15s ease, height 0.15s ease;
+        }
+        /* 단일 영상 모드: JS가 실제 영상 비율에 맞춰 width/height를 px로 직접 지정 (풀스크린에 가깝게) */
+        .modal-container.fit-video {
+            max-width: none;
+            max-height: none;
         }
 
         .modal-header {
@@ -183,8 +209,6 @@
 
         .modal-body-dual.single-mode {
             grid-template-columns: 1fr;
-            max-width: 900px;
-            margin: 0 auto;
             width: 100%;
         }
 
@@ -423,13 +447,13 @@
                 date: "260625",
                 title: "IP VIDEO TEST",
                 items: [
-                    { 
-                        tag: "OPTION 01", 
-                        title: "IP VIDEO TEST", 
-                        isSingle: true, 
+                    {
+                        tag: "IP VIDEO TEST",
+                        title: "IP VIDEO TEST",
+                        isSingle: true,
                         rightTitle: "IP VIDEO TEST",
-                        fullUrl: SUPABASE_STORAGE_URL + encodeURIComponent("0625 TEST_.mp4"), 
-                        mode: "landscape" 
+                        fullUrl: SUPABASE_STORAGE_URL + encodeURIComponent("0625 TEST_.mp4"),
+                        mode: "landscape"
                     }
                 ]
             },
@@ -460,7 +484,7 @@
                         leftTitle: "INTRO_02_", 
                         rightTitle: "INTRO_REF_02_ (IP+THIS IS REAL CLASS_develop)", 
                         introUrl: SUPABASE_STORAGE_URL + "INTRO_02_.mp4", 
-                        fullUrl: SUPABASE_STORAGE_URL + encodeURIComponent("INTRO_REF_02_.mp4"), 
+                        fullUrl: SUPABASE_STORAGE_URL + encodeURIComponent("INTRO_02_.mp4"), 
                         mode: "portrait" 
                     },
                     { 
@@ -558,8 +582,9 @@
                     
                     gridCardsHtml += `
                         <div class="video-card" onclick="openDualModal(${jsonItem})">
-                            <div class="thumb-cover ${item.mode}">
-                                <video src="${thumbSource}#t=0.1" class="thumb-video" preload="auto" muted playsinline></video>
+                            <div class="thumb-cover ${item.mode || 'landscape'}">
+                                <video src="${thumbSource}#t=0.1" class="thumb-video" preload="auto" muted playsinline
+                                    onloadedmetadata="if(this.videoWidth && this.videoHeight){ this.closest('.thumb-cover').style.aspectRatio = (this.videoWidth / this.videoHeight); }"></video>
                                 <div class="play-btn"></div>
                             </div>
                             <div class="video-info">
@@ -643,11 +668,42 @@
         const overlayLeft = document.getElementById('overlayLeft');
         const overlayRight = document.getElementById('overlayRight');
 
+        const modalContainerEl = document.querySelector('.modal-container');
+        const MODAL_HEADER_H = 48;
+
+        // 영상의 실제 가로/세로 비율(ratio = width/height)에 맞춰
+        // 뷰포트를 거의 꽉 채우는 팝업 크기(px)를 계산해서 적용
+        function sizeSingleModalToRatio(ratio) {
+            const maxW = window.innerWidth * 0.97;
+            const maxH = window.innerHeight * 0.94;
+            const availH = Math.max(maxH - MODAL_HEADER_H, 100);
+
+            let videoAreaW, videoAreaH;
+            if (maxW / availH > ratio) {
+                videoAreaH = availH;
+                videoAreaW = availH * ratio;
+            } else {
+                videoAreaW = maxW;
+                videoAreaH = maxW / ratio;
+            }
+
+            modalContainerEl.style.width = `${videoAreaW}px`;
+            modalContainerEl.style.height = `${videoAreaH + MODAL_HEADER_H}px`;
+        }
+
+        function onMainVideoMetadataForModal() {
+            if (videoRight.videoWidth && videoRight.videoHeight) {
+                sizeSingleModalToRatio(videoRight.videoWidth / videoRight.videoHeight);
+            }
+        }
+
         function openDualModal(item) {
             modalHeaderTitle.textContent = item.title.replace('<br>', ' ');
 
             resetProgressUI('fillLeft', 'timeLeft');
             resetProgressUI('fillRight', 'timeRight');
+
+            videoRight.removeEventListener('loadedmetadata', onMainVideoMetadataForModal);
 
             if (item.isSingle) {
                 modalBodyDual.classList.add('single-mode');
@@ -655,11 +711,21 @@
                 rightColumn.style.display = 'flex';
                 rightTitle.textContent = item.rightTitle;
                 videoRight.src = item.fullUrl;
+
+                modalContainerEl.classList.add('fit-video');
+                // 메타데이터 로딩 전 임시 비율(모드 기반 추정치)로 우선 표시 → 로드 완료 시 정확한 비율로 보정
+                const guessRatio = item.mode === 'portrait' ? 9 / 16 : 16 / 9;
+                sizeSingleModalToRatio(guessRatio);
+                videoRight.addEventListener('loadedmetadata', onMainVideoMetadataForModal);
             } else {
                 modalBodyDual.classList.remove('single-mode');
                 leftColumn.style.display = 'flex';
                 rightColumn.style.display = 'flex';
-                
+
+                modalContainerEl.classList.remove('fit-video');
+                modalContainerEl.style.width = '';
+                modalContainerEl.style.height = '';
+
                 leftTitle.textContent = item.leftTitle;
                 rightTitle.textContent = item.rightTitle;
                 
@@ -744,10 +810,23 @@
             videoRight.pause();
             videoLeft.src = '';
             videoRight.src = '';
+            videoRight.removeEventListener('loadedmetadata', onMainVideoMetadataForModal);
+            modalContainerEl.classList.remove('fit-video');
+            modalContainerEl.style.width = '';
+            modalContainerEl.style.height = '';
             overlayLeft.classList.remove('hidden');
             overlayRight.classList.remove('hidden');
             document.body.style.overflow = 'auto';
         }
+
+        // 모달이 열린 상태에서 창 크기를 바꿔도(예: 브라우저 리사이즈) 비율 유지하며 재계산
+        window.addEventListener('resize', () => {
+            if (modal.classList.contains('active') && modalContainerEl.classList.contains('fit-video')) {
+                if (videoRight.videoWidth && videoRight.videoHeight) {
+                    sizeSingleModalToRatio(videoRight.videoWidth / videoRight.videoHeight);
+                }
+            }
+        });
 
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && modal.classList.contains('active')) forceClose();
