@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Socra Brandteam Archive</title>
 
-    <!-- AWS S3 SDK (Cloudflare R2 호환 업로드용) -->
+    <!-- AWS S3 SDK (Presigned URL 생성용) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/aws-sdk/2.1584.0/aws-sdk.min.js"></script>
 
     <style>
@@ -49,16 +49,27 @@
 
         .nav-bar-container { display: flex; flex-direction: column; gap: 0.6rem; }
         .nav-row { display: flex; align-items: center; justify-content: flex-start; gap: 0.5rem; flex-wrap: wrap; width: 100%; }
-        .nav-row-scroll { display: flex; align-items: center; justify-content: flex-start; gap: 0.5rem; overflow-x: auto; white-space: nowrap; scrollbar-width: none; touch-action: pan-x; cursor: grab; user-select: none; width: 100%; -webkit-overflow-scrolling: touch; }
+        
+        /* 🖱️ 드래그 & 마우스 휠 스크롤 완벽 대응 스타일 */
+        .nav-row-scroll { 
+            display: flex; align-items: center; justify-content: flex-start; gap: 0.5rem; 
+            overflow-x: auto; white-space: nowrap; scrollbar-width: none; 
+            touch-action: pan-x; cursor: grab; user-select: none; width: 100%; 
+            -webkit-overflow-scrolling: touch; 
+        }
+        .nav-row-scroll:active { cursor: grabbing; }
         .nav-row-scroll::-webkit-scrollbar { display: none; }
 
-        .tab-btn, .quick-link-btn {
+        .tab-btn, .quick-link-btn, .month-btn {
             height: 34px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important;
             border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: background 0.2s; flex-shrink: 0;
         }
 
         .tab-btn { background: #18181b; border: 1px solid var(--border-color); color: var(--text-secondary); padding: 0 0.8rem; }
         .tab-btn.active { background: var(--accent-red); color: #ffffff; border-color: var(--accent-red); }
+
+        .month-btn { background: #121215; border: 1px solid var(--border-color); color: var(--text-secondary); padding: 0 0.7rem; font-size: 0.75rem; }
+        .month-btn.active { background: #27272a; color: #ffffff; border-color: #52525b; }
 
         .quick-link-btn { background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-color); color: var(--text-secondary); padding: 0 0.8rem; gap: 0.4rem; }
         .quick-link-btn .date-label { color: var(--accent-red); font-family: monospace; font-weight: 700; }
@@ -158,6 +169,7 @@
             <div class="nav-row">
                 <button id="btnAll" class="tab-btn active" onclick="filterYear('ALL')">ALL</button>
                 <div id="yearTabs" style="display:flex; gap:0.5rem;"></div>
+                <div id="monthTabs" style="display:none; gap:0.4rem; padding-left: 0.5rem; border-left: 1px solid var(--border-color);"></div>
             </div>
             <div id="quickLinks" class="nav-row-scroll"></div>
         </div>
@@ -178,7 +190,7 @@
         <div style="font-size: 0.8rem; color: #a1a1aa;">대용량 파일의 경우 잠시만 기다려주세요.</div>
     </div>
 
-    <!-- 1. 새 프로젝트 추가 모달 -->
+    <!-- 모달 모음 (생성/수정/업로드/재생) -->
     <div id="projectModal" class="admin-modal-overlay">
         <div class="admin-modal-box">
             <div class="admin-modal-title">새 프로젝트 생성</div>
@@ -197,7 +209,6 @@
         </div>
     </div>
 
-    <!-- 2. 프로젝트 제목 수정 모달 -->
     <div id="projectEditModal" class="admin-modal-overlay">
         <div class="admin-modal-box">
             <div class="admin-modal-title">프로젝트 수정</div>
@@ -214,7 +225,6 @@
         </div>
     </div>
 
-    <!-- 3. 영상 정보 수정 모달 -->
     <div id="videoEditModal" class="admin-modal-overlay">
         <div class="admin-modal-box">
             <div class="admin-modal-title">영상 시안 정보 수정</div>
@@ -241,7 +251,6 @@
         </div>
     </div>
 
-    <!-- 4. 새 영상 파일 업로드 모달 -->
     <div id="videoModalUpload" class="admin-modal-overlay">
         <div class="admin-modal-box">
             <div class="admin-modal-title">새 동영상 추가 (R2 자동 업로드)</div>
@@ -272,7 +281,6 @@
         </div>
     </div>
 
-    <!-- 5. 재생 모달 -->
     <div id="videoModal" class="modal-overlay" onclick="closeVideo(event)">
         <div class="modal-container">
             <div class="modal-header">
@@ -318,9 +326,6 @@
     </div>
 
     <script>
-        // ==========================================
-        // 🔑 R2 설정 및 엔드포인트 규격 정동 완료
-        // ==========================================
         const R2_BUCKET_NAME = "brandteam"; 
         const R2_PUBLIC_DOMAIN = "https://pub-427fa438eaa44e659bfdd77141c7ca95.r2.dev/"; 
         const R2_ENDPOINT = "https://6acdc5b002c918c06be9f2a0018f972b.r2.cloudflarestorage.com"; 
@@ -440,6 +445,7 @@
 
         let displayArchive = [];
         let currentFilterYear = 'ALL';
+        let currentFilterMonth = 'ALL';
 
         async function handleAdminToggle() {
             if (isAdmin) {
@@ -552,12 +558,22 @@
             container.innerHTML = '';
             quickLinksContainer.innerHTML = '';
             const yearsSet = new Set();
+            const availableMonthsSet = new Set();
 
             displayArchive.forEach((group, idx) => {
                 const dateInfo = parseDate(group.date);
                 yearsSet.add(dateInfo.year);
 
-                if (currentFilterYear !== 'ALL' && dateInfo.year !== currentFilterYear) return;
+                // 연도 필터링
+                if (currentFilterYear !== 'ALL') {
+                    if (dateInfo.year !== currentFilterYear) return;
+                    availableMonthsSet.add(parseInt(dateInfo.month, 10)); // 선택된 연도 내 존재하는 월 수집
+
+                    // 월 필터링
+                    if (currentFilterMonth !== 'ALL' && parseInt(dateInfo.month, 10) !== parseInt(currentFilterMonth, 10)) {
+                        return;
+                    }
+                }
 
                 const sectionId = `section-${group.date}-${idx}`;
 
@@ -626,8 +642,10 @@
             });
 
             renderYearTabs(Array.from(yearsSet).sort((a, b) => b - a));
+            renderMonthTabs(Array.from(availableMonthsSet).sort((a, b) => a - b));
         }
 
+        // 📅 연도 탭 렌더링
         function renderYearTabs(years) {
             const yearTabsContainer = document.getElementById('yearTabs');
             const btnAll = document.getElementById('btnAll');
@@ -643,8 +661,43 @@
             });
         }
 
+        // 🗓️ 월(Month) 탭 렌더링
+        function renderMonthTabs(months) {
+            const monthTabsContainer = document.getElementById('monthTabs');
+            monthTabsContainer.innerHTML = '';
+
+            if (currentFilterYear === 'ALL' || months.length === 0) {
+                monthTabsContainer.style.display = 'none';
+                return;
+            }
+
+            monthTabsContainer.style.display = 'flex';
+
+            // 'ALL' 월 선택 버튼
+            const btnAllMonth = document.createElement('button');
+            btnAllMonth.className = `month-btn ${currentFilterMonth === 'ALL' ? 'active' : ''}`;
+            btnAllMonth.textContent = 'ALL';
+            btnAllMonth.onclick = () => filterMonth('ALL');
+            monthTabsContainer.appendChild(btnAllMonth);
+
+            // 해당 연도에 존재하는 월만 생성
+            months.forEach(m => {
+                const btn = document.createElement('button');
+                btn.className = `month-btn ${parseInt(currentFilterMonth, 10) === m ? 'active' : ''}`;
+                btn.textContent = `${m}월`;
+                btn.onclick = () => filterMonth(m);
+                monthTabsContainer.appendChild(btn);
+            });
+        }
+
         function filterYear(year) {
             currentFilterYear = year;
+            currentFilterMonth = 'ALL'; // 연도가 바뀌면 월 필터 초기화
+            renderArchive();
+        }
+
+        function filterMonth(month) {
+            currentFilterMonth = month;
             renderArchive();
         }
 
@@ -808,54 +861,57 @@
 
             document.getElementById('loadingSpinner').style.display = 'flex';
 
-            const params = {
-                Bucket: R2_BUCKET_NAME,
-                Key: fileName,
-                Body: file,
-                ContentType: file.type
-            };
+            try {
+                const presignedUrl = s3.getSignedUrl('putObject', {
+                    Bucket: R2_BUCKET_NAME,
+                    Key: fileName,
+                    ContentType: file.type,
+                    Expires: 3600
+                });
 
-            s3.upload(params, async function(err, data) {
-                if (err) {
-                    document.getElementById('loadingSpinner').style.display = 'none';
-                    console.error("R2 업로드 실패:", err);
-                    alert("Cloudflare R2 업로드 중 오류가 발생했습니다.");
-                    return;
+                const uploadRes = await fetch(presignedUrl, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': file.type },
+                    body: file
+                });
+
+                if (!uploadRes.ok) {
+                    throw new Error(`R2 HTTP Upload Error: ${uploadRes.status}`);
                 }
 
-                try {
-                    const dbRes = await fetch(`${SUPABASE_URL}/rest/v1/archive_videos`, {
-                        method: 'POST',
-                        headers: {
-                            'apikey': SUPABASE_ANON_KEY,
-                            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                            'Content-Type': 'application/json',
-                            'Prefer': 'return=minimal'
-                        },
-                        body: JSON.stringify({
-                            project_date: date,
-                            tag: tag,
-                            title: title,
-                            is_single: true,
-                            full_url: fullUrl,
-                            mode: mode
-                        })
-                    });
+                const dbRes = await fetch(`${SUPABASE_URL}/rest/v1/archive_videos`, {
+                    method: 'POST',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify({
+                        project_date: date,
+                        tag: tag,
+                        title: title,
+                        is_single: true,
+                        full_url: fullUrl,
+                        mode: mode
+                    })
+                });
 
-                    document.getElementById('loadingSpinner').style.display = 'none';
+                document.getElementById('loadingSpinner').style.display = 'none';
 
-                    if (dbRes.ok) {
-                        alert('영상이 성공적으로 R2에 업로드되고 아카이브에 등록되었습니다!');
-                        closeVideoUploadModal();
-                        loadArchiveFromDB();
-                    } else {
-                        alert('DB 저장 실패. Supabase 설정을 확인해 주세요.');
-                    }
-                } catch (e) {
-                    document.getElementById('loadingSpinner').style.display = 'none';
-                    console.error(e);
+                if (dbRes.ok) {
+                    alert('영상이 성공적으로 R2에 업로드되고 아카이브에 등록되었습니다!');
+                    closeVideoUploadModal();
+                    loadArchiveFromDB();
+                } else {
+                    alert('DB 저장 실패. Supabase 설정을 확인해 주세요.');
                 }
-            });
+
+            } catch (err) {
+                document.getElementById('loadingSpinner').style.display = 'none';
+                console.error("R2 업로드 최종 실패:", err);
+                alert("Cloudflare R2 업로드 중 오류가 발생했습니다.");
+            }
         }
 
         const modal = document.getElementById('videoModal');
@@ -986,8 +1042,39 @@
             document.body.style.overflow = 'auto';
         }
 
+        // 🖱️ 상단 Quick Links 영역 드래그 및 마우스 휠 스크롤 이벤트 바인딩
+        function setupQuickLinksScroll() {
+            const slider = document.getElementById('quickLinks');
+            let isDown = false;
+            let startX, scrollLeft;
+
+            slider.addEventListener('mousedown', (e) => {
+                isDown = true;
+                startX = e.pageX - slider.offsetLeft;
+                scrollLeft = slider.scrollLeft;
+            });
+            slider.addEventListener('mouseleave', () => { isDown = false; });
+            slider.addEventListener('mouseup', () => { isDown = false; });
+            slider.addEventListener('mousemove', (e) => {
+                if(!isDown) return;
+                e.preventDefault();
+                const x = e.pageX - slider.offsetLeft;
+                const walk = (x - startX) * 2;
+                slider.scrollLeft = scrollLeft - walk;
+            });
+
+            // 마우스 휠을 위/아래로 굴릴 때 좌/우 스크롤 처리
+            slider.addEventListener('wheel', (e) => {
+                if (e.deltaY !== 0) {
+                    e.preventDefault();
+                    slider.scrollLeft += e.deltaY;
+                }
+            }, { passive: false });
+        }
+
         (async function init() {
             applyAdminMode();
+            setupQuickLinksScroll();
             await loadArchiveFromDB();
         })();
     </script>
