@@ -154,6 +154,14 @@
             flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding: 1rem; background: #000000; overflow: hidden;
         }
 
+        /* 1번 옵션 등 단일 비디오 표출 모드 */
+        .modal-body-dual.single-mode {
+            grid-template-columns: 1fr;
+            max-width: 500px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
         @media (max-width: 768px) {
             .modal-body-dual { grid-template-columns: 1fr; overflow-y: auto; }
         }
@@ -172,7 +180,6 @@
         .left-badge { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.4); }
         .right-badge { background: rgba(59, 130, 246, 0.2); color: var(--accent-blue); border: 1px solid rgba(59, 130, 246, 0.4); }
 
-        /* 100% 화면 클릭 작동 오버레이 비디오 컨테이너 */
         .column-media {
             position: relative;
             flex: 1; width: 100%; height: 100%; background: #000;
@@ -180,15 +187,13 @@
             display: flex; align-items: center; justify-content: center;
         }
 
-        /* 비디오 자체 클릭 방해 방지 */
         .column-media video {
             width: 100%; height: 100%;
             object-fit: contain;
             background: #000;
-            pointer-events: none; /* 핵심: 비디오 바 대신 전체 영역 클릭 작동 */
         }
 
-        /* 커스텀 센터 재생 버튼 오버레이 */
+        /* 센터 재생 버튼 오버레이 */
         .overlay-play-btn {
             position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
@@ -210,6 +215,63 @@
         }
 
         .overlay-play-btn.hidden { opacity: 0; pointer-events: none; }
+
+        /* ------------------------------------
+           마우스 호버 시 표출되는 하단 비디오 프로그레스 바
+        ------------------------------------ */
+        .video-control-bar {
+            position: absolute;
+            bottom: 0; left: 0; width: 100%;
+            padding: 0.8rem 1rem 0.6rem;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.88), transparent);
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            z-index: 10;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        /* 마우스 오버 시 프로그레스 바 투명도 해제 */
+        .column-media:hover .video-control-bar {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .progress-container {
+            flex: 1;
+            height: 12px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .progress-bg {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: var(--accent-red);
+            border-radius: 2px;
+            transition: width 0.1s linear;
+        }
+
+        .time-display {
+            font-size: 0.75rem;
+            font-family: monospace;
+            color: #ffffff;
+            font-weight: 600;
+            user-select: none;
+            white-space: nowrap;
+        }
 
         .top-btn {
             position: fixed; bottom: 2rem; right: 2rem;
@@ -242,16 +304,16 @@
 
     <button class="top-btn" onclick="scrollToTop()">TOP ▲</button>
 
-    <!-- 듀얼 비교 모달 팝업 -->
+    <!-- 팝업 모달 -->
     <div id="videoModal" class="modal-overlay" onclick="closeVideo(event)">
         <div class="modal-container">
             <div class="modal-header">
                 <span id="modalHeaderTitle" class="modal-header-title">시안 비교</span>
                 <button class="close-btn" onclick="forceClose()">✕</button>
             </div>
-            <div class="modal-body-dual">
-                <!-- 좌측 INTRO -->
-                <div class="dual-column">
+            <div id="modalBodyDual" class="modal-body-dual">
+                <!-- 좌측 컬럼 -->
+                <div id="leftColumn" class="dual-column">
                     <div class="column-header">
                         <span id="leftTitle">INTRO_01</span>
                         <span class="badge left-badge">ONLY INTRO</span>
@@ -259,11 +321,20 @@
                     <div class="column-media" onclick="togglePlay('videoLeft', 'overlayLeft')">
                         <div id="overlayLeft" class="overlay-play-btn"></div>
                         <video id="videoLeft" playsinline></video>
+                        <!-- 마우스 오버 시 나타나는 타임라인 컨트롤바 -->
+                        <div class="video-control-bar" onclick="event.stopPropagation();">
+                            <div class="progress-container" onclick="seekVideo(event, 'videoLeft')">
+                                <div class="progress-bg">
+                                    <div id="fillLeft" class="progress-fill"></div>
+                                </div>
+                            </div>
+                            <span id="timeLeft" class="time-display">00:00 / 00:00</span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- 우측 예시영상 -->
-                <div class="dual-column">
+                <!-- 우측 컬럼 -->
+                <div id="rightColumn" class="dual-column">
                     <div class="column-header">
                         <span id="rightTitle">INTRO_01 예시영상</span>
                         <span class="badge right-badge">FULL EXAMPLE</span>
@@ -271,6 +342,15 @@
                     <div class="column-media" onclick="togglePlay('videoRight', 'overlayRight')">
                         <div id="overlayRight" class="overlay-play-btn"></div>
                         <video id="videoRight" playsinline></video>
+                        <!-- 마우스 오버 시 나타나는 타임라인 컨트롤바 -->
+                        <div class="video-control-bar" onclick="event.stopPropagation();">
+                            <div class="progress-container" onclick="seekVideo(event, 'videoRight')">
+                                <div class="progress-bg">
+                                    <div id="fillRight" class="progress-fill"></div>
+                                </div>
+                            </div>
+                            <span id="timeRight" class="time-display">00:00 / 00:00</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -284,14 +364,13 @@
     <script>
         const SUPABASE_STORAGE_URL = "https://kblwddlquwlvumhwkirl.supabase.co/storage/v1/object/public/videos/";
 
-        // [URL 및 네이밍 보정 매핑]
         const projectsArchive = [
             {
                 date: "260724",
                 title: "INTRO 시안",
                 items: [
-                    // 1번 좌측 링크 INTRO_01.mp4 원본으로 지정 보정
-                    { numKey: "01", introUrl: SUPABASE_STORAGE_URL + "INTRO_01.mp4", fullUrl: SUPABASE_STORAGE_URL + encodeURIComponent("INTRO_REF_01 (UI).mp4"), tag: "OPTION 01", title: "INTRO_REF_01 (UI)", mode: "portrait" },
+                    // 1번 시안: 단일 영상 세팅 (isSingle: true)
+                    { numKey: "01", isSingle: true, fullUrl: SUPABASE_STORAGE_URL + encodeURIComponent("INTRO_REF_01 (UI).mp4"), tag: "OPTION 01", title: "INTRO_REF_01 (UI)", mode: "portrait" },
                     { numKey: "02", introUrl: SUPABASE_STORAGE_URL + "INTRO_02.mp4", fullUrl: SUPABASE_STORAGE_URL + encodeURIComponent("INTRO_REF_02 (IP+THIS IS REAL CLASS).mp4"), tag: "OPTION 02", title: "INTRO_REF_02 (IP+THIS IS REAL CLASS)", mode: "portrait" },
                     { numKey: "03", introUrl: SUPABASE_STORAGE_URL + "INTRO_03.mp4", fullUrl: SUPABASE_STORAGE_URL + "INTRO_REF_03.mp4", tag: "OPTION 03", title: "INTRO_REF_03 (IP+리얼클래스)", mode: "portrait" },
                     { numKey: "04", introUrl: SUPABASE_STORAGE_URL + "INTRO_04.mp4", fullUrl: SUPABASE_STORAGE_URL + encodeURIComponent("INTRO_REF_04 (Jingle+Logo).mp4"), tag: "OPTION 04", title: "INTRO_REF_04 (Jingle+Logo)", mode: "portrait" },
@@ -351,11 +430,12 @@
                 group.items.forEach(item => {
                     const jsonItem = JSON.stringify(item).replace(/"/g, '&quot;');
                     const formattedTitle = formatTitleWithBreak(item.title);
+                    const thumbSource = item.isSingle ? item.fullUrl : item.introUrl;
                     
                     gridCardsHtml += `
                         <div class="video-card" onclick="openDualModal(${jsonItem})">
                             <div class="thumb-cover ${item.mode}">
-                                <video src="${item.introUrl}#t=0.1" class="thumb-video" preload="metadata" muted></video>
+                                <video src="${thumbSource}#t=0.1" class="thumb-video" preload="metadata" muted></video>
                                 <div class="play-btn"></div>
                             </div>
                             <div class="video-info">
@@ -403,15 +483,12 @@
 
         renderArchive();
 
-        // 마우스 드래그 가로 스크롤 제어
+        // 가로 드래그 스크롤
         const navBar = document.getElementById('navBarContainer');
-        let isMouseDown = false;
-        let startX, scrollLeft;
-        let isDragging = false;
+        let isMouseDown = false, startX, scrollLeft, isDragging = false;
 
         navBar.addEventListener('mousedown', (e) => {
-            isMouseDown = true;
-            isDragging = false;
+            isMouseDown = true; isDragging = false;
             startX = e.pageX - navBar.offsetLeft;
             scrollLeft = navBar.scrollLeft;
         });
@@ -428,13 +505,13 @@
             navBar.scrollLeft = scrollLeft - walk;
         });
 
-        function handleButtonClick(action) {
-            if (!isDragging) action();
-        }
+        function handleButtonClick(action) { if (!isDragging) action(); }
 
-        // 모달 및 비디오 클릭 재생 제어
+        // 모달 및 비디오 제어
         const modal = document.getElementById('videoModal');
         const modalHeaderTitle = document.getElementById('modalHeaderTitle');
+        const modalBodyDual = document.getElementById('modalBodyDual');
+        const leftColumn = document.getElementById('leftColumn');
         const leftTitle = document.getElementById('leftTitle');
         const rightTitle = document.getElementById('rightTitle');
 
@@ -445,11 +522,21 @@
 
         function openDualModal(item) {
             modalHeaderTitle.textContent = item.title;
-            leftTitle.textContent = `INTRO_${item.numKey}`;
-            rightTitle.textContent = `INTRO_${item.numKey} 예시영상`;
 
-            videoLeft.src = item.introUrl;
-            videoRight.src = item.fullUrl;
+            // 1번 옵션 (isSingle) 조건 분기 처리
+            if (item.isSingle) {
+                modalBodyDual.classList.add('single-mode');
+                leftColumn.style.display = 'none'; // 좌측 제거
+                rightTitle.textContent = item.title;
+                videoRight.src = item.fullUrl;
+            } else {
+                modalBodyDual.classList.remove('single-mode');
+                leftColumn.style.display = 'flex';
+                leftTitle.textContent = `INTRO_${item.numKey}`;
+                rightTitle.textContent = `INTRO_${item.numKey} 예시영상`;
+                videoLeft.src = item.introUrl;
+                videoRight.src = item.fullUrl;
+            }
 
             overlayLeft.classList.remove('hidden');
             overlayRight.classList.remove('hidden');
@@ -458,7 +545,6 @@
             document.body.style.overflow = 'hidden';
         }
 
-        // 화면 영역 클릭 시 100% 동작하는 재생/일시정지 토글
         function togglePlay(videoId, overlayId) {
             const v = document.getElementById(videoId);
             const o = document.getElementById(overlayId);
@@ -471,6 +557,39 @@
                 o.classList.remove('hidden');
             }
         }
+
+        // 시간 포맷팅 함수 (sec -> 00:00)
+        function formatTime(sec) {
+            if (isNaN(sec)) return "00:00";
+            const m = Math.floor(sec / 60);
+            const s = Math.floor(sec % 60);
+            return `${m < 10 ? '0' + m : m}:${s < 10 ? '0' + s : s}`;
+        }
+
+        // 프로그레스 바 및 초 시간 업데이트 함수
+        function updateProgress(v, fillId, timeId) {
+            const fill = document.getElementById(fillId);
+            const time = document.getElementById(timeId);
+            if (v.duration) {
+                const pct = (v.currentTime / v.duration) * 100;
+                fill.style.width = `${pct}%`;
+                time.textContent = `${formatTime(v.currentTime)} / ${formatTime(v.duration)}`;
+            }
+        }
+
+        // 클릭 탐색(Seek) 기능
+        function seekVideo(e, videoId) {
+            const v = document.getElementById(videoId);
+            const rect = e.currentTarget.getBoundingClientRect();
+            const pos = (e.clientX - rect.left) / rect.width;
+            if (v.duration) {
+                v.currentTime = pos * v.duration;
+            }
+        }
+
+        // 실시간 타임라인 이벤트 바인딩
+        videoLeft.addEventListener('timeupdate', () => updateProgress(videoLeft, 'fillLeft', 'timeLeft'));
+        videoRight.addEventListener('timeupdate', () => updateProgress(videoRight, 'fillRight', 'timeRight'));
 
         videoLeft.addEventListener('ended', () => { overlayLeft.classList.remove('hidden'); });
         videoRight.addEventListener('ended', () => { overlayRight.classList.remove('hidden'); });
