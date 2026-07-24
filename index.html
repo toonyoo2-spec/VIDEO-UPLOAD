@@ -30,7 +30,7 @@
 
         header { padding-top: 2.2rem; padding-bottom: 1.2rem; display: flex; justify-content: space-between; align-items: center; }
         .header-tag { color: var(--accent-red); font-size: 1.8rem; font-weight: 800; letter-spacing: -1px; display: inline-block; }
-        @media (min-width: 768px) { .modal-overlay { padding: 1rem; } .modal-container { width: 90vw; max-width: 1600px; height: 90vh; max-height: none; border-radius: 16px; } }
+        @media (min-width: 768px) { header { padding-top: 3.5rem; padding-bottom: 1.8rem; } .header-tag { font-size: 2.6rem; } }
 
         .btn-admin-action {
             background: var(--accent-red); color: white; border: none; padding: 0.5rem 0.9rem;
@@ -46,12 +46,12 @@
 
         .nav-bar-container { display: flex; flex-direction: column; gap: 0.6rem; }
         .nav-row { display: flex; align-items: center; justify-content: flex-start; gap: 0.5rem; flex-wrap: wrap; width: 100%; }
-        
-        .nav-row-scroll { 
-            display: flex; align-items: center; justify-content: flex-start; gap: 0.5rem; 
-            overflow-x: auto; white-space: nowrap; scrollbar-width: none; 
-            touch-action: pan-x; cursor: grab; user-select: none; width: 100%; 
-            -webkit-overflow-scrolling: touch; 
+
+        .nav-row-scroll {
+            display: flex; align-items: center; justify-content: flex-start; gap: 0.5rem;
+            overflow-x: auto; white-space: nowrap; scrollbar-width: none;
+            touch-action: pan-x; cursor: grab; user-select: none; width: 100%;
+            -webkit-overflow-scrolling: touch;
         }
         .nav-row-scroll:active { cursor: grabbing; }
         .nav-row-scroll::-webkit-scrollbar { display: none; }
@@ -104,7 +104,12 @@
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(12px); display: none; align-items: center; justify-content: center; z-index: 9999; padding: 0.5rem; }
         .modal-overlay.active { display: flex; }
         .modal-container { position: relative; background: #0b0b0b; border-radius: 12px; border: 1px solid var(--border-color); overflow: hidden; display: flex; flex-direction: column; width: 100vw; height: 92vh; }
-        @media (min-width: 768px) { .modal-overlay { padding: 1rem; } .modal-container { width: 95vw; max-width: 1000px; height: 90vh; max-height: 820px; border-radius: 16px; } }
+
+        /* ⚠️ 이 규칙 딱 하나만 존재해야 합니다 (예전에 중복된 낡은 규칙이 이 값을 덮어쓰고 있었음) */
+        @media (min-width: 768px) {
+            .modal-overlay { padding: 1rem; }
+            .modal-container { width: 95vw; max-width: 1800px; height: 94vh; max-height: none; border-radius: 16px; }
+        }
 
         .modal-header { height: 44px; padding: 0 1rem; background: #121212; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
         .modal-header-title { font-size: 0.9rem; font-weight: 800; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 0.5rem; }
@@ -322,13 +327,13 @@
     </div>
 
     <script>
-        const R2_BUCKET_NAME = "brandteam"; 
-        const R2_PUBLIC_DOMAIN = "https://pub-427fa438eaa44e659bfdd77141c7ca95.r2.dev/"; 
+        const R2_BUCKET_NAME = "brandteam";
+        const R2_PUBLIC_DOMAIN = "https://pub-427fa438eaa44e659bfdd77141c7ca95.r2.dev/";
         const SUPABASE_URL = "https://kblwddlquwlvumhwkirl.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtibHdkZGxxdXdsdnVtaHdraXJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3Mzg1NjksImV4cCI6MjEwMDMxNDU2OX0.OWH0eJXCGcJzjaMHqXWsurNuOEg4kNLuxpac6bxod1E";
 
         // 🔒 R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY는 더 이상 여기 두지 않습니다.
-        // 서명은 Cloudflare Worker(r2-presign-worker)가 서버 측에서 대신 계산합니다.
+        // 업로드/삭제 로직은 Cloudflare Worker(r2-presign-worker)가 R2 바인딩으로 대신 처리합니다.
         const WORKER_PRESIGN_URL = "https://r2-presign-worker.kwan-yun.workers.dev";
 
         const ADMIN_FLAG_KEY = 'socra_admin_flag';
@@ -363,67 +368,67 @@
                 date: "260724",
                 title: "INTRO 시안",
                 items: [
-                    { 
-                        tag: "OPTION 01", 
-                        title: "INTRO_REF_01 (UI)", 
-                        isSingle: true, 
+                    {
+                        tag: "OPTION 01",
+                        title: "INTRO_REF_01 (UI)",
+                        isSingle: true,
                         rightTitle: "INTRO_REF_01 (UI)",
-                        fullUrl: R2_PUBLIC_DOMAIN + encodeURIComponent("INTRO_REF_01 (UI).mp4"), 
-                        mode: "portrait" 
+                        fullUrl: R2_PUBLIC_DOMAIN + encodeURIComponent("INTRO_REF_01 (UI).mp4"),
+                        mode: "portrait"
                     },
-                    { 
-                        tag: "OPTION 02", 
-                        title: "INTRO_REF_02<br>(IP+THIS IS REAL CLASS)", 
-                        leftTitle: "INTRO_02", 
-                        rightTitle: "INTRO_REF_02 (IP+THIS IS REAL CLASS)", 
-                        introUrl: R2_PUBLIC_DOMAIN + "INTRO_02.mp4", 
-                        fullUrl: R2_PUBLIC_DOMAIN + encodeURIComponent("INTRO_REF_02 (IP+THIS IS REAL CLASS).mp4"), 
-                        mode: "portrait" 
+                    {
+                        tag: "OPTION 02",
+                        title: "INTRO_REF_02<br>(IP+THIS IS REAL CLASS)",
+                        leftTitle: "INTRO_02",
+                        rightTitle: "INTRO_REF_02 (IP+THIS IS REAL CLASS)",
+                        introUrl: R2_PUBLIC_DOMAIN + "INTRO_02.mp4",
+                        fullUrl: R2_PUBLIC_DOMAIN + encodeURIComponent("INTRO_REF_02 (IP+THIS IS REAL CLASS).mp4"),
+                        mode: "portrait"
                     },
-                    { 
-                        tag: "OPTION 02_develop", 
-                        title: "INTRO_REF_02_<br>(IP+THIS IS REAL CLASS_develop)", 
-                        leftTitle: "INTRO_02_", 
-                        rightTitle: "INTRO_REF_02_ (IP+THIS IS REAL CLASS_develop)", 
-                        introUrl: R2_PUBLIC_DOMAIN + "INTRO_02_.mp4", 
-                        fullUrl: R2_PUBLIC_DOMAIN + encodeURIComponent("INTRO_02_.mp4"), 
-                        mode: "portrait" 
+                    {
+                        tag: "OPTION 02_develop",
+                        title: "INTRO_REF_02_<br>(IP+THIS IS REAL CLASS_develop)",
+                        leftTitle: "INTRO_02_",
+                        rightTitle: "INTRO_REF_02_ (IP+THIS IS REAL CLASS_develop)",
+                        introUrl: R2_PUBLIC_DOMAIN + "INTRO_02_.mp4",
+                        fullUrl: R2_PUBLIC_DOMAIN + encodeURIComponent("INTRO_02_.mp4"),
+                        mode: "portrait"
                     },
-                    { 
-                        tag: "OPTION 03", 
-                        title: "INTRO_REF_03<br>(IP+리얼클래스)", 
-                        leftTitle: "INTRO_03", 
-                        rightTitle: "INTRO_REF_03 (IP+리얼클래스)", 
-                        introUrl: R2_PUBLIC_DOMAIN + "INTRO_03.mp4", 
-                        fullUrl: R2_PUBLIC_DOMAIN + "INTRO_REF_03.mp4", 
-                        mode: "portrait" 
+                    {
+                        tag: "OPTION 03",
+                        title: "INTRO_REF_03<br>(IP+리얼클래스)",
+                        leftTitle: "INTRO_03",
+                        rightTitle: "INTRO_REF_03 (IP+리얼클래스)",
+                        introUrl: R2_PUBLIC_DOMAIN + "INTRO_03.mp4",
+                        fullUrl: R2_PUBLIC_DOMAIN + "INTRO_REF_03.mp4",
+                        mode: "portrait"
                     },
-                    { 
-                        tag: "OPTION 04", 
-                        title: "INTRO_REF_04<br>(Jingle+Logo)", 
-                        leftTitle: "INTRO_04", 
-                        rightTitle: "INTRO_REF_04 (Jingle+Logo)", 
-                        introUrl: R2_PUBLIC_DOMAIN + "INTRO_04.mp4", 
-                        fullUrl: R2_PUBLIC_DOMAIN + encodeURIComponent("INTRO_REF_04 (Jingle+Logo).mp4"), 
-                        mode: "portrait" 
+                    {
+                        tag: "OPTION 04",
+                        title: "INTRO_REF_04<br>(Jingle+Logo)",
+                        leftTitle: "INTRO_04",
+                        rightTitle: "INTRO_REF_04 (Jingle+Logo)",
+                        introUrl: R2_PUBLIC_DOMAIN + "INTRO_04.mp4",
+                        fullUrl: R2_PUBLIC_DOMAIN + encodeURIComponent("INTRO_REF_04 (Jingle+Logo).mp4"),
+                        mode: "portrait"
                     },
-                    { 
-                        tag: "OPTION 05", 
-                        title: "INTRO_REF_05<br>(Voice_Logo)", 
-                        leftTitle: "INTRO_05", 
-                        rightTitle: "INTRO_REF_05 (Voice_Logo)", 
-                        introUrl: R2_PUBLIC_DOMAIN + "INTRO_05.mp4", 
-                        fullUrl: R2_PUBLIC_DOMAIN + encodeURIComponent("INTRO_REF_05 (Voice_Logo).mp4"), 
-                        mode: "portrait" 
+                    {
+                        tag: "OPTION 05",
+                        title: "INTRO_REF_05<br>(Voice_Logo)",
+                        leftTitle: "INTRO_05",
+                        rightTitle: "INTRO_REF_05 (Voice_Logo)",
+                        introUrl: R2_PUBLIC_DOMAIN + "INTRO_05.mp4",
+                        fullUrl: R2_PUBLIC_DOMAIN + encodeURIComponent("INTRO_REF_05 (Voice_Logo).mp4"),
+                        mode: "portrait"
                     },
-                    { 
-                        tag: "OPTION 06", 
-                        title: "INTRO_REF_06<br>(Voice_Logo ani.)", 
-                        leftTitle: "INTRO_06", 
-                        rightTitle: "INTRO_REF_06 (Voice_Logo ani.)", 
-                        introUrl: R2_PUBLIC_DOMAIN + "INTRO_06.mp4", 
-                        fullUrl: R2_PUBLIC_DOMAIN + encodeURIComponent("INTRO_REF_06 (Voice_Logo ani.).mp4"), 
-                        mode: "portrait" 
+                    {
+                        tag: "OPTION 06",
+                        title: "INTRO_REF_06<br>(Voice_Logo ani.)",
+                        leftTitle: "INTRO_06",
+                        rightTitle: "INTRO_REF_06 (Voice_Logo ani.)",
+                        introUrl: R2_PUBLIC_DOMAIN + "INTRO_06.mp4",
+                        fullUrl: R2_PUBLIC_DOMAIN + encodeURIComponent("INTRO_REF_06 (Voice_Logo ani.).mp4"),
+                        mode: "portrait"
                     }
                 ]
             }
@@ -580,34 +585,34 @@
                     const thumbSource = item.isSingle ? item.fullUrl : item.introUrl;
 
                     const canEdit = isAdmin && item.id;
-const editClickAttr = canEdit
-    ? `onclick="event.stopPropagation(); openVideoEditModal(${item.id}, '${item.tag.replace(/'/g, "\\'")}', '${item.title.replace(/'/g, "\\'")}', '${item.mode || 'landscape'}')"`
-    : '';
+                    const editClickAttr = canEdit
+                        ? `onclick="event.stopPropagation(); openVideoEditModal(${item.id}, '${item.tag.replace(/'/g, "\\'")}', '${item.title.replace(/'/g, "\\'")}', '${item.mode || 'landscape'}')"`
+                        : '';
 
-const vidAdminBtnsHtml = canEdit ? `
-    <div class="video-admin-bar" onclick="event.stopPropagation();">
-        <button class="admin-delete-badge" onclick="deleteVideo(${item.id})">삭제</button>
-    </div>
-` : '';
+                    const vidAdminBtnsHtml = canEdit ? `
+                        <div class="video-admin-bar" onclick="event.stopPropagation();">
+                            <button class="admin-delete-badge" onclick="deleteVideo(${item.id})">삭제</button>
+                        </div>
+                    ` : '';
 
-gridCardsHtml += `
-    <div class="video-card" onclick="openDualModal(${jsonItem})">
-        <div class="thumb-cover ${item.mode || 'landscape'}">
-            <video src="${thumbSource}#t=0.1" class="thumb-video" preload="metadata" muted playsinline
-                onloadedmetadata="if(this.videoWidth && this.videoHeight){ this.closest('.thumb-cover').style.aspectRatio = (this.videoWidth / this.videoHeight); }"></video>
-            <div class="play-btn"></div>
-        </div>
-        <div class="video-info">
-            <div class="video-tag" ${editClickAttr} style="${canEdit ? 'cursor:pointer; text-decoration:underline dotted;' : ''}">${item.tag}</div>
-            <div class="video-title" ${editClickAttr} style="${canEdit ? 'cursor:pointer;' : ''}">${item.title}</div>
-            ${vidAdminBtnsHtml}
-        </div>
-    </div>
-`;
+                    gridCardsHtml += `
+                        <div class="video-card" onclick="openDualModal(${jsonItem})">
+                            <div class="thumb-cover ${item.mode || 'landscape'}">
+                                <video src="${thumbSource}#t=0.1" class="thumb-video" preload="metadata" muted playsinline
+                                    onloadedmetadata="if(this.videoWidth && this.videoHeight){ this.closest('.thumb-cover').style.aspectRatio = (this.videoWidth / this.videoHeight); }"></video>
+                                <div class="play-btn"></div>
+                            </div>
+                            <div class="video-info">
+                                <div class="video-tag" ${editClickAttr} style="${canEdit ? 'cursor:pointer; text-decoration:underline dotted;' : ''}">${item.tag}</div>
+                                <div class="video-title" ${editClickAttr} style="${canEdit ? 'cursor:pointer;' : ''}">${item.title}</div>
+                                ${vidAdminBtnsHtml}
+                            </div>
+                        </div>
+                    `;
                 });
 
-                const addVideoBtnHtml = isAdmin 
-                    ? `<button class="btn-admin-action" style="display:inline-block;" onclick="openVideoUploadModal('${group.date}')">+ 영상 추가</button>` 
+                const addVideoBtnHtml = isAdmin
+                    ? `<button class="btn-admin-action" style="display:inline-block;" onclick="openVideoUploadModal('${group.date}')">+ 영상 추가</button>`
                     : '';
 
                 const projAdminBtnsHtml = (isAdmin && group.id && !String(group.id).startsWith('def_')) ? `
@@ -732,7 +737,7 @@ gridCardsHtml += `
             if (!newTitle) return alert('제목을 입력해주세요.');
 
             try {
-                const url = id && id !== 'undefined' 
+                const url = id && id !== 'undefined'
                     ? `${SUPABASE_URL}/rest/v1/archive_projects?id=eq.${id}`
                     : `${SUPABASE_URL}/rest/v1/archive_projects?date=eq.${date}`;
 
@@ -757,7 +762,7 @@ gridCardsHtml += `
         async function deleteProject(id, date) {
             if (!confirm('이 프로젝트를 삭제할까요? 관련 동영상 항목도 모두 삭제 권장됩니다.')) return;
             try {
-                const url = id && id !== 'undefined' 
+                const url = id && id !== 'undefined'
                     ? `${SUPABASE_URL}/rest/v1/archive_projects?id=eq.${id}`
                     : `${SUPABASE_URL}/rest/v1/archive_projects?date=eq.${date}`;
 
@@ -809,38 +814,35 @@ gridCardsHtml += `
             } catch(e) { console.error(e); }
         }
 
-async function deleteVideo(vidId) {
-    if (!confirm('이 영상 시안 항목을 삭제할까요? R2 저장소의 실제 파일도 함께 삭제됩니다.')) return;
-    try {
-        // 목록에서 해당 영상의 실제 파일 URL 찾기
-        let targetItem = null;
-        for (const group of displayArchive) {
-            const found = group.items.find(v => v.id === vidId);
-            if (found) { targetItem = found; break; }
+        async function deleteVideo(vidId) {
+            if (!confirm('이 영상 시안 항목을 삭제할까요? R2 저장소의 실제 파일도 함께 삭제됩니다.')) return;
+            try {
+                let targetItem = null;
+                for (const group of displayArchive) {
+                    const found = group.items.find(v => v.id === vidId);
+                    if (found) { targetItem = found; break; }
+                }
+
+                if (targetItem && targetItem.fullUrl && targetItem.fullUrl.startsWith(R2_PUBLIC_DOMAIN)) {
+                    const fileName = decodeURIComponent(targetItem.fullUrl.replace(R2_PUBLIC_DOMAIN, ''));
+                    await fetch(WORKER_PRESIGN_URL, {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ fileName })
+                    });
+                }
+
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/archive_videos?id=eq.${vidId}`, {
+                    method: 'DELETE',
+                    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+                });
+
+                if (res.ok) {
+                    alert('영상이 삭제되었습니다.');
+                    loadArchiveFromDB();
+                } else { alert('삭제 실패'); }
+            } catch(e) { console.error(e); }
         }
-
-        // R2에서 실제 파일 삭제 (Worker를 통해서)
-        if (targetItem && targetItem.fullUrl && targetItem.fullUrl.startsWith(R2_PUBLIC_DOMAIN)) {
-            const fileName = decodeURIComponent(targetItem.fullUrl.replace(R2_PUBLIC_DOMAIN, ''));
-            await fetch(WORKER_PRESIGN_URL, {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ fileName })
-            });
-        }
-
-        // Supabase 기록 삭제
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/archive_videos?id=eq.${vidId}`, {
-            method: 'DELETE',
-            headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
-        });
-
-        if (res.ok) {
-            alert('영상이 삭제되었습니다.');
-            loadArchiveFromDB();
-        } else { alert('삭제 실패'); }
-    } catch(e) { console.error(e); }
-}
 
         function openVideoUploadModal(date) {
             document.getElementById('uploadTargetDate').value = date;
@@ -848,61 +850,60 @@ async function deleteVideo(vidId) {
         }
         function closeVideoUploadModal() { document.getElementById('videoModalUpload').classList.remove('active'); }
 
-        // 🚀 Cloudflare Worker가 발급한 프리사인드 URL로 브라우저 → R2 직접 업로드
-        // (시크릿 키는 이 파일에 존재하지 않으며, Worker 안에서만 사용됩니다)
-async function submitNewVideo() {
-    const date = document.getElementById('uploadTargetDate').value;
-    const tag = document.getElementById('inputVidTag').value.trim();
-    const title = document.getElementById('inputVidTitle').value.trim();
-    const mode = document.getElementById('selectVidMode').value;
-    const fileInput = document.getElementById('inputFileVideo');
+        // 🚀 Cloudflare Worker(*.workers.dev)로 파일을 직접 전송 — r2.cloudflarestorage.com은 거치지 않음
+        // (시크릿 키는 이 파일에 존재하지 않으며, Worker 안에서 R2 바인딩으로만 처리됩니다)
+        async function submitNewVideo() {
+            const date = document.getElementById('uploadTargetDate').value;
+            const tag = document.getElementById('inputVidTag').value.trim();
+            const title = document.getElementById('inputVidTitle').value.trim();
+            const mode = document.getElementById('selectVidMode').value;
+            const fileInput = document.getElementById('inputFileVideo');
 
-    if (!tag || !title || fileInput.files.length === 0) return alert('모든 정보와 파일 선택을 완료해주세요.');
+            if (!tag || !title || fileInput.files.length === 0) return alert('모든 정보와 파일 선택을 완료해주세요.');
 
-    const file = fileInput.files[0];
-    document.getElementById('loadingSpinner').style.display = 'flex';
+            const file = fileInput.files[0];
+            document.getElementById('loadingSpinner').style.display = 'flex';
 
-    try {
-        // Worker(*.workers.dev)로 파일을 직접 전송 — r2.cloudflarestorage.com은 거치지 않음
-        const uploadRes = await fetch(WORKER_PRESIGN_URL, {
-            method: 'POST',
-headers: {
-    'Content-Type': file.type,
-    'X-File-Name': encodeURIComponent(file.name)   // ← 여기만 encodeURIComponent 추가
-},
-            body: file
-        });
-        if (!uploadRes.ok) throw new Error(`업로드 실패: ${uploadRes.status}`);
-        const { fileName } = await uploadRes.json();
+            try {
+                const uploadRes = await fetch(WORKER_PRESIGN_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': file.type,
+                        'X-File-Name': encodeURIComponent(file.name)
+                    },
+                    body: file
+                });
+                if (!uploadRes.ok) throw new Error(`업로드 실패: ${uploadRes.status}`);
+                const { fileName } = await uploadRes.json();
 
-        const fullUrl = R2_PUBLIC_DOMAIN + fileName;
+                const fullUrl = R2_PUBLIC_DOMAIN + fileName;
 
-        const dbRes = await fetch(`${SUPABASE_URL}/rest/v1/archive_videos`, {
-            method: 'POST',
-            headers: {
-                'apikey': SUPABASE_ANON_KEY,
-                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                'Content-Type': 'application/json',
-                'Prefer': 'return=minimal'
-            },
-            body: JSON.stringify({ project_date: date, tag, title, is_single: true, full_url: fullUrl, mode })
-        });
+                const dbRes = await fetch(`${SUPABASE_URL}/rest/v1/archive_videos`, {
+                    method: 'POST',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify({ project_date: date, tag, title, is_single: true, full_url: fullUrl, mode })
+                });
 
-        document.getElementById('loadingSpinner').style.display = 'none';
+                document.getElementById('loadingSpinner').style.display = 'none';
 
-        if (dbRes.ok) {
-            alert('영상이 성공적으로 업로드되고 아카이브에 등록되었습니다!');
-            closeVideoUploadModal();
-            loadArchiveFromDB();
-        } else {
-            alert('DB 저장 실패. Supabase 설정을 확인해 주세요.');
+                if (dbRes.ok) {
+                    alert('영상이 성공적으로 업로드되고 아카이브에 등록되었습니다!');
+                    closeVideoUploadModal();
+                    loadArchiveFromDB();
+                } else {
+                    alert('DB 저장 실패. Supabase 설정을 확인해 주세요.');
+                }
+            } catch (err) {
+                document.getElementById('loadingSpinner').style.display = 'none';
+                console.error("업로드 실패:", err);
+                alert("업로드 중 오류가 발생했습니다: " + err.message);
+            }
         }
-    } catch (err) {
-        document.getElementById('loadingSpinner').style.display = 'none';
-        console.error("업로드 실패:", err);
-        alert("업로드 중 오류가 발생했습니다: " + err.message);
-    }
-}
 
         const modal = document.getElementById('videoModal');
         const modalHeaderTitle = document.getElementById('modalHeaderTitle');
@@ -917,53 +918,26 @@ headers: {
         const overlayLeft = document.getElementById('overlayLeft');
         const overlayRight = document.getElementById('overlayRight');
         const modalContainerEl = document.querySelector('.modal-container');
-        const MODAL_HEADER_H = 48;
-
-        function sizeSingleModalToRatio(ratio) {
-            if (window.innerWidth < 768) return;
-            const maxW = window.innerWidth * 0.97;
-            const maxH = window.innerHeight * 0.94;
-            const availH = Math.max(maxH - MODAL_HEADER_H, 100);
-
-            let videoAreaW, videoAreaH;
-            if (maxW / availH > ratio) {
-                videoAreaH = availH;
-                videoAreaW = availH * ratio;
-            } else {
-                videoAreaW = maxW;
-                videoAreaH = maxW / ratio;
-            }
-            modalContainerEl.style.width = `${videoAreaW}px`;
-            modalContainerEl.style.height = `${videoAreaH + MODAL_HEADER_H}px`;
-        }
-
-        function onMainVideoMetadataForModal() {
-            if (videoRight.videoWidth && videoRight.videoHeight) {
-                sizeSingleModalToRatio(videoRight.videoWidth / videoRight.videoHeight);
-            }
-        }
 
         function openDualModal(item) {
             modalHeaderTitle.textContent = item.title.replace('<br>', ' ');
             resetProgressUI('fillLeft', 'timeLeft');
             resetProgressUI('fillRight', 'timeRight');
-            videoRight.removeEventListener('loadedmetadata', onMainVideoMetadataForModal);
 
-if (item.isSingle) {
-    modalBodyDual.classList.add('single-mode');
-    leftColumn.style.display = 'none';
-    rightColumn.style.display = 'flex';
-    rightColumnHeader.style.display = 'none';
-    videoRight.src = item.fullUrl;
-    modalContainerEl.style.width = '';
-    modalContainerEl.style.height = '';
-} else {
+            // 모달 크기는 CSS(.modal-container 미디어쿼리)가 항상 담당합니다.
+            modalContainerEl.style.width = '';
+            modalContainerEl.style.height = '';
+
+            if (item.isSingle) {
+                modalBodyDual.classList.add('single-mode');
+                leftColumn.style.display = 'none';
+                rightColumn.style.display = 'flex';
+                rightColumnHeader.style.display = 'none';
+                videoRight.src = item.fullUrl;
+            } else {
                 modalBodyDual.classList.remove('single-mode');
                 leftColumn.style.display = 'flex';
                 rightColumn.style.display = 'flex';
-                modalContainerEl.classList.remove('fit-video');
-                modalContainerEl.style.width = '';
-                modalContainerEl.style.height = '';
                 rightColumnHeader.style.display = 'flex';
                 leftTitle.textContent = item.leftTitle || 'INTRO';
                 rightTitle.textContent = item.rightTitle || 'FULL EXAMPLE';
@@ -972,7 +946,7 @@ if (item.isSingle) {
             }
 
             videoRight.currentTime = 0.1;
-            if(!item.isSingle) videoLeft.currentTime = 0.1;
+            if (!item.isSingle) videoLeft.currentTime = 0.1;
             overlayLeft.classList.remove('hidden');
             overlayRight.classList.remove('hidden');
             modal.classList.add('active');
