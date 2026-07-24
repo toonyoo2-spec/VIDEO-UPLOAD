@@ -844,10 +844,10 @@ async function submitNewVideo() {
         // Worker(*.workers.dev)로 파일을 직접 전송 — r2.cloudflarestorage.com은 거치지 않음
         const uploadRes = await fetch(WORKER_PRESIGN_URL, {
             method: 'POST',
-            headers: {
-                'Content-Type': file.type,
-                'X-File-Name': file.name
-            },
+headers: {
+    'Content-Type': file.type,
+    'X-File-Name': encodeURIComponent(file.name)   // ← 여기만 encodeURIComponent 추가
+},
             body: file
         });
         if (!uploadRes.ok) throw new Error(`업로드 실패: ${uploadRes.status}`);
