@@ -4,8 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>INTRO 시안</title>
+
+    <!-- 구글 드라이브 사전 연결 -->
+    <link rel="dns-prefetch" href="https://drive.google.com">
+    <link rel="preconnect" href="https://drive.google.com" crossorigin>
+
     <style>
-        /* Black Eight 스타일 다크 테마 */
         :root {
             --bg-dark: #0a0a0a;
             --card-bg: #121212;
@@ -16,20 +20,9 @@
             --accent-blue: #3b82f6;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-primary); line-height: 1.6; }
 
-        body {
-            background-color: var(--bg-dark);
-            color: var(--text-primary);
-            line-height: 1.6;
-        }
-
-        /* Header */
         header {
             padding: 3.5rem 2rem 2.5rem;
             max-width: 1200px;
@@ -38,37 +31,18 @@
         }
 
         .header-tag {
-            color: var(--accent-blue);
-            font-size: 0.85rem;
-            font-weight: 700;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin-bottom: 0.75rem;
+            color: var(--accent-blue); font-size: 0.85rem; font-weight: 700;
+            letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.75rem;
         }
 
-        header h1 {
-            font-size: 2.5rem;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            margin-bottom: 0.5rem;
-        }
+        header h1 { font-size: 2.5rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 0.5rem; }
+        header p { color: var(--text-secondary); font-size: 1.05rem; }
 
-        header p {
-            color: var(--text-secondary);
-            font-size: 1.05rem;
-        }
+        main { max-width: 1200px; margin: 3rem auto; padding: 0 2rem; }
 
-        /* Main Container */
-        main {
-            max-width: 1200px;
-            margin: 3rem auto;
-            padding: 0 2rem;
-        }
-
-        /* Video Grid Layout */
         .video-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 2rem;
         }
 
@@ -86,138 +60,143 @@
             transform: translateY(-4px);
         }
 
-        /* 클릭 전 플레이 버튼 썸네일 커버 */
+        /* ------------------------------------
+           썸네일 이미지 및 커버 스타일
+        ------------------------------------ */
         .thumb-cover {
             position: relative;
             width: 100%;
-            padding-bottom: 56.25%; /* 16:9 */
+            padding-bottom: 56.25%; /* 16:9 비율 */
             background: #171717;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            overflow: hidden;
+        }
+
+        .thumb-img {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .video-card:hover .thumb-img {
+            transform: scale(1.05); /* 호버 시 썸네일 미세 확대 */
         }
 
         .play-btn {
-            position: absolute;
-            top: 50%;
-            left: 50%;
+            position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            width: 60px;
-            height: 60px;
-            background: rgba(59, 130, 246, 0.9);
+            width: 54px; height: 54px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             transition: transform 0.2s, background 0.2s;
+            z-index: 2;
         }
 
         .play-btn::after {
-            content: "";
-            display: block;
-            width: 0;
-            height: 0;
-            border-style: solid;
-            border-width: 10px 0 10px 18px;
+            content: ""; display: block; width: 0; height: 0;
+            border-style: solid; border-width: 8px 0 8px 14px;
             border-color: transparent transparent transparent #ffffff;
-            margin-left: 4px;
+            margin-left: 3px;
         }
 
         .video-card:hover .play-btn {
             transform: translate(-50%, -50%) scale(1.1);
-            background: #2563eb;
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
         }
 
-        .video-info {
-            padding: 1.25rem;
+        .video-info { padding: 1.25rem; }
+        .video-tag { font-size: 0.75rem; font-weight: 700; color: var(--accent-blue); margin-bottom: 0.25rem; }
+        .video-title { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); }
+
+        /* ------------------------------------
+           100% 꽉 차는 완전 전체화면 모달
+        ------------------------------------ */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: #000000;
+            display: none;
+            flex-direction: column;
+            z-index: 9999;
         }
 
-        .video-tag {
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: var(--accent-blue);
-            margin-bottom: 0.25rem;
+        .modal-overlay.active { display: flex; }
+
+        .modal-header {
+            width: 100%;
+            height: 60px;
+            padding: 0 2rem;
+            background: rgba(10, 10, 10, 0.9);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
-        .video-title {
-            font-size: 1.1rem;
+        .modal-title {
+            font-size: 1rem;
             font-weight: 700;
             color: var(--text-primary);
         }
 
-        /* ------------------------------------
-           팝업 (Modal) 스타일 - 시원한 대형 사이즈
-        ------------------------------------ */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
+        .close-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border-color);
+            color: #ffffff;
+            padding: 0.4rem 1rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .close-btn:hover {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+        }
+
+        .modal-body {
+            position: relative;
+            flex: 1;
             width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(8px);
-            display: none;
+            height: calc(100vh - 60px);
+            background: #000;
+            display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
-            padding: 2rem;
         }
 
-        .modal-overlay.active {
-            display: flex;
-        }
-
-        .modal-content {
-            position: relative;
-            width: 100%;
-            max-width: 1000px; /* 대형 플레이어 너비 */
-            background: #000;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            overflow: hidden;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
-
-        .modal-video-box {
-            position: relative;
-            width: 100%;
-            padding-bottom: 56.25%; /* 16:9 비율 유지 */
-            height: 0;
-        }
-
-        .modal-video-box iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
+        .modal-body iframe {
             width: 100%;
             height: 100%;
             border: 0;
         }
 
-        .close-btn {
+        .loader {
             position: absolute;
-            top: -45px;
-            right: 0;
-            background: none;
-            border: none;
-            color: #ffffff;
-            font-size: 2rem;
-            cursor: pointer;
-            font-weight: 300;
+            width: 48px; height: 48px;
+            border: 5px solid #262626;
+            border-bottom-color: var(--accent-blue);
+            border-radius: 50%;
+            animation: rotation 1s linear infinite;
+            z-index: 5;
         }
 
-        .close-btn:hover {
-            color: var(--accent-blue);
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         footer {
-            max-width: 1200px;
-            margin: 5rem auto 2rem;
-            padding: 2rem;
-            border-top: 1px solid var(--border-color);
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            text-align: center;
+            max-width: 1200px; margin: 5rem auto 2rem; padding: 2rem;
+            border-top: 1px solid var(--border-color); color: var(--text-secondary);
+            font-size: 0.85rem; text-align: center;
         }
     </style>
 </head>
@@ -226,60 +205,78 @@
     <header>
         <div class="header-tag">// VIDEO PORTFOLIO</div>
         <h1>INTRO 시안</h1>
-        <p>카드를 클릭하면 시원한 대형 화면으로 시안이 재생됩니다.</p>
+        <p>시안 카드를 클릭하면 100% 전체화면으로 감상하실 수 있습니다.</p>
     </header>
 
     <main>
         <div class="video-grid">
 
-            <!-- 01 -->
-            <div class="video-card" onclick="openVideo('https://drive.google.com/file/d/1XQUyPvw47zlbxlZl2EoCC8048cSxqjU3/preview')">
-                <div class="thumb-cover"><div class="play-btn"></div></div>
+            <!-- OPTION 01 -->
+            <div class="video-card" onclick="openVideo('https://drive.google.com/file/d/1XQUyPvw47zlbxlZl2EoCC8048cSxqjU3/preview', 'INTRO_REF_01 (UI)')">
+                <div class="thumb-cover">
+                    <img src="https://drive.google.com/thumbnail?id=1XQUyPvw47zlbxlZl2EoCC8048cSxqjU3&sz=w800" class="thumb-img" alt="thumbnail">
+                    <div class="play-btn"></div>
+                </div>
                 <div class="video-info">
                     <div class="video-tag">OPTION 01</div>
                     <div class="video-title">INTRO_REF_01 (UI)</div>
                 </div>
             </div>
 
-            <!-- 02 -->
-            <div class="video-card" onclick="openVideo('https://drive.google.com/file/d/1UbMfMe_cpEjlnA0p7qwraVWBCCnAUBzq/preview')">
-                <div class="thumb-cover"><div class="play-btn"></div></div>
+            <!-- OPTION 02 -->
+            <div class="video-card" onclick="openVideo('https://drive.google.com/file/d/1UbMfMe_cpEjlnA0p7qwraVWBCCnAUBzq/preview', 'INTRO_REF_02 (IP+THIS IS REAL CLASS)')">
+                <div class="thumb-cover">
+                    <img src="https://drive.google.com/thumbnail?id=1UbMfMe_cpEjlnA0p7qwraVWBCCnAUBzq&sz=w800" class="thumb-img" alt="thumbnail">
+                    <div class="play-btn"></div>
+                </div>
                 <div class="video-info">
                     <div class="video-tag">OPTION 02</div>
                     <div class="video-title">INTRO_REF_02 (IP+THIS IS REAL CLASS)</div>
                 </div>
             </div>
 
-            <!-- 03 -->
-            <div class="video-card" onclick="openVideo('https://drive.google.com/file/d/104jlXs0cKiWd2NYMDzkXYtW2SKvqDBa7/preview')">
-                <div class="thumb-cover"><div class="play-btn"></div></div>
+            <!-- OPTION 03 -->
+            <div class="video-card" onclick="openVideo('https://drive.google.com/file/d/104jlXs0cKiWd2NYMDzkXYtW2SKvqDBa7/preview', 'INTRO_REF_03 (IP+리얼클래스)')">
+                <div class="thumb-cover">
+                    <img src="https://drive.google.com/thumbnail?id=104jlXs0cKiWd2NYMDzkXYtW2SKvqDBa7&sz=w800" class="thumb-img" alt="thumbnail">
+                    <div class="play-btn"></div>
+                </div>
                 <div class="video-info">
                     <div class="video-tag">OPTION 03</div>
                     <div class="video-title">INTRO_REF_03 (IP+리얼클래스)</div>
                 </div>
             </div>
 
-            <!-- 04 -->
-            <div class="video-card" onclick="openVideo('https://drive.google.com/file/d/1V0wjN7piEey4J7itS5NxJ3WKhCkIQEh2/preview')">
-                <div class="thumb-cover"><div class="play-btn"></div></div>
+            <!-- OPTION 04 -->
+            <div class="video-card" onclick="openVideo('https://drive.google.com/file/d/1V0wjN7piEey4J7itS5NxJ3WKhCkIQEh2/preview', 'INTRO_REF_04 (Jingle+Logo)')">
+                <div class="thumb-cover">
+                    <img src="https://drive.google.com/thumbnail?id=1V0wjN7piEey4J7itS5NxJ3WKhCkIQEh2&sz=w800" class="thumb-img" alt="thumbnail">
+                    <div class="play-btn"></div>
+                </div>
                 <div class="video-info">
                     <div class="video-tag">OPTION 04</div>
                     <div class="video-title">INTRO_REF_04 (Jingle+Logo)</div>
                 </div>
             </div>
 
-            <!-- 05 -->
-            <div class="video-card" onclick="openVideo('https://drive.google.com/file/d/1_6SoqztcF-yEX57FZN5kZw8FWudQH7Kk/preview')">
-                <div class="thumb-cover"><div class="play-btn"></div></div>
+            <!-- OPTION 05 -->
+            <div class="video-card" onclick="openVideo('https://drive.google.com/file/d/1_6SoqztcF-yEX57FZN5kZw8FWudQH7Kk/preview', 'INTRO_REF_05 (Voice_Logo)')">
+                <div class="thumb-cover">
+                    <img src="https://drive.google.com/thumbnail?id=1_6SoqztcF-yEX57FZN5kZw8FWudQH7Kk&sz=w800" class="thumb-img" alt="thumbnail">
+                    <div class="play-btn"></div>
+                </div>
                 <div class="video-info">
                     <div class="video-tag">OPTION 05</div>
                     <div class="video-title">INTRO_REF_05 (Voice_Logo)</div>
                 </div>
             </div>
 
-            <!-- 06 -->
-            <div class="video-card" onclick="openVideo('https://drive.google.com/file/d/14KG4XoCFnvr9e9l-oDRPmjsdVcpnCFAN/preview')">
-                <div class="thumb-cover"><div class="play-btn"></div></div>
+            <!-- OPTION 06 -->
+            <div class="video-card" onclick="openVideo('https://drive.google.com/file/d/14KG4XoCFnvr9e9l-oDRPmjsdVcpnCFAN/preview', 'INTRO_REF_06 (Voice_Logo ani.)')">
+                <div class="thumb-cover">
+                    <img src="https://drive.google.com/thumbnail?id=14KG4XoCFnvr9e9l-oDRPmjsdVcpnCFAN&sz=w800" class="thumb-img" alt="thumbnail">
+                    <div class="play-btn"></div>
+                </div>
                 <div class="video-info">
                     <div class="video-tag">OPTION 06</div>
                     <div class="video-title">INTRO_REF_06 (Voice_Logo ani.)</div>
@@ -289,13 +286,15 @@
         </div>
     </main>
 
-    <!-- 대형 팝업(모달) 레이어 -->
-    <div id="videoModal" class="modal-overlay" onclick="closeVideo(event)">
-        <div class="modal-content">
-            <button class="close-btn" onclick="forceClose()">✕ 닫기</button>
-            <div class="modal-video-box">
-                <iframe id="modalIframe" src="" allow="autoplay" allowfullscreen></iframe>
-            </div>
+    <!-- 100% 완전 전체화면 팝업 레이어 -->
+    <div id="videoModal" class="modal-overlay">
+        <div class="modal-header">
+            <span id="modalTitle" class="modal-title">TITLE</span>
+            <button class="close-btn" onclick="forceClose()">✕ 닫기 (ESC)</button>
+        </div>
+        <div class="modal-body">
+            <div id="loader" class="loader"></div>
+            <iframe id="modalIframe" src="" allow="autoplay" allowfullscreen onload="hideLoader()"></iframe>
         </div>
     </div>
 
@@ -306,27 +305,27 @@
     <script>
         const modal = document.getElementById('videoModal');
         const iframe = document.getElementById('modalIframe');
+        const loader = document.getElementById('loader');
+        const modalTitle = document.getElementById('modalTitle');
 
-        function openVideo(videoUrl) {
+        function openVideo(videoUrl, title) {
+            loader.style.display = 'block';
+            modalTitle.textContent = title;
             iframe.src = videoUrl;
             modal.classList.add('active');
-            document.body.style.overflow = 'hidden'; // 팝업 시 배경 스크롤 방지
+            document.body.style.overflow = 'hidden';
         }
 
-        function closeVideo(event) {
-            // 배경 바깥을 눌렀을 때만 닫기
-            if (event.target === modal) {
-                forceClose();
-            }
+        function hideLoader() {
+            loader.style.display = 'none';
         }
 
         function forceClose() {
             modal.classList.remove('active');
-            iframe.src = ''; // 닫을 때 영상 소리 정지
+            iframe.src = '';
             document.body.style.overflow = 'auto';
         }
 
-        // ESC 키 누르면 팝업 닫기
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && modal.classList.contains('active')) {
                 forceClose();
