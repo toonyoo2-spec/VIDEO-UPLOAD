@@ -805,20 +805,38 @@
             } catch(e) { console.error(e); }
         }
 
-        async function deleteVideo(vidId) {
-            if (!confirm('이 영상 시안 항목을 삭제할까요?')) return;
-            try {
-                const res = await fetch(`${SUPABASE_URL}/rest/v1/archive_videos?id=eq.${vidId}`, {
-                    method: 'DELETE',
-                    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
-                });
-
-                if (res.ok) {
-                    alert('영상이 삭제되었습니다.');
-                    loadArchiveFromDB();
-                } else { alert('삭제 실패'); }
-            } catch(e) { console.error(e); }
+async function deleteVideo(vidId) {
+    if (!confirm('이 영상 시안 항목을 삭제할까요? R2 저장소의 실제 파일도 함께 삭제됩니다.')) return;
+    try {
+        // 목록에서 해당 영상의 실제 파일 URL 찾기
+        let targetItem = null;
+        for (const group of displayArchive) {
+            const found = group.items.find(v => v.id === vidId);
+            if (found) { targetItem = found; break; }
         }
+
+        // R2에서 실제 파일 삭제 (Worker를 통해서)
+        if (targetItem && targetItem.fullUrl && targetItem.fullUrl.startsWith(R2_PUBLIC_DOMAIN)) {
+            const fileName = decodeURIComponent(targetItem.fullUrl.replace(R2_PUBLIC_DOMAIN, ''));
+            await fetch(WORKER_PRESIGN_URL, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fileName })
+            });
+        }
+
+        // Supabase 기록 삭제
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/archive_videos?id=eq.${vidId}`, {
+            method: 'DELETE',
+            headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+        });
+
+        if (res.ok) {
+            alert('영상이 삭제되었습니다.');
+            loadArchiveFromDB();
+        } else { alert('삭제 실패'); }
+    } catch(e) { console.error(e); }
+}
 
         function openVideoUploadModal(date) {
             document.getElementById('uploadTargetDate').value = date;
