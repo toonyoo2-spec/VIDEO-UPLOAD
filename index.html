@@ -363,7 +363,7 @@
 
                 <div id="rightColumn" class="dual-column">
                     <div class="column-header">
-                        <span id="rightTitle">INTRO_02 예시영상</span>
+                        <span id="rightTitle">INTRO_REF_02 (IP+THIS IS REAL CLASS)</span>
                         <span class="badge right-badge">FULL EXAMPLE</span>
                     </div>
                     <div class="column-media" onclick="togglePlay('videoRight', 'overlayRight')">
@@ -395,13 +395,68 @@
                 date: "260724",
                 title: "INTRO 시안",
                 items: [
-                    { numKey: "01", isSingle: true, fullUrl: SUPABASE_STORAGE_URL + encodeURIComponent("INTRO_REF_01 (UI).mp4"), tag: "OPTION 01", title: "INTRO_REF_01 (UI)", mode: "portrait" },
-                    { numKey: "02", introUrl: SUPABASE_STORAGE_URL + "INTRO_02.mp4", fullUrl: SUPABASE_STORAGE_URL + encodeURIComponent("INTRO_REF_02 (IP+THIS IS REAL CLASS).mp4"), tag: "OPTION 02", title: "INTRO_REF_02 (IP+THIS IS REAL CLASS)", mode: "portrait" },
-                    { numKey: "02_", introUrl: SUPABASE_STORAGE_URL + "INTRO_02_.mp4", fullUrl: SUPABASE_STORAGE_URL + encodeURIComponent("INTRO_REF_02_.mp4"), tag: "OPTION 02_", title: "INTRO_REF_02_", mode: "portrait" },
-                    { numKey: "03", introUrl: SUPABASE_STORAGE_URL + "INTRO_03.mp4", fullUrl: SUPABASE_STORAGE_URL + "INTRO_REF_03.mp4", tag: "OPTION 03", title: "INTRO_REF_03 (IP+리얼클래스)", mode: "portrait" },
-                    { numKey: "04", introUrl: SUPABASE_STORAGE_URL + "INTRO_04.mp4", fullUrl: SUPABASE_STORAGE_URL + encodeURIComponent("INTRO_REF_04 (Jingle+Logo).mp4"), tag: "OPTION 04", title: "INTRO_REF_04 (Jingle+Logo)", mode: "portrait" },
-                    { numKey: "05", introUrl: SUPABASE_STORAGE_URL + "INTRO_05.mp4", fullUrl: SUPABASE_STORAGE_URL + encodeURIComponent("INTRO_REF_05 (Voice_Logo).mp4"), tag: "OPTION 05", title: "INTRO_REF_05 (Voice_Logo)", mode: "portrait" },
-                    { numKey: "06", introUrl: SUPABASE_STORAGE_URL + "INTRO_06.mp4", fullUrl: SUPABASE_STORAGE_URL + encodeURIComponent("INTRO_REF_06 (Voice_Logo ani.).mp4"), tag: "OPTION 06", title: "INTRO_REF_06 (Voice_Logo ani.)", mode: "portrait" }
+                    { 
+                        tag: "OPTION 01", 
+                        title: "INTRO_REF_01 (UI)", 
+                        isSingle: true, 
+                        rightTitle: "INTRO_REF_01 (UI)",
+                        fullUrl: SUPABASE_STORAGE_URL + encodeURIComponent("INTRO_REF_01 (UI).mp4"), 
+                        mode: "portrait" 
+                    },
+                    { 
+                        tag: "OPTION 02", 
+                        title: "INTRO_REF_02 (IP+THIS IS REAL CLASS)", 
+                        leftTitle: "INTRO_02", 
+                        rightTitle: "INTRO_REF_02 (IP+THIS IS REAL CLASS)", 
+                        introUrl: SUPABASE_STORAGE_URL + "INTRO_02.mp4", 
+                        fullUrl: SUPABASE_STORAGE_URL + encodeURIComponent("INTRO_REF_02 (IP+THIS IS REAL CLASS).mp4"), 
+                        mode: "portrait" 
+                    },
+                    { 
+                        tag: "OPTION 02_develop", 
+                        title: "INTRO_REF_02_<br>(IP+THIS IS REAL CLASS_develop)", 
+                        leftTitle: "INTRO_02_", 
+                        rightTitle: "INTRO_REF_02_ (IP+THIS IS REAL CLASS_develop)", 
+                        introUrl: SUPABASE_STORAGE_URL + "INTRO_02_.mp4", 
+                        fullUrl: SUPABASE_STORAGE_URL + encodeURIComponent("INTRO_REF_02_.mp4"), 
+                        mode: "portrait" 
+                    },
+                    { 
+                        tag: "OPTION 03", 
+                        title: "INTRO_REF_03 (IP+리얼클래스)", 
+                        leftTitle: "INTRO_03", 
+                        rightTitle: "INTRO_REF_03 (IP+리얼클래스)", 
+                        introUrl: SUPABASE_STORAGE_URL + "INTRO_03.mp4", 
+                        fullUrl: SUPABASE_STORAGE_URL + "INTRO_REF_03.mp4", 
+                        mode: "portrait" 
+                    },
+                    { 
+                        tag: "OPTION 04", 
+                        title: "INTRO_REF_04 (Jingle+Logo)", 
+                        leftTitle: "INTRO_04", 
+                        rightTitle: "INTRO_REF_04 (Jingle+Logo)", 
+                        introUrl: SUPABASE_STORAGE_URL + "INTRO_04.mp4", 
+                        fullUrl: SUPABASE_STORAGE_URL + encodeURIComponent("INTRO_REF_04 (Jingle+Logo).mp4"), 
+                        mode: "portrait" 
+                    },
+                    { 
+                        tag: "OPTION 05", 
+                        title: "INTRO_REF_05 (Voice_Logo)", 
+                        leftTitle: "INTRO_05", 
+                        rightTitle: "INTRO_REF_05 (Voice_Logo)", 
+                        introUrl: SUPABASE_STORAGE_URL + "INTRO_05.mp4", 
+                        fullUrl: SUPABASE_STORAGE_URL + encodeURIComponent("INTRO_REF_05 (Voice_Logo).mp4"), 
+                        mode: "portrait" 
+                    },
+                    { 
+                        tag: "OPTION 06", 
+                        title: "INTRO_REF_06 (Voice_Logo ani.)", 
+                        leftTitle: "INTRO_06", 
+                        rightTitle: "INTRO_REF_06 (Voice_Logo ani.)", 
+                        introUrl: SUPABASE_STORAGE_URL + "INTRO_06.mp4", 
+                        fullUrl: SUPABASE_STORAGE_URL + encodeURIComponent("INTRO_REF_06 (Voice_Logo ani.).mp4"), 
+                        mode: "portrait" 
+                    }
                 ]
             }
         ];
@@ -416,6 +471,8 @@
         }
 
         function formatTitleWithBreak(title) {
+            // HTML 태그(<br>)가 포함되어 있으면 그대로 반환하고, 아니면 기존처럼 소괄호 앞 줄바꿈 적용
+            if (title.includes('<br>')) return title;
             return title.replace(/\s*(\()/g, '<br>$1');
         }
 
@@ -545,20 +602,29 @@
         const overlayRight = document.getElementById('overlayRight');
 
         function openDualModal(item) {
-            modalHeaderTitle.textContent = item.title;
+            modalHeaderTitle.textContent = item.title.replace('<br>', ' ');
 
             resetProgressUI('fillLeft', 'timeLeft');
             resetProgressUI('fillRight', 'timeRight');
 
-            modalBodyDual.classList.remove('single-mode');
-            leftColumn.style.display = 'flex';
-            leftTitle.textContent = `INTRO_${item.numKey}`;
-            rightTitle.textContent = `INTRO_${item.numKey} 예시영상`;
-            videoLeft.src = item.introUrl;
-            videoRight.src = item.fullUrl;
+            if (item.isSingle) {
+                modalBodyDual.classList.add('single-mode');
+                leftColumn.style.display = 'none';
+                rightTitle.textContent = item.rightTitle;
+                videoRight.src = item.fullUrl;
+            } else {
+                modalBodyDual.classList.remove('single-mode');
+                leftColumn.style.display = 'flex';
+                
+                leftTitle.textContent = item.leftTitle;
+                rightTitle.textContent = item.rightTitle;
+                
+                videoLeft.src = item.introUrl;
+                videoRight.src = item.fullUrl;
+            }
 
             videoRight.currentTime = 0.1;
-            videoLeft.currentTime = 0.1;
+            if(!item.isSingle) videoLeft.currentTime = 0.1;
 
             overlayLeft.classList.remove('hidden');
             overlayRight.classList.remove('hidden');
