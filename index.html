@@ -919,12 +919,11 @@
         const overlayRight = document.getElementById('overlayRight');
         const modalContainerEl = document.querySelector('.modal-container');
 
-        function openDualModal(item) {
+function openDualModal(item) {
             modalHeaderTitle.textContent = item.title.replace('<br>', ' ');
             resetProgressUI('fillLeft', 'timeLeft');
             resetProgressUI('fillRight', 'timeRight');
 
-            // 모달 크기는 CSS(.modal-container 미디어쿼리)가 항상 담당합니다.
             modalContainerEl.style.width = '';
             modalContainerEl.style.height = '';
 
@@ -951,6 +950,12 @@
             overlayRight.classList.remove('hidden');
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
+
+            // 🚀 모바일 뒤로가기 대응: 모달이 열릴 때 가상 히스토리 쌓기
+            if (!isModalHistoryPushed) {
+                history.pushState({ modalOpen: true }, '');
+                isModalHistoryPushed = true;
+            }
         }
 
         function togglePlay(videoId, overlayId) {
@@ -997,12 +1002,32 @@
         videoRight.addEventListener('ended', () => { overlayRight.classList.remove('hidden'); });
 
         function closeVideo(event) { if (event.target === modal) forceClose(); }
+        
         function forceClose() {
+            if (!modal.classList.contains('active')) return;
+
             modal.classList.remove('active');
             videoLeft.pause(); videoRight.pause();
             videoLeft.src = ''; videoRight.src = '';
             document.body.style.overflow = 'auto';
+
+            // 🚀 사용자가 X버튼/배경을 클릭해 직접 닫은 경우, 쌓았던 가상 히스토리 제거
+            if (isModalHistoryPushed) {
+                isModalHistoryPushed = false;
+                history.back();
+            }
         }
+
+        // 🚀 모바일 '뒤로 가기' 감지 이벤트
+        window.addEventListener('popstate', (event) => {
+            if (modal.classList.contains('active')) {
+                isModalHistoryPushed = false; // 히스토리는 이미 소모되었으므로 플래그만 해제
+                modal.classList.remove('active');
+                videoLeft.pause(); videoRight.pause();
+                videoLeft.src = ''; videoRight.src = '';
+                document.body.style.overflow = 'auto';
+            }
+        });
 
         function setupQuickLinksScroll() {
             const slider = document.getElementById('quickLinks');
