@@ -1,2083 +1,1042 @@
 <!DOCTYPE html>
-
 <html lang="ko">
-
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
     <title>Socra Brandteam Archive</title>
 
-
-
     <style>
-
         :root {
-
             --bg-dark: #0a0a0a;
-
             --card-bg: #121212;
-
             --border-color: #222225;
-
             --border-hover: #3f3f46;
-
             --text-primary: #ffffff;
-
             --text-secondary: #a1a1aa;
-
             --accent-red: #ef4444;
-
             --accent-blue: #3b82f6;
-
             --container-max-width: 1200px;
-
         }
-
-
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
-
         body { background-color: var(--bg-dark); color: var(--text-primary); line-height: 1.6; overflow-x: hidden; }
 
-
-
         .grid-layout-align {
-
             max-width: var(--container-max-width);
-
             margin-left: auto; margin-right: auto;
-
             padding-left: 1.2rem; padding-right: 1.2rem;
-
         }
-
         @media (min-width: 768px) { .grid-layout-align { padding-left: 2rem; padding-right: 2rem; } }
 
-
-
         header { padding-top: 2.2rem; padding-bottom: 1.2rem; display: flex; justify-content: space-between; align-items: center; }
-
         .header-tag { color: var(--accent-red); font-size: 1.8rem; font-weight: 800; letter-spacing: -1px; display: inline-block; }
-
         @media (min-width: 768px) { header { padding-top: 3.5rem; padding-bottom: 1.8rem; } .header-tag { font-size: 2.6rem; } }
 
-
-
         .btn-admin-action {
-
             background: var(--accent-red); color: white; border: none; padding: 0.5rem 0.9rem;
-
             border-radius: 8px; font-weight: 700; cursor: pointer; display: none; transition: background 0.2s; font-size: 0.8rem;
-
         }
-
         .btn-admin-action:hover { background: #dc2626; }
 
-
-
         .nav-bar-wrapper {
-
             position: sticky; top: 0;
-
             background: rgba(10, 10, 10, 0.88); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-
             border-bottom: 1px solid var(--border-color); z-index: 100; padding-top: 0.8rem; padding-bottom: 0.8rem;
-
         }
-
-
 
         .nav-bar-container { display: flex; flex-direction: column; gap: 0.6rem; }
-
         .nav-row { display: flex; align-items: center; justify-content: flex-start; gap: 0.5rem; flex-wrap: wrap; width: 100%; }
 
-
-
         .nav-row-scroll {
-
             display: flex; align-items: center; justify-content: flex-start; gap: 0.5rem;
-
             overflow-x: auto; white-space: nowrap; scrollbar-width: none;
-
             touch-action: pan-x; cursor: grab; user-select: none; width: 100%;
-
             -webkit-overflow-scrolling: touch;
-
         }
-
         .nav-row-scroll:active { cursor: grabbing; }
-
         .nav-row-scroll::-webkit-scrollbar { display: none; }
 
-
-
         .tab-btn, .quick-link-btn, .month-btn {
-
             height: 34px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important;
-
             border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: background 0.2s; flex-shrink: 0;
-
         }
-
-
 
         .tab-btn { background: #18181b; border: 1px solid var(--border-color); color: var(--text-secondary); padding: 0 0.8rem; }
-
         .tab-btn.active { background: var(--accent-red); color: #ffffff; border-color: var(--accent-red); }
 
-
-
         .month-btn { background: #121215; border: 1px solid var(--border-color); color: var(--text-secondary); padding: 0 0.7rem; font-size: 0.75rem; }
-
         .month-btn.active { background: #27272a; color: #ffffff; border-color: #52525b; }
 
-
-
         .quick-link-btn { background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-color); color: var(--text-secondary); padding: 0 0.8rem; gap: 0.4rem; }
-
         .quick-link-btn .date-label { color: var(--accent-red); font-family: monospace; font-weight: 700; }
 
-
-
         main { margin-top: 1.5rem; margin-bottom: 2.5rem; }
-
         .project-section { margin-bottom: 3rem; scroll-margin-top: 140px; }
 
-
-
         .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; gap: 0.5rem; }
-
         .section-header-left { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
-
         .date-badge { font-size: 0.85rem; font-weight: 800; color: #ffffff; background: #18181b; padding: 0.25rem 0.6rem; border-radius: 6px; border: 1px solid var(--border-hover); font-family: monospace; }
-
         .section-title { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); }
 
-
-
         .admin-edit-badge { background: #27272a; color: #a1a1aa; border: 1px solid #3f3f46; font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 4px; cursor: pointer; transition: 0.2s; }
-
         .admin-edit-badge:hover { color: white; border-color: #71717a; }
-
         .admin-delete-badge { background: rgba(239, 68, 68, 0.15); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.3); font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 4px; cursor: pointer; transition: 0.2s; }
-
         .admin-delete-badge:hover { background: var(--accent-red); color: white; }
 
-
-
         .video-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.8rem; align-items: start; }
-
         @media (min-width: 768px) { .video-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.5rem; } }
 
-
-
         .video-card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; cursor: pointer; transition: border-color 0.2s, transform 0.2s; position: relative; }
-
         .video-card:hover { border-color: var(--accent-red); transform: translateY(-2px); }
 
-
-
         .thumb-cover { position: relative; width: 100%; background: #171717; overflow: hidden; aspect-ratio: 16 / 9; }
-
         .thumb-cover.portrait { aspect-ratio: 9 / 16; }
-
         .thumb-video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
 
-
-
         .play-btn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 42px; height: 42px; background: rgba(239, 68, 68, 0.9); border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 2; }
-
         .play-btn::after { content: ""; display: block; width: 0; height: 0; border-style: solid; border-width: 6px 0 6px 10px; border-color: transparent transparent transparent #ffffff; margin-left: 2px; }
 
-
-
         .video-info { padding: 0.75rem; }
-
         .video-tag { font-size: 0.7rem; font-weight: 700; color: var(--accent-red); margin-bottom: 0.2rem; }
-
         .video-title { font-size: 0.85rem; font-weight: 700; color: var(--text-primary); line-height: 1.3; }
-
         .video-admin-bar { display: flex; gap: 0.4rem; margin-top: 0.5rem; padding-top: 0.4rem; border-top: 1px solid var(--border-color); }
 
-
-
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(12px); display: none; align-items: center; justify-content: center; z-index: 9999; padding: 0.5rem; }
-
         .modal-overlay.active { display: flex; }
-
         .modal-container { position: relative; background: #0b0b0b; border-radius: 12px; border: 1px solid var(--border-color); overflow: hidden; display: flex; flex-direction: column; width: 100vw; height: 92vh; }
 
-
-
         /* ⚠️ 이 규칙 딱 하나만 존재해야 합니다 (예전에 중복된 낡은 규칙이 이 값을 덮어쓰고 있었음) */
-
         @media (min-width: 768px) {
-
             .modal-overlay { padding: 1rem; }
-
             .modal-container { width: 95vw; max-width: 1800px; height: 94vh; max-height: none; border-radius: 16px; }
-
         }
 
-
-
         .modal-header { height: 44px; padding: 0 1rem; background: #121212; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
-
         .modal-header-title { font-size: 0.9rem; font-weight: 800; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 0.5rem; }
-
         .close-btn { background: none; border: none; color: var(--text-secondary); font-size: 1.4rem; cursor: pointer; padding: 0.2rem; }
 
-
-
         .modal-body-dual { flex: 1; display: grid; grid-template-columns: 1fr; gap: 0.8rem; padding: 0.6rem; background: #000000; overflow-y: auto; }
-
         @media (min-width: 768px) { .modal-body-dual { grid-template-columns: 1fr 1fr; gap: 1rem; padding: 1rem; overflow: hidden; } }
-
         .modal-body-dual.single-mode { grid-template-columns: 1fr !important; }
 
-
-
         .dual-column { display: flex; flex-direction: column; background: #121212; border-radius: 8px; border: 1px solid var(--border-color); overflow: hidden; min-height: 320px; }
-
         @media (min-width: 768px) { .dual-column { height: 100%; min-height: 0; } }
 
-
-
         .column-header { height: 38px; padding: 0 0.8rem; background: #18181b; border-bottom: 1px solid var(--border-color); font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
-
         .column-header .badge { font-size: 0.65rem; padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 800; }
-
         .left-badge { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.4); }
-
         .right-badge { background: rgba(59, 130, 246, 0.2); color: var(--accent-blue); border: 1px solid rgba(59, 130, 246, 0.4); }
 
-
-
         .column-media { position: relative; flex: 1; width: 100%; height: 100%; background: #000; overflow: hidden; cursor: pointer; display: flex; align-items: center; justify-content: center; min-height: 240px; }
-
         .column-media video { width: 100%; height: 100%; object-fit: contain; background: #000; }
 
-
-
         .overlay-play-btn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 52px; height: 52px; background: rgba(239, 68, 68, 0.95); border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 5; pointer-events: none; transition: opacity 0.2s ease; }
-
         .overlay-play-btn::after { content: ""; display: block; width: 0; height: 0; border-style: solid; border-width: 7px 0 7px 12px; border-color: transparent transparent transparent #ffffff; margin-left: 2px; }
-
         .overlay-play-btn.hidden { opacity: 0; }
 
-
-
         .video-control-bar { position: absolute; bottom: 0; left: 0; width: 100%; padding: 0.6rem 0.8rem 0.5rem; background: linear-gradient(to top, rgba(0, 0, 0, 0.88), transparent); display: flex; align-items: center; gap: 0.6rem; z-index: 10; opacity: 1; }
-
         @media (min-width: 768px) { .video-control-bar { opacity: 0; } .column-media:hover .video-control-bar { opacity: 1; } }
 
-
-
         .progress-container { flex: 1; height: 16px; display: flex; align-items: center; cursor: pointer; }
-
         .progress-bg { width: 100%; height: 4px; background: rgba(255, 255, 255, 0.3); border-radius: 2px; position: relative; overflow: hidden; }
-
         .progress-fill { width: 0%; height: 100%; background: var(--accent-red); border-radius: 2px; }
-
         .time-display { font-size: 0.7rem; font-family: monospace; color: #ffffff; font-weight: 600; white-space: nowrap; }
 
-
-
         .admin-modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85); display: none; align-items: center; justify-content: center; z-index: 10000; padding: 1rem; }
-
         .admin-modal-overlay.active { display: flex; }
-
         .admin-modal-box { background: #121212; border: 1px solid var(--border-color); padding: 1.2rem; border-radius: 12px; width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: 0.8rem; }
-
         .admin-modal-title { font-size: 1rem; font-weight: 800; color: white; border-bottom: 1px solid var(--border-color); padding-bottom: 0.4rem; }
-
         .admin-input-group { display: flex; flex-direction: column; gap: 0.3rem; }
-
         .admin-input-group label { font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); }
-
         .admin-input { background: #18181b; border: 1px solid var(--border-color); color: white; padding: 0.5rem; border-radius: 6px; outline: none; font-size: 0.85rem; }
-
         .admin-btn-row { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.8rem; }
-
         .btn-cancel { background: #27272a; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; }
-
         .btn-submit { background: var(--accent-red); color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 0.8rem; }
-
-
 
         .top-btn { position: fixed; bottom: 1.5rem; right: 1rem; width: 40px; height: 40px; background: #18181b; border: 1px solid var(--border-hover); color: var(--text-primary); border-radius: 50%; font-size: 0.7rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 99; }
 
-
-
         #loadingSpinner { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); color: white; z-index: 20000; align-items: center; justify-content: center; font-weight: 700; flex-direction: column; gap: 1rem; text-align: center; padding: 1rem; }
-
     </style>
-
 </head>
-
 <body>
 
-
-
     <header class="grid-layout-align">
-
         <div class="header-tag" id="mainHeaderTitle">Socra Brandteam Archive</div>
-
         <button id="btnAddProject" class="btn-admin-action" onclick="openProjectModal()">+ 새 프로젝트</button>
-
     </header>
 
-
-
     <div class="nav-bar-wrapper">
-
         <div class="nav-bar-container grid-layout-align">
-
             <div class="nav-row">
-
                 <button id="btnAll" class="tab-btn active" onclick="filterYear('ALL')">ALL</button>
-
                 <div id="yearTabs" style="display:flex; gap:0.5rem;"></div>
-
                 <div id="monthTabs" style="display:none; gap:0.4rem; padding-left: 0.5rem; border-left: 1px solid var(--border-color);"></div>
-
             </div>
-
             <div id="quickLinks" class="nav-row-scroll"></div>
-
         </div>
-
     </div>
-
-
 
     <main id="archiveContainer" class="grid-layout-align"></main>
 
-
-
     <button class="top-btn" onclick="scrollToTop()">TOP ▲</button>
 
-
-
     <footer class="grid-layout-align" style="padding-bottom: 2rem; font-size: 0.8rem;">
-
         &copy; 2026 SOCRA BRAND TEAM. ALL RIGHTS RESERVED. <span style="color:var(--text-secondary);">by Kwanyun</span>
-
         &nbsp;·&nbsp;
-
         <span id="adminToggleBtn" style="cursor:pointer; text-decoration:underline; color:var(--text-secondary);" onclick="handleAdminToggle()">관리자 로그인</span>
-
     </footer>
 
-
-
     <div id="loadingSpinner">
-
         <div style="font-size: 1.1rem;" id="spinnerText">⏳ Cloudflare R2 스토리지로 영상 업로드 중...</div>
-
         <div style="font-size: 0.8rem; color: #a1a1aa;">대용량 파일의 경우 잠시만 기다려주세요.</div>
-
     </div>
-
-
 
     <!-- 모달 모음 (생성/수정/업로드/재생) -->
-
     <div id="projectModal" class="admin-modal-overlay">
-
         <div class="admin-modal-box">
-
             <div class="admin-modal-title">새 프로젝트 생성</div>
-
             <div class="admin-input-group">
-
                 <label>날짜 (YYMMDD 형식, 예: 260801)</label>
-
                 <input type="text" id="inputProjDate" class="admin-input" placeholder="260801">
-
             </div>
-
             <div class="admin-input-group">
-
                 <label>프로젝트 제목</label>
-
                 <input type="text" id="inputProjTitle" class="admin-input" placeholder="8월 영상 시안 모음">
-
             </div>
-
             <div class="admin-btn-row">
-
                 <button class="btn-cancel" onclick="closeProjectModal()">취소</button>
-
                 <button class="btn-submit" onclick="submitNewProject()">생성</button>
-
             </div>
-
         </div>
-
     </div>
-
-
 
     <div id="projectEditModal" class="admin-modal-overlay">
-
         <div class="admin-modal-box">
-
             <div class="admin-modal-title">프로젝트 수정</div>
-
             <input type="hidden" id="editProjTargetId">
-
             <input type="hidden" id="editProjTargetDate">
-
             <div class="admin-input-group">
-
                 <label>프로젝트 제목</label>
-
                 <input type="text" id="editProjTitleInput" class="admin-input">
-
             </div>
-
             <div class="admin-btn-row">
-
                 <button class="btn-cancel" onclick="closeProjectEditModal()">취소</button>
-
                 <button class="btn-submit" onclick="submitEditProject()">수정 완료</button>
-
             </div>
-
         </div>
-
     </div>
-
-
 
     <div id="videoEditModal" class="admin-modal-overlay">
-
         <div class="admin-modal-box">
-
             <div class="admin-modal-title">영상 시안 정보 수정</div>
-
             <input type="hidden" id="editVidTargetId">
-
             <div class="admin-input-group">
-
                 <label>태그 (예: OPTION 01)</label>
-
                 <input type="text" id="editVidTagInput" class="admin-input">
-
             </div>
-
             <div class="admin-input-group">
-
                 <label>비디오 제목</label>
-
                 <input type="text" id="editVidTitleInput" class="admin-input">
-
             </div>
-
             <div class="admin-input-group">
-
                 <label>화면 비율 모드</label>
-
                 <select id="editVidModeSelect" class="admin-input">
-
                     <option value="landscape">가로 영상 (16:9)</option>
-
                     <option value="portrait">세로 숏폼 (9:16)</option>
-
                 </select>
-
             </div>
-
             <div class="admin-btn-row">
-
                 <button class="btn-cancel" onclick="closeVideoEditModal()">취소</button>
-
                 <button class="btn-submit" onclick="submitEditVideo()">수정 완료</button>
-
             </div>
-
         </div>
-
     </div>
-
-
 
     <div id="videoModalUpload" class="admin-modal-overlay">
-
         <div class="admin-modal-box">
-
             <div class="admin-modal-title">새 동영상 추가 (R2 자동 업로드)</div>
-
             <input type="hidden" id="uploadTargetDate">
-
             <div class="admin-input-group">
-
                 <label>태그 (예: OPTION 01)</label>
-
                 <input type="text" id="inputVidTag" class="admin-input" placeholder="OPTION 01">
-
             </div>
-
             <div class="admin-input-group">
-
                 <label>비디오 제목</label>
-
                 <input type="text" id="inputVidTitle" class="admin-input" placeholder="INTRO_REF_01">
-
             </div>
-
             <div class="admin-input-group">
-
                 <label>화면 비율 모드</label>
-
                 <select id="selectVidMode" class="admin-input">
-
                     <option value="landscape">가로 영상 (16:9)</option>
-
                     <option value="portrait">세로 숏폼 (9:16)</option>
-
                 </select>
-
             </div>
-
             <div class="admin-input-group">
-
                 <label>영상 파일 (.mp4)</label>
-
                 <input type="file" id="inputFileVideo" class="admin-input" accept="video/mp4,video/*">
-
             </div>
-
             <div class="admin-btn-row">
-
                 <button class="btn-cancel" onclick="closeVideoUploadModal()">취소</button>
-
                 <button class="btn-submit" onclick="submitNewVideo()">업로드 및 등록</button>
-
             </div>
-
         </div>
-
     </div>
-
-
 
     <div id="videoModal" class="modal-overlay" onclick="closeVideo(event)">
-
         <div class="modal-container">
-
             <div class="modal-header">
-
                 <span id="modalHeaderTitle" class="modal-header-title">시안 비교</span>
-
                 <button class="close-btn" onclick="forceClose()">✕</button>
-
             </div>
-
             <div id="modalBodyDual" class="modal-body-dual">
-
                 <div id="leftColumn" class="dual-column">
-
                     <div class="column-header">
-
                         <span id="leftTitle" class="column-header-text">INTRO_02</span>
-
                         <span class="badge left-badge">ONLY INTRO</span>
-
                     </div>
-
                     <div class="column-media" onclick="togglePlay('videoLeft', 'overlayLeft')">
-
                         <div id="overlayLeft" class="overlay-play-btn"></div>
-
                         <video id="videoLeft" preload="auto" playsinline></video>
-
                         <div class="video-control-bar" onclick="event.stopPropagation();">
-
                             <div class="progress-container" onclick="seekVideo(event, 'videoLeft')">
-
                                 <div class="progress-bg"><div id="fillLeft" class="progress-fill"></div></div>
-
                             </div>
-
                             <span id="timeLeft" class="time-display">00:00 / 00:00</span>
-
                         </div>
-
                     </div>
-
                 </div>
-
-
 
                 <div id="rightColumn" class="dual-column">
-
                     <div id="rightColumnHeader" class="column-header">
-
                         <span id="rightTitle" class="column-header-text">INTRO_REF_02</span>
-
                         <span class="badge right-badge">FULL EXAMPLE</span>
-
                     </div>
-
                     <div class="column-media" onclick="togglePlay('videoRight', 'overlayRight')">
-
                         <div id="overlayRight" class="overlay-play-btn"></div>
-
                         <video id="videoRight" preload="auto" playsinline></video>
-
                         <div class="video-control-bar" onclick="event.stopPropagation();">
-
                             <div class="progress-container" onclick="seekVideo(event, 'videoRight')">
-
                                 <div class="progress-bg"><div id="fillRight" class="progress-fill"></div></div>
-
                             </div>
-
                             <span id="timeRight" class="time-display">00:00 / 00:00</span>
-
                         </div>
-
                     </div>
-
                 </div>
-
             </div>
-
         </div>
-
     </div>
 
-
-
     <script>
-
         const R2_BUCKET_NAME = "brandteam";
-
         const R2_PUBLIC_DOMAIN = "https://pub-427fa438eaa44e659bfdd77141c7ca95.r2.dev/";
-
         const SUPABASE_URL = "https://kblwddlquwlvumhwkirl.supabase.co";
-
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtibHdkZGxxdXdsdnVtaHdraXJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3Mzg1NjksImV4cCI6MjEwMDMxNDU2OX0.OWH0eJXCGcJzjaMHqXWsurNuOEg4kNLuxpac6bxod1E";
 
-
-
         // 🔒 R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY는 더 이상 여기 두지 않습니다.
-
         // 업로드/삭제 로직은 Cloudflare Worker(r2-presign-worker)가 R2 바인딩으로 대신 처리합니다.
-
         const WORKER_PRESIGN_URL = "https://r2-presign-worker.kwan-yun.workers.dev";
 
-
-
         const ADMIN_FLAG_KEY = 'socra_admin_flag';
-
         let isAdmin = localStorage.getItem(ADMIN_FLAG_KEY) === 'true';
 
-
-
         const defaultProjectsArchive = [
-
             {
-
                 id: 'def_260625',
-
                 date: "260625",
-
                 title: "IP VIDEO TEST",
-
                 items: [
-
                     {
-
                         tag: "IP VIDEO TEST",
-
                         title: "Video 01",
-
                         isSingle: true,
-
                         rightTitle: "IP VIDEO TEST",
-
                         fullUrl: R2_PUBLIC_DOMAIN + encodeURIComponent("0625 TEST_.mp4"),
-
                         mode: "landscape"
-
                     },
-
                      {
-
                         tag: "IP VIDEO TEST",
-
                         title: "Video 02",
-
                         isSingle: true,
-
                         rightTitle: "IP VIDEO TEST",
-
                         fullUrl: R2_PUBLIC_DOMAIN + encodeURIComponent("realoffice.mp4"),
-
                         mode: "landscape"
-
                     }
-
                 ]
-
             },
-
             {
-
                 id: 'def_260724',
-
                 date: "260724",
-
                 title: "INTRO 시안",
-
                 items: [
-
                     {
-
                         tag: "OPTION 01",
-
                         title: "INTRO_REF_01 (UI)",
-
                         isSingle: true,
-
                         rightTitle: "INTRO_REF_01 (UI)",
-
                         fullUrl: R2_PUBLIC_DOMAIN + encodeURIComponent("INTRO_REF_01 (UI).mp4"),
-
                         mode: "portrait"
-
                     },
-
                     {
-
                         tag: "OPTION 02",
-
                         title: "INTRO_REF_02<br>(IP+THIS IS REAL CLASS)",
-
                         leftTitle: "INTRO_02",
-
                         rightTitle: "INTRO_REF_02 (IP+THIS IS REAL CLASS)",
-
                         introUrl: R2_PUBLIC_DOMAIN + "INTRO_02.mp4",
-
                         fullUrl: R2_PUBLIC_DOMAIN + encodeURIComponent("INTRO_REF_02 (IP+THIS IS REAL CLASS).mp4"),
-
                         mode: "portrait"
-
                     },
-
                     {
-
                         tag: "OPTION 02_develop",
-
                         title: "INTRO_REF_02_<br>(IP+THIS IS REAL CLASS_develop)",
-
                         leftTitle: "INTRO_02_",
-
                         rightTitle: "INTRO_REF_02_ (IP+THIS IS REAL CLASS_develop)",
-
                         introUrl: R2_PUBLIC_DOMAIN + "INTRO_02_.mp4",
-
                         fullUrl: R2_PUBLIC_DOMAIN + encodeURIComponent("INTRO_02_.mp4"),
-
                         mode: "portrait"
-
                     },
-
                     {
-
                         tag: "OPTION 03",
-
                         title: "INTRO_REF_03<br>(IP+리얼클래스)",
-
                         leftTitle: "INTRO_03",
-
                         rightTitle: "INTRO_REF_03 (IP+리얼클래스)",
-
                         introUrl: R2_PUBLIC_DOMAIN + "INTRO_03.mp4",
-
                         fullUrl: R2_PUBLIC_DOMAIN + "INTRO_REF_03.mp4",
-
                         mode: "portrait"
-
                     },
-
                     {
-
                         tag: "OPTION 04",
-
                         title: "INTRO_REF_04<br>(Jingle+Logo)",
-
                         leftTitle: "INTRO_04",
-
                         rightTitle: "INTRO_REF_04 (Jingle+Logo)",
-
                         introUrl: R2_PUBLIC_DOMAIN + "INTRO_04.mp4",
-
                         fullUrl: R2_PUBLIC_DOMAIN + encodeURIComponent("INTRO_REF_04 (Jingle+Logo).mp4"),
-
                         mode: "portrait"
-
                     },
-
                     {
-
                         tag: "OPTION 05",
-
                         title: "INTRO_REF_05<br>(Voice_Logo)",
-
                         leftTitle: "INTRO_05",
-
                         rightTitle: "INTRO_REF_05 (Voice_Logo)",
-
                         introUrl: R2_PUBLIC_DOMAIN + "INTRO_05.mp4",
-
                         fullUrl: R2_PUBLIC_DOMAIN + encodeURIComponent("INTRO_REF_05 (Voice_Logo).mp4"),
-
                         mode: "portrait"
-
                     },
-
                     {
-
                         tag: "OPTION 06",
-
                         title: "INTRO_REF_06<br>(Voice_Logo ani.)",
-
                         leftTitle: "INTRO_06",
-
                         rightTitle: "INTRO_REF_06 (Voice_Logo ani.)",
-
                         introUrl: R2_PUBLIC_DOMAIN + "INTRO_06.mp4",
-
                         fullUrl: R2_PUBLIC_DOMAIN + encodeURIComponent("INTRO_REF_06 (Voice_Logo ani.).mp4"),
-
                         mode: "portrait"
-
                     }
-
                 ]
-
             }
-
         ];
 
-
-
         let displayArchive = [];
-
         let currentFilterYear = 'ALL';
-
         let currentFilterMonth = 'ALL';
 
-
-
         async function handleAdminToggle() {
-
             if (isAdmin) {
-
                 if (confirm('관리자 모드를 종료할까요?')) {
-
                     isAdmin = false;
-
                     localStorage.removeItem(ADMIN_FLAG_KEY);
-
                     applyAdminMode();
-
                     renderArchive();
-
                 }
-
             } else {
-
                 const inputPw = prompt('관리자 비밀번호를 입력하세요');
-
                 if (!inputPw) return;
 
-
-
                 try {
-
                     const res = await fetch(`${SUPABASE_URL}/rest/v1/admin_config?password_hash=eq.${encodeURIComponent(inputPw)}&select=*`, {
-
                         headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
-
                     });
-
                     const data = await res.json();
 
-
-
                     if (Array.isArray(data) && data.length > 0) {
-
                         isAdmin = true;
-
                         localStorage.setItem(ADMIN_FLAG_KEY, 'true');
-
                         applyAdminMode();
-
                         renderArchive();
-
                         alert('관리자로 인증되었습니다.');
-
                     } else {
-
                         alert('비밀번호가 틀렸습니다.');
-
                     }
-
                 } catch (e) {
-
                     console.error("인증 실패:", e);
-
                     alert('인증 처리 중 오류가 발생했습니다.');
-
                 }
-
             }
-
         }
-
-
 
         function applyAdminMode() {
-
             const toggleBtn = document.getElementById('adminToggleBtn');
-
             const addProjBtn = document.getElementById('btnAddProject');
-
             if (isAdmin) {
-
                 toggleBtn.textContent = '관리자 모드 (로그아웃)';
-
                 addProjBtn.style.display = 'block';
-
             } else {
-
                 toggleBtn.textContent = '관리자 로그인';
-
                 addProjBtn.style.display = 'none';
-
             }
-
         }
-
-
 
         async function loadArchiveFromDB() {
-
             try {
-
                 const projRes = await fetch(`${SUPABASE_URL}/rest/v1/archive_projects?select=*`, {
-
                     headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
-
                 });
-
                 const dbProjects = await projRes.json();
 
-
-
                 const vidRes = await fetch(`${SUPABASE_URL}/rest/v1/archive_videos?select=*`, {
-
                     headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
-
                 });
-
                 const dbVideos = await vidRes.json();
 
-
-
                 displayArchive = JSON.parse(JSON.stringify(defaultProjectsArchive));
-
-
 
                 if (Array.isArray(dbProjects)) {
-
                     dbProjects.forEach(p => {
-
                         let targetGroup = displayArchive.find(g => (p.id && g.id === p.id));
-
                         if (!targetGroup) {
-
                             targetGroup = { id: p.id, date: p.date, title: p.title, items: [] };
-
                             displayArchive.push(targetGroup);
-
                         } else {
-
                             targetGroup.title = p.title;
-
                         }
 
-
-
                         const matchingVids = dbVideos.filter(v => v.project_date === p.date);
-
                         matchingVids.forEach(v => {
-
                             if(!targetGroup.items.some(existVid => existVid.id === v.id || existVid.fullUrl === v.full_url)) {
-
                                 targetGroup.items.push({
-
                                     id: v.id,
-
                                     tag: v.tag,
-
                                     title: v.title,
-
                                     isSingle: v.is_single !== false,
-
                                     leftTitle: v.left_title,
-
                                     rightTitle: v.right_title,
-
                                     fullUrl: v.full_url,
-
                                     introUrl: v.intro_url,
-
                                     mode: v.mode
-
                                 });
-
                             }
-
                         });
-
                     });
-
                 }
-
-
 
                 displayArchive.sort((a, b) => Number(b.date) - Number(a.date));
-
                 renderArchive();
-
             } catch (e) {
-
                 console.error("데이터 로드 중 오류:", e);
-
                 displayArchive = JSON.parse(JSON.stringify(defaultProjectsArchive));
-
                 renderArchive();
-
             }
-
         }
-
-
 
         function parseDate(dateStr) {
-
             const year = '20' + dateStr.substring(0, 2);
-
             const month = dateStr.substring(2, 4);
-
             const day = dateStr.substring(4, 6);
-
             return { year, month, day, formattedFull: `${year}.${month}.${day}` };
-
         }
 
-
-
         function renderArchive() {
-
             const container = document.getElementById('archiveContainer');
-
             const quickLinksContainer = document.getElementById('quickLinks');
-
             container.innerHTML = '';
-
             quickLinksContainer.innerHTML = '';
-
             const yearsSet = new Set();
-
             const availableMonthsSet = new Set();
 
-
-
             displayArchive.forEach((group, idx) => {
-
                 const dateInfo = parseDate(group.date);
-
                 yearsSet.add(dateInfo.year);
 
-
-
                 if (currentFilterYear !== 'ALL') {
-
                     if (dateInfo.year !== currentFilterYear) return;
-
                     availableMonthsSet.add(parseInt(dateInfo.month, 10));
 
-
-
                     if (currentFilterMonth !== 'ALL' && parseInt(dateInfo.month, 10) !== parseInt(currentFilterMonth, 10)) {
-
                         return;
-
                     }
-
                 }
-
-
 
                 const sectionId = `section-${group.date}-${idx}`;
 
-
-
                 const qLink = document.createElement('button');
-
                 qLink.className = 'quick-link-btn';
-
                 qLink.innerHTML = `<span class="date-label">${dateInfo.formattedFull}</span> ${group.title}`;
-
                 qLink.onclick = () => {
-
                     const targetSec = document.getElementById(sectionId);
-
                     if (targetSec) targetSec.scrollIntoView({ behavior: 'smooth' });
-
                 };
-
                 quickLinksContainer.appendChild(qLink);
 
-
-
                 const section = document.createElement('section');
-
                 section.className = 'project-section';
-
                 section.id = sectionId;
 
-
-
                 let gridCardsHtml = '';
-
                 group.items.forEach((item) => {
-
                     const jsonItem = JSON.stringify(item).replace(/"/g, '&quot;');
-
                     const thumbSource = item.isSingle ? item.fullUrl : item.introUrl;
 
-
-
                     const canEdit = isAdmin && item.id;
-
                     const editClickAttr = canEdit
-
                         ? `onclick="event.stopPropagation(); openVideoEditModal(${item.id}, '${item.tag.replace(/'/g, "\\'")}', '${item.title.replace(/'/g, "\\'")}', '${item.mode || 'landscape'}')"`
-
                         : '';
 
-
-
                     const vidAdminBtnsHtml = canEdit ? `
-
                         <div class="video-admin-bar" onclick="event.stopPropagation();">
-
                             <button class="admin-delete-badge" onclick="deleteVideo(${item.id})">삭제</button>
-
                         </div>
-
                     ` : '';
 
-
-
                     gridCardsHtml += `
-
                         <div class="video-card" onclick="openDualModal(${jsonItem})">
-
                             <div class="thumb-cover ${item.mode || 'landscape'}">
-
                                 <video src="${thumbSource}#t=0.1" class="thumb-video" preload="metadata" muted playsinline
-
                                     onloadedmetadata="if(this.videoWidth && this.videoHeight){ this.closest('.thumb-cover').style.aspectRatio = (this.videoWidth / this.videoHeight); }"></video>
-
                                 <div class="play-btn"></div>
-
                             </div>
-
                             <div class="video-info">
-
                                 <div class="video-tag" ${editClickAttr} style="${canEdit ? 'cursor:pointer; text-decoration:underline dotted;' : ''}">${item.tag}</div>
-
                                 <div class="video-title" ${editClickAttr} style="${canEdit ? 'cursor:pointer;' : ''}">${item.title}</div>
-
                                 ${vidAdminBtnsHtml}
-
                             </div>
-
                         </div>
-
                     `;
-
                 });
 
-
-
                 const addVideoBtnHtml = isAdmin
-
                     ? `<button class="btn-admin-action" style="display:inline-block;" onclick="openVideoUploadModal('${group.date}')">+ 영상 추가</button>`
-
                     : '';
 
-
-
                 const projAdminBtnsHtml = (isAdmin && group.id && !String(group.id).startsWith('def_')) ? `
-
                     <button class="admin-edit-badge" onclick="openProjectEditModal('${group.id}', '${group.date}', '${group.title.replace(/'/g, "\\'")}')">제목 수정</button>
-
                     <button class="admin-delete-badge" onclick="deleteProject('${group.id}', '${group.date}')">프로젝트 삭제</button>
-
                 ` : '';
 
-
-
                 section.innerHTML = `
-
                     <div class="section-header">
-
                         <div class="section-header-left">
-
                             <span class="date-badge">${dateInfo.formattedFull}</span>
-
                             <h2 class="section-title">${group.title}</h2>
-
                             ${projAdminBtnsHtml}
-
                         </div>
-
                         ${addVideoBtnHtml}
-
                     </div>
-
                     <div class="video-grid">${gridCardsHtml}</div>
-
                 `;
-
                 container.appendChild(section);
-
             });
-
-
 
             renderYearTabs(Array.from(yearsSet).sort((a, b) => b - a));
-
             renderMonthTabs(Array.from(availableMonthsSet).sort((a, b) => a - b));
-
         }
-
-
 
         function renderYearTabs(years) {
-
             const yearTabsContainer = document.getElementById('yearTabs');
-
             const btnAll = document.getElementById('btnAll');
-
             yearTabsContainer.innerHTML = '';
-
             btnAll.className = `tab-btn ${currentFilterYear === 'ALL' ? 'active' : ''}`;
 
-
-
             years.forEach(yr => {
-
                 const btn = document.createElement('button');
-
                 btn.className = `tab-btn ${currentFilterYear === yr ? 'active' : ''}`;
-
                 btn.textContent = yr;
-
                 btn.onclick = () => filterYear(yr);
-
                 yearTabsContainer.appendChild(btn);
-
             });
-
         }
 
-
-
         function renderMonthTabs(months) {
-
             const monthTabsContainer = document.getElementById('monthTabs');
-
             monthTabsContainer.innerHTML = '';
 
-
-
             if (currentFilterYear === 'ALL' || months.length === 0) {
-
                 monthTabsContainer.style.display = 'none';
-
                 return;
-
             }
-
-
 
             monthTabsContainer.style.display = 'flex';
 
-
-
             const btnAllMonth = document.createElement('button');
-
             btnAllMonth.className = `month-btn ${currentFilterMonth === 'ALL' ? 'active' : ''}`;
-
             btnAllMonth.textContent = 'ALL';
-
             btnAllMonth.onclick = () => filterMonth('ALL');
-
             monthTabsContainer.appendChild(btnAllMonth);
 
-
-
             months.forEach(m => {
-
                 const btn = document.createElement('button');
-
                 btn.className = `month-btn ${parseInt(currentFilterMonth, 10) === m ? 'active' : ''}`;
-
                 btn.textContent = `${m}월`;
-
                 btn.onclick = () => filterMonth(m);
-
                 monthTabsContainer.appendChild(btn);
-
             });
-
         }
-
-
 
         function filterYear(year) {
-
             currentFilterYear = year;
-
             currentFilterMonth = 'ALL';
-
             renderArchive();
-
         }
-
-
 
         function filterMonth(month) {
-
             currentFilterMonth = month;
-
             renderArchive();
-
         }
-
-
 
         function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
-
-
         function openProjectModal() { document.getElementById('projectModal').classList.add('active'); }
-
         function closeProjectModal() { document.getElementById('projectModal').classList.remove('active'); }
 
-
-
         async function submitNewProject() {
-
             const date = document.getElementById('inputProjDate').value.trim();
-
             const title = document.getElementById('inputProjTitle').value.trim();
-
             if (!date || !title) return alert('날짜와 제목을 모두 입력해 주세요.');
 
-
-
             try {
-
                 const res = await fetch(`${SUPABASE_URL}/rest/v1/archive_projects`, {
-
                     method: 'POST',
-
                     headers: {
-
                         'apikey': SUPABASE_ANON_KEY,
-
                         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-
                         'Content-Type': 'application/json',
-
                         'Prefer': 'return=minimal'
-
                     },
-
                     body: JSON.stringify({ date, title })
-
                 });
 
-
-
                 if (res.ok) {
-
                     alert('새 프로젝트가 생성되었습니다!');
-
                     closeProjectModal();
-
                     loadArchiveFromDB();
-
                 } else {
-
                     alert('프로젝트 생성 실패. DB 설정을 확인해 보세요.');
-
                 }
-
             } catch (e) { console.error(e); }
-
         }
-
-
 
         function openProjectEditModal(id, date, currentTitle) {
-
             document.getElementById('editProjTargetId').value = id;
-
             document.getElementById('editProjTargetDate').value = date;
-
             document.getElementById('editProjTitleInput').value = currentTitle;
-
             document.getElementById('projectEditModal').classList.add('active');
-
         }
-
         function closeProjectEditModal() { document.getElementById('projectEditModal').classList.remove('active'); }
 
-
-
         async function submitEditProject() {
-
             const id = document.getElementById('editProjTargetId').value;
-
             const date = document.getElementById('editProjTargetDate').value;
-
             const newTitle = document.getElementById('editProjTitleInput').value.trim();
-
             if (!newTitle) return alert('제목을 입력해주세요.');
 
-
-
             try {
-
                 const url = id && id !== 'undefined'
-
                     ? `${SUPABASE_URL}/rest/v1/archive_projects?id=eq.${id}`
-
                     : `${SUPABASE_URL}/rest/v1/archive_projects?date=eq.${date}`;
 
-
-
                 const res = await fetch(url, {
-
                     method: 'PATCH',
-
                     headers: {
-
                         'apikey': SUPABASE_ANON_KEY,
-
                         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-
                         'Content-Type': 'application/json'
-
                     },
-
                     body: JSON.stringify({ title: newTitle })
-
                 });
 
-
-
                 if (res.ok) {
-
                     alert('프로젝트 제목이 수정되었습니다.');
-
                     closeProjectEditModal();
-
                     loadArchiveFromDB();
-
                 } else { alert('수정 실패'); }
-
             } catch(e) { console.error(e); }
-
         }
-
-
 
         async function deleteProject(id, date) {
-
             if (!confirm('이 프로젝트를 삭제할까요? 관련 동영상 항목도 모두 삭제 권장됩니다.')) return;
-
             try {
-
                 const url = id && id !== 'undefined'
-
                     ? `${SUPABASE_URL}/rest/v1/archive_projects?id=eq.${id}`
-
                     : `${SUPABASE_URL}/rest/v1/archive_projects?date=eq.${date}`;
 
-
-
                 const res = await fetch(url, {
-
                     method: 'DELETE',
-
                     headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
-
                 });
 
-
-
                 if (res.ok) {
-
                     alert('프로젝트가 삭제되었습니다.');
-
                     loadArchiveFromDB();
-
                 } else { alert('삭제 실패'); }
-
             } catch(e) { console.error(e); }
-
         }
-
-
 
         function openVideoEditModal(vidId, currentTag, currentTitle, currentMode) {
-
             document.getElementById('editVidTargetId').value = vidId;
-
             document.getElementById('editVidTagInput').value = currentTag;
-
             document.getElementById('editVidTitleInput').value = currentTitle;
-
             document.getElementById('editVidModeSelect').value = currentMode;
-
             document.getElementById('videoEditModal').classList.add('active');
-
         }
-
         function closeVideoEditModal() { document.getElementById('videoEditModal').classList.remove('active'); }
 
-
-
         async function submitEditVideo() {
-
             const vidId = document.getElementById('editVidTargetId').value;
-
             const newTag = document.getElementById('editVidTagInput').value.trim();
-
             const newTitle = document.getElementById('editVidTitleInput').value.trim();
-
             const newMode = document.getElementById('editVidModeSelect').value;
-
-
 
             if (!newTag || !newTitle) return alert('태그와 제목을 모두 입력해 주세요.');
 
-
-
             try {
-
                 const res = await fetch(`${SUPABASE_URL}/rest/v1/archive_videos?id=eq.${vidId}`, {
-
                     method: 'PATCH',
-
                     headers: {
-
                         'apikey': SUPABASE_ANON_KEY,
-
                         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-
                         'Content-Type': 'application/json'
-
                     },
-
                     body: JSON.stringify({ tag: newTag, title: newTitle, mode: newMode })
-
                 });
 
-
-
                 if (res.ok) {
-
                     alert('영상 정보가 수정되었습니다.');
-
                     closeVideoEditModal();
-
                     loadArchiveFromDB();
-
                 } else { alert('수정 실패'); }
-
             } catch(e) { console.error(e); }
-
         }
-
-
 
         async function deleteVideo(vidId) {
-
             if (!confirm('이 영상 시안 항목을 삭제할까요? R2 저장소의 실제 파일도 함께 삭제됩니다.')) return;
-
             try {
-
                 let targetItem = null;
-
                 for (const group of displayArchive) {
-
                     const found = group.items.find(v => v.id === vidId);
-
                     if (found) { targetItem = found; break; }
-
                 }
-
-
 
                 if (targetItem && targetItem.fullUrl && targetItem.fullUrl.startsWith(R2_PUBLIC_DOMAIN)) {
-
                     const fileName = decodeURIComponent(targetItem.fullUrl.replace(R2_PUBLIC_DOMAIN, ''));
-
                     await fetch(WORKER_PRESIGN_URL, {
-
                         method: 'DELETE',
-
                         headers: { 'Content-Type': 'application/json' },
-
                         body: JSON.stringify({ fileName })
-
                     });
-
                 }
 
-
-
                 const res = await fetch(`${SUPABASE_URL}/rest/v1/archive_videos?id=eq.${vidId}`, {
-
                     method: 'DELETE',
-
                     headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
-
                 });
 
-
-
                 if (res.ok) {
-
                     alert('영상이 삭제되었습니다.');
-
                     loadArchiveFromDB();
-
                 } else { alert('삭제 실패'); }
-
             } catch(e) { console.error(e); }
-
         }
-
-
 
         function openVideoUploadModal(date) {
-
             document.getElementById('uploadTargetDate').value = date;
-
             document.getElementById('videoModalUpload').classList.add('active');
-
         }
-
         function closeVideoUploadModal() { document.getElementById('videoModalUpload').classList.remove('active'); }
 
-
-
         // 🚀 Cloudflare Worker(*.workers.dev)로 파일을 직접 전송 — r2.cloudflarestorage.com은 거치지 않음
-
         // (시크릿 키는 이 파일에 존재하지 않으며, Worker 안에서 R2 바인딩으로만 처리됩니다)
-
         async function submitNewVideo() {
-
             const date = document.getElementById('uploadTargetDate').value;
-
             const tag = document.getElementById('inputVidTag').value.trim();
-
             const title = document.getElementById('inputVidTitle').value.trim();
-
             const mode = document.getElementById('selectVidMode').value;
-
             const fileInput = document.getElementById('inputFileVideo');
-
-
 
             if (!tag || !title || fileInput.files.length === 0) return alert('모든 정보와 파일 선택을 완료해주세요.');
 
-
-
             const file = fileInput.files[0];
-
             document.getElementById('loadingSpinner').style.display = 'flex';
 
-
-
             try {
-
                 const uploadRes = await fetch(WORKER_PRESIGN_URL, {
-
                     method: 'POST',
-
                     headers: {
-
                         'Content-Type': file.type,
-
                         'X-File-Name': encodeURIComponent(file.name)
-
                     },
-
                     body: file
-
                 });
-
                 if (!uploadRes.ok) throw new Error(`업로드 실패: ${uploadRes.status}`);
-
                 const { fileName } = await uploadRes.json();
-
-
 
                 const fullUrl = R2_PUBLIC_DOMAIN + fileName;
 
-
-
                 const dbRes = await fetch(`${SUPABASE_URL}/rest/v1/archive_videos`, {
-
                     method: 'POST',
-
                     headers: {
-
                         'apikey': SUPABASE_ANON_KEY,
-
                         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-
                         'Content-Type': 'application/json',
-
                         'Prefer': 'return=minimal'
-
                     },
-
                     body: JSON.stringify({ project_date: date, tag, title, is_single: true, full_url: fullUrl, mode })
-
                 });
 
-
-
                 document.getElementById('loadingSpinner').style.display = 'none';
-
-
 
                 if (dbRes.ok) {
-
                     alert('영상이 성공적으로 업로드되고 아카이브에 등록되었습니다!');
-
                     closeVideoUploadModal();
-
                     loadArchiveFromDB();
-
                 } else {
-
                     alert('DB 저장 실패. Supabase 설정을 확인해 주세요.');
-
                 }
-
             } catch (err) {
-
                 document.getElementById('loadingSpinner').style.display = 'none';
-
                 console.error("업로드 실패:", err);
-
                 alert("업로드 중 오류가 발생했습니다: " + err.message);
-
             }
-
         }
-
-
 
         const modal = document.getElementById('videoModal');
-
         const modalHeaderTitle = document.getElementById('modalHeaderTitle');
-
         const modalBodyDual = document.getElementById('modalBodyDual');
-
         const leftColumn = document.getElementById('leftColumn');
-
         const rightColumn = document.getElementById('rightColumn');
-
         const rightColumnHeader = document.getElementById('rightColumnHeader');
-
         const leftTitle = document.getElementById('leftTitle');
-
         const rightTitle = document.getElementById('rightTitle');
-
         const videoLeft = document.getElementById('videoLeft');
-
         const videoRight = document.getElementById('videoRight');
-
         const overlayLeft = document.getElementById('overlayLeft');
-
         const overlayRight = document.getElementById('overlayRight');
-
         const modalContainerEl = document.querySelector('.modal-container');
 
-
-
         function openDualModal(item) {
-
             modalHeaderTitle.textContent = item.title.replace('<br>', ' ');
-
             resetProgressUI('fillLeft', 'timeLeft');
-
             resetProgressUI('fillRight', 'timeRight');
 
-
-
             // 모달 크기는 CSS(.modal-container 미디어쿼리)가 항상 담당합니다.
-
             modalContainerEl.style.width = '';
-
             modalContainerEl.style.height = '';
 
-
-
             if (item.isSingle) {
-
                 modalBodyDual.classList.add('single-mode');
-
                 leftColumn.style.display = 'none';
-
                 rightColumn.style.display = 'flex';
-
                 rightColumnHeader.style.display = 'none';
-
                 videoRight.src = item.fullUrl;
-
             } else {
-
                 modalBodyDual.classList.remove('single-mode');
-
                 leftColumn.style.display = 'flex';
-
                 rightColumn.style.display = 'flex';
-
                 rightColumnHeader.style.display = 'flex';
-
                 leftTitle.textContent = item.leftTitle || 'INTRO';
-
                 rightTitle.textContent = item.rightTitle || 'FULL EXAMPLE';
-
                 videoLeft.src = item.introUrl;
-
                 videoRight.src = item.fullUrl;
-
             }
-
-
 
             videoRight.currentTime = 0.1;
-
             if (!item.isSingle) videoLeft.currentTime = 0.1;
-
             overlayLeft.classList.remove('hidden');
-
             overlayRight.classList.remove('hidden');
-
             modal.classList.add('active');
-
             document.body.style.overflow = 'hidden';
-
         }
-
-
 
         function togglePlay(videoId, overlayId) {
-
             const v = document.getElementById(videoId);
-
             const o = document.getElementById(overlayId);
-
             if (v.paused) { v.play(); o.classList.add('hidden'); }
-
             else { v.pause(); o.classList.remove('hidden'); }
-
         }
-
-
 
         function formatTime(sec) {
-
             if (isNaN(sec) || !isFinite(sec)) return "00:00";
-
             const m = Math.floor(sec / 60); const s = Math.floor(sec % 60);
-
             return `${m < 10 ? '0' + m : m}:${s < 10 ? '0' + s : s}`;
-
         }
-
-
 
         function resetProgressUI(fillId, timeId) {
-
             document.getElementById(fillId).style.width = '0%';
-
             document.getElementById(timeId).textContent = "00:00 / 00:00";
-
         }
-
-
 
         function updateProgress(v, fillId, timeId) {
-
             const fill = document.getElementById(fillId);
-
             const time = document.getElementById(timeId);
-
             if (v.duration && !isNaN(v.duration) && v.duration > 0) {
-
                 const pct = (v.currentTime / v.duration) * 100;
-
                 fill.style.width = `${pct}%`;
-
                 time.textContent = `${formatTime(v.currentTime)} / ${formatTime(v.duration)}`;
-
             } else {
-
                 fill.style.width = '0%';
-
                 time.textContent = `00:00 / ${formatTime(v.duration)}`;
-
             }
-
         }
-
-
 
         function seekVideo(e, videoId) {
-
             const v = document.getElementById(videoId);
-
             const rect = e.currentTarget.getBoundingClientRect();
-
             const pos = (e.clientX - rect.left) / rect.width;
-
             if (v.duration && !isNaN(v.duration)) { v.currentTime = pos * v.duration; }
-
         }
-
-
 
         videoLeft.addEventListener('timeupdate', () => updateProgress(videoLeft, 'fillLeft', 'timeLeft'));
-
         videoRight.addEventListener('timeupdate', () => updateProgress(videoRight, 'fillRight', 'timeRight'));
-
         videoLeft.addEventListener('ended', () => { overlayLeft.classList.remove('hidden'); });
-
         videoRight.addEventListener('ended', () => { overlayRight.classList.remove('hidden'); });
 
-
-
         function closeVideo(event) { if (event.target === modal) forceClose(); }
-
         function forceClose() {
-
             modal.classList.remove('active');
-
             videoLeft.pause(); videoRight.pause();
-
             videoLeft.src = ''; videoRight.src = '';
-
             document.body.style.overflow = 'auto';
-
         }
-
-
 
         function setupQuickLinksScroll() {
-
             const slider = document.getElementById('quickLinks');
-
             let isDown = false;
-
             let startX, scrollLeft;
 
-
-
             slider.addEventListener('mousedown', (e) => {
-
                 isDown = true;
-
                 startX = e.pageX - slider.offsetLeft;
-
                 scrollLeft = slider.scrollLeft;
-
             });
-
             slider.addEventListener('mouseleave', () => { isDown = false; });
-
             slider.addEventListener('mouseup', () => { isDown = false; });
-
             slider.addEventListener('mousemove', (e) => {
-
                 if(!isDown) return;
-
                 e.preventDefault();
-
                 const x = e.pageX - slider.offsetLeft;
-
                 const walk = (x - startX) * 2;
-
                 slider.scrollLeft = scrollLeft - walk;
-
             });
-
-
 
             slider.addEventListener('wheel', (e) => {
-
                 if (e.deltaY !== 0) {
-
                     e.preventDefault();
-
                     slider.scrollLeft += e.deltaY;
-
                 }
-
             }, { passive: false });
-
         }
 
-
-
         (async function init() {
-
             applyAdminMode();
-
             setupQuickLinksScroll();
-
             await loadArchiveFromDB();
-
         })();
-
     </script>
-
 </body>
-
 </html>
