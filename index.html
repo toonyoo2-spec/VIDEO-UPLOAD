@@ -387,8 +387,7 @@
 <body>
 
     <header class="grid-layout-align">
-        <div class="header-tag editable" contenteditable="true" spellcheck="false" id="mainHeaderTitle"
-             onblur="saveToServer()">Socra Brandteam Archive</div>
+        <div class="header-tag" id="mainHeaderTitle">Socra Brandteam Archive</div>
     </header>
 
     <div class="nav-bar-wrapper">
@@ -456,6 +455,8 @@
 
     <footer class="grid-layout-align">
         &copy; 2026 SOCRA BRAND TEAM. ALL RIGHTS RESERVED.
+        &nbsp;·&nbsp;
+        <span id="adminToggleBtn" style="cursor:pointer; text-decoration:underline; color:var(--text-secondary);" onclick="handleAdminToggle()">관리자 로그인</span>
     </footer>
 
     <script>
@@ -463,6 +464,50 @@
         const SUPABASE_URL = "https://kblwddlquwlvumhwkirl.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtibHdkZGxxdXdsdnVtaHdraXJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3Mzg1NjksImV4cCI6MjEwMDMxNDU2OX0.OWH0eJXCGcJzjaMHqXWsurNuOEg4kNLuxpac6bxod1E";
         const SUPABASE_REST_URL = `${SUPABASE_URL}/rest/v1/archive_content`;
+
+        // ===== 관리자 모드 (비밀번호로 편집 잠금/해제) =====
+        const ADMIN_PASSWORD = "socra2026!"; // 원하는 비밀번호로 바꾸세요
+        const ADMIN_FLAG_KEY = 'socra_admin_flag';
+        let isAdmin = localStorage.getItem(ADMIN_FLAG_KEY) === 'true';
+
+        function handleAdminToggle() {
+            if (isAdmin) {
+                if (confirm('관리자 모드를 종료할까요?')) {
+                    isAdmin = false;
+                    localStorage.removeItem(ADMIN_FLAG_KEY);
+                    applyAdminModeToHeader();
+                    renderArchive();
+                }
+            } else {
+                const pw = prompt('관리자 비밀번호를 입력하세요');
+                if (pw === null) return;
+                if (pw === ADMIN_PASSWORD) {
+                    isAdmin = true;
+                    localStorage.setItem(ADMIN_FLAG_KEY, 'true');
+                    applyAdminModeToHeader();
+                    renderArchive();
+                } else {
+                    alert('비밀번호가 틀렸습니다.');
+                }
+            }
+        }
+
+        function applyAdminModeToHeader() {
+            const header = document.getElementById('mainHeaderTitle');
+            const toggleBtn = document.getElementById('adminToggleBtn');
+            if (isAdmin) {
+                header.setAttribute('contenteditable', 'true');
+                header.setAttribute('spellcheck', 'false');
+                header.classList.add('editable');
+                header.onblur = saveToServer;
+                toggleBtn.textContent = '관리자 모드 (로그아웃)';
+            } else {
+                header.removeAttribute('contenteditable');
+                header.classList.remove('editable');
+                header.onblur = null;
+                toggleBtn.textContent = '관리자 로그인';
+            }
+        }
 
         const projectsArchive = [
             {
@@ -664,6 +709,9 @@
                     const jsonItem = JSON.stringify(item).replace(/"/g, '&quot;');
                     const formattedTitle = formatTitleWithBreak(item.title);
                     const thumbSource = item.isSingle ? item.fullUrl : item.introUrl;
+                    const titleEditAttrs = isAdmin
+                        ? `class="video-title editable" contenteditable="true" spellcheck="false" data-date="${group.date}" data-idx="${idx}" onclick="event.stopPropagation()" onblur="saveItemTitle(this)"`
+                        : `class="video-title"`;
                     
                     gridCardsHtml += `
                         <div class="video-card" onclick="openDualModal(${jsonItem})">
@@ -674,10 +722,7 @@
                             </div>
                             <div class="video-info">
                                 <div class="video-tag">${item.tag}</div>
-                                <div class="video-title editable" contenteditable="true" spellcheck="false"
-                                     data-date="${group.date}" data-idx="${idx}"
-                                     onclick="event.stopPropagation()"
-                                     onblur="saveItemTitle(this)">${formattedTitle}</div>
+                                <div ${titleEditAttrs}>${formattedTitle}</div>
                             </div>
                         </div>
                     `;
@@ -686,8 +731,9 @@
                 section.innerHTML = `
                     <div class="section-header">
                         <span class="date-badge">${dateInfo.formattedFull}</span>
-                        <h2 class="section-title editable" contenteditable="true" spellcheck="false"
-                            data-date="${group.date}" onblur="saveSectionTitle(this)">${group.title}</h2>
+                        <h2 ${isAdmin
+                            ? `class="section-title editable" contenteditable="true" spellcheck="false" data-date="${group.date}" onblur="saveSectionTitle(this)"`
+                            : `class="section-title"`}>${group.title}</h2>
                     </div>
                     <div class="video-grid">${gridCardsHtml}</div>
                 `;
@@ -743,6 +789,7 @@
 
         (async function init() {
             await loadFromServer();
+            applyAdminModeToHeader();
             renderArchive();
         })();
 
