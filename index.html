@@ -829,7 +829,7 @@
         }
         function closeVideoUploadModal() { document.getElementById('videoModalUpload').classList.remove('active'); }
 
-        // 🚀 서브도메인 SSL 에러 방지용 R2 전용 AWS SDK 객체 생성 및 업로드
+        // 🚀 R2 호환성 문제 완벽 해결 업로드 로직
         async function submitNewVideo() {
             const date = document.getElementById('uploadTargetDate').value;
             const tag = document.getElementById('inputVidTag').value.trim();
@@ -846,17 +846,18 @@
             document.getElementById('loadingSpinner').style.display = 'flex';
 
             try {
-                // 서브도메인 뒤섞임 방지를 위해 엔드포인트에 버킷 경로를 포함시키고 s3BucketEndpoint 지정
+                // ConfigError 및 SSL 서브도메인 에러 완벽 해결 S3 인스턴스
                 const customS3 = new AWS.S3({
-                    endpoint: new AWS.Endpoint(`https://6acdc5b002c918c06be9f2a0018f972b.r2.cloudflarestorage.com/${R2_BUCKET_NAME}`),
+                    endpoint: 'https://6acdc5b002c918c06be9f2a0018f972b.r2.cloudflarestorage.com',
                     accessKeyId: R2_ACCESS_KEY_ID,
                     secretAccessKey: R2_SECRET_ACCESS_KEY,
                     signatureVersion: 'v4',
                     region: 'auto',
-                    s3BucketEndpoint: true
+                    s3ForcePathStyle: true
                 });
 
                 const presignedUrl = customS3.getSignedUrl('putObject', {
+                    Bucket: R2_BUCKET_NAME,
                     Key: fileName,
                     ContentType: file.type,
                     Expires: 3600
@@ -903,7 +904,7 @@
             } catch (err) {
                 document.getElementById('loadingSpinner').style.display = 'none';
                 console.error("R2 업로드 최종 실패:", err);
-                alert("Cloudflare R2 업로드 중 오류가 발생했습니다. 콘솔을 확인해 보세요.");
+                alert("Cloudflare R2 업로드 중 오류가 발생했습니다. 개발자 도구 콘솔을 확인해 보세요.");
             }
         }
 
@@ -1035,7 +1036,7 @@
             document.body.style.overflow = 'auto';
         }
 
-        // 🖱️ 상단 Quick Links 영역 드래그 & 휠 가로 스크롤 이벤트 바인딩
+        // 🖱️ 상단 Quick Links 영역 드래그 & 휠 가로 스크롤 이벤트
         function setupQuickLinksScroll() {
             const slider = document.getElementById('quickLinks');
             let isDown = false;
