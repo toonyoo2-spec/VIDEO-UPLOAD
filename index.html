@@ -25,7 +25,14 @@
 
         /* Header */
         header { padding: 3.5rem 2rem 1.5rem; max-width: 1200px; margin: 0 auto; }
-        .header-tag { color: var(--accent-red); font-size: 0.85rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+        
+        .header-tag { 
+            color: var(--accent-red); 
+            font-size: 1.7rem; 
+            font-weight: 800; 
+            letter-spacing: 1px; 
+            text-transform: uppercase; 
+        }
 
         /* Navigation Bar */
         .nav-bar-wrapper {
@@ -91,11 +98,11 @@
         .video-title { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); }
 
         /* ------------------------------------
-           유튜브 UI 숨김 처리 크롭 팝업
+           개선된 듀얼 모달 팝업 (잘림 및 음영 방지)
         ------------------------------------ */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(0, 0, 0, 0.94); backdrop-filter: blur(12px);
+            background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(12px);
             display: none; align-items: center; justify-content: center;
             z-index: 9999; padding: 1rem;
         }
@@ -106,7 +113,7 @@
             border: 1px solid var(--border-color); overflow: hidden;
             display: flex; flex-direction: column;
             width: 95vw; max-width: 1000px;
-            height: 90vh; max-height: 800px;
+            height: 90vh; max-height: 820px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9);
         }
 
@@ -143,21 +150,20 @@
         .left-badge { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.4); }
         .right-badge { background: rgba(59, 130, 246, 0.2); color: var(--accent-blue); border: 1px solid rgba(59, 130, 246, 0.4); }
 
-        /* UI 가림용 스카이라이트 컨테이너 */
+        /* 100% 원본 비율 보장 및 음영 제거 마스킹 컨테이너 */
         .column-media {
             position: relative;
             flex: 1; width: 100%; height: 100%; background: #000;
             overflow: hidden;
         }
 
-        /* iframe을 위아래로 약간 늘려서 상단 타이틀 UI를 상자 밖으로 잘라냄 */
+        /* 크롭 오프셋을 제거하고 100% 꽉 차게 원본 화면 노출 */
         .column-media iframe {
             position: absolute;
-            top: -55px; /* 상단 유튜브 제목 바 영역 잘라내기 */
-            left: 0;
-            width: 100%;
-            height: calc(100% + 110px); /* 잘라낸 만큼 높이 보정 */
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             border: 0;
+            object-fit: contain;
         }
 
         footer { max-width: 1200px; margin: 5rem auto 2rem; padding: 2rem; border-top: 1px solid var(--border-color); color: var(--text-secondary); font-size: 0.85rem; text-align: center; }
@@ -166,7 +172,7 @@
 <body>
 
     <header>
-        <div class="header-tag">// BRAND TEAM MEDIA</div>
+        <div class="header-tag">Socra_브랜드팀</div>
     </header>
 
     <div class="nav-bar-wrapper">
@@ -214,7 +220,7 @@
     </div>
 
     <footer>
-        &copy; 2026 BRAND TEAM MEDIA. ALL RIGHTS RESERVED.
+        &copy; 2026 SOCRA BRAND TEAM. ALL RIGHTS RESERVED.
     </footer>
 
     <script>
@@ -319,7 +325,7 @@
 
         renderArchive();
 
-        // 팝업 오버레이
+        // 팝업 모달 제어
         const modal = document.getElementById('videoModal');
         const modalHeaderTitle = document.getElementById('modalHeaderTitle');
         const leftTitle = document.getElementById('leftTitle');
@@ -332,9 +338,9 @@
             leftTitle.textContent = `INTRO_${item.numKey}`;
             rightTitle.textContent = `INTRO_${item.numKey} 예시영상`;
 
-            // controls=0 & modestbranding=1 옵션을 추가하여 컨트롤바 최소화
-            iframeLeft.src = `https://www.youtube.com/embed/${item.introId}?autoplay=1&controls=0&rel=0&modestbranding=1`;
-            iframeRight.src = `https://www.youtube.com/embed/${item.id}?autoplay=1&controls=0&rel=0&modestbranding=1`;
+            // autoplay=0 (수동 시작) 및 관련 파라미터 적용
+            iframeLeft.src = `https://www.youtube.com/embed/${item.introId}?autoplay=0&rel=0&showinfo=0&autohide=1`;
+            iframeRight.src = `https://www.youtube.com/embed/${item.id}?autoplay=0&rel=0&showinfo=0&autohide=1`;
 
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
