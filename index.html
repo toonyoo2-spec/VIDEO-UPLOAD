@@ -30,7 +30,7 @@
 
         header { padding-top: 2.2rem; padding-bottom: 1.2rem; display: flex; justify-content: space-between; align-items: center; }
         .header-tag { color: var(--accent-red); font-size: 1.8rem; font-weight: 800; letter-spacing: -1px; display: inline-block; }
-        @media (min-width: 768px) { .modal-overlay { padding: 1rem; } .modal-container { width: 97vw; max-width: 1600px; height: 96vh; max-height: none; border-radius: 16px; } }
+        @media (min-width: 768px) { .modal-overlay { padding: 1rem; } .modal-container { width: 90vw; max-width: 1600px; height: 90vh; max-height: none; border-radius: 16px; } }
 
         .btn-admin-action {
             background: var(--accent-red); color: white; border: none; padding: 0.5rem 0.9rem;
@@ -949,17 +949,15 @@ headers: {
             resetProgressUI('fillRight', 'timeRight');
             videoRight.removeEventListener('loadedmetadata', onMainVideoMetadataForModal);
 
-            if (item.isSingle) {
-                modalBodyDual.classList.add('single-mode');
-                leftColumn.style.display = 'none';
-                rightColumn.style.display = 'flex';
-                rightColumnHeader.style.display = 'none';
-                videoRight.src = item.fullUrl;
-                modalContainerEl.classList.add('fit-video');
-                const guessRatio = item.mode === 'portrait' ? 9 / 16 : 16 / 9;
-                sizeSingleModalToRatio(guessRatio);
-                videoRight.addEventListener('loadedmetadata', onMainVideoMetadataForModal);
-            } else {
+if (item.isSingle) {
+    modalBodyDual.classList.add('single-mode');
+    leftColumn.style.display = 'none';
+    rightColumn.style.display = 'flex';
+    rightColumnHeader.style.display = 'none';
+    videoRight.src = item.fullUrl;
+    modalContainerEl.style.width = '';
+    modalContainerEl.style.height = '';
+} else {
                 modalBodyDual.classList.remove('single-mode');
                 leftColumn.style.display = 'flex';
                 rightColumn.style.display = 'flex';
