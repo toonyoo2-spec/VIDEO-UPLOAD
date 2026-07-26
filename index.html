@@ -336,8 +336,29 @@
         // 업로드/삭제 로직은 Cloudflare Worker(r2-presign-worker)가 R2 바인딩으로 대신 처리합니다.
         const WORKER_PRESIGN_URL = "https://r2-presign-worker.kwan-yun.workers.dev";
 
-        const ADMIN_FLAG_KEY = 'socra_admin_flag';
-        let isAdmin = localStorage.getItem(ADMIN_FLAG_KEY) === 'true';
+        const ADMIN_TOKEN_KEY = 'socra_admin_token';
+        const ADMIN_EXP_KEY = 'socra_admin_token_exp';
+        let adminToken = localStorage.getItem(ADMIN_TOKEN_KEY);
+        let isAdmin = !!(adminToken && Number(localStorage.getItem(ADMIN_EXP_KEY)) > Date.now());
+        if (!isAdmin && adminToken) {
+            localStorage.removeItem(ADMIN_TOKEN_KEY);
+            localStorage.removeItem(ADMIN_EXP_KEY);
+            adminToken = null;
+        }
+
+        // 관리자 전용 RPC 호출 공용 헬퍼. 비밀번호 확인은 서버(Postgres) 안에서만 이뤄지고,
+        // 여기서는 로그인 시 발급받은 세션 토큰만 함께 보냅니다.
+        async function callAdminRpc(fnName, params) {
+            return fetch(`${SUPABASE_URL}/rest/v1/rpc/${fnName}`, {
+                method: 'POST',
+                headers: {
+                    'apikey': SUPABASE_ANON_KEY,
+                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ p_token: adminToken, ...params })
+            });
+        }
 
         const defaultProjectsArchive = [
             {
@@ -442,7 +463,9 @@
             if (isAdmin) {
                 if (confirm('관리자 모드를 종료할까요?')) {
                     isAdmin = false;
-                    localStorage.removeItem(ADMIN_FLAG_KEY);
+                    adminToken = null;
+                    localStorage.removeItem(ADMIN_TOKEN_KEY);
+                    localStorage.removeItem(ADMIN_EXP_KEY);
                     applyAdminMode();
                     renderArchive();
                 }
@@ -451,14 +474,22 @@
                 if (!inputPw) return;
 
                 try {
-                    const res = await fetch(`${SUPABASE_URL}/rest/v1/admin_config?password_hash=eq.${encodeURIComponent(inputPw)}&select=*`, {
-                        headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+                    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/admin_login`, {
+                        method: 'POST',
+                        headers: {
+                            'apikey': SUPABASE_ANON_KEY,
+                            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ p_password: inputPw })
                     });
-                    const data = await res.json();
+                    const token = await res.json();
 
-                    if (Array.isArray(data) && data.length > 0) {
+                    if (token) {
                         isAdmin = true;
-                        localStorage.setItem(ADMIN_FLAG_KEY, 'true');
+                        adminToken = token;
+                        localStorage.setItem(ADMIN_TOKEN_KEY, token);
+                        localStorage.setItem(ADMIN_EXP_KEY, String(Date.now() + 12 * 60 * 60 * 1000));
                         applyAdminMode();
                         renderArchive();
                         alert('관리자로 인증되었습니다.');
@@ -701,16 +732,7 @@
             if (!date || !title) return alert('날짜와 제목을 모두 입력해 주세요.');
 
             try {
-                const res = await fetch(`${SUPABASE_URL}/rest/v1/archive_projects`, {
-                    method: 'POST',
-                    headers: {
-                        'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                        'Content-Type': 'application/json',
-                        'Prefer': 'return=minimal'
-                    },
-                    body: JSON.stringify({ date, title })
-                });
+                const res = await callAdminRpc('admin_create_project', { p_date: date, p_title: title });
 
                 if (res.ok) {
                     alert('새 프로젝트가 생성되었습니다!');
@@ -737,18 +759,11 @@
             if (!newTitle) return alert('제목을 입력해주세요.');
 
             try {
-                const url = id && id !== 'undefined'
-                    ? `${SUPABASE_URL}/rest/v1/archive_projects?id=eq.${id}`
-                    : `${SUPABASE_URL}/rest/v1/archive_projects?date=eq.${date}`;
-
-                const res = await fetch(url, {
-                    method: 'PATCH',
-                    headers: {
-                        'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ title: newTitle })
+                const hasId = id && id !== 'undefined';
+                const res = await callAdminRpc('admin_update_project', {
+                    p_id: hasId ? Number(id) : null,
+                    p_date: date,
+                    p_title: newTitle
                 });
 
                 if (res.ok) {
@@ -762,13 +777,10 @@
         async function deleteProject(id, date) {
             if (!confirm('이 프로젝트를 삭제할까요? 관련 동영상 항목도 모두 삭제 권장됩니다.')) return;
             try {
-                const url = id && id !== 'undefined'
-                    ? `${SUPABASE_URL}/rest/v1/archive_projects?id=eq.${id}`
-                    : `${SUPABASE_URL}/rest/v1/archive_projects?date=eq.${date}`;
-
-                const res = await fetch(url, {
-                    method: 'DELETE',
-                    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+                const hasId = id && id !== 'undefined';
+                const res = await callAdminRpc('admin_delete_project', {
+                    p_id: hasId ? Number(id) : null,
+                    p_date: date
                 });
 
                 if (res.ok) {
@@ -796,14 +808,11 @@
             if (!newTag || !newTitle) return alert('태그와 제목을 모두 입력해 주세요.');
 
             try {
-                const res = await fetch(`${SUPABASE_URL}/rest/v1/archive_videos?id=eq.${vidId}`, {
-                    method: 'PATCH',
-                    headers: {
-                        'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ tag: newTag, title: newTitle, mode: newMode })
+                const res = await callAdminRpc('admin_update_video', {
+                    p_id: Number(vidId),
+                    p_tag: newTag,
+                    p_title: newTitle,
+                    p_mode: newMode
                 });
 
                 if (res.ok) {
@@ -832,10 +841,7 @@
                     });
                 }
 
-                const res = await fetch(`${SUPABASE_URL}/rest/v1/archive_videos?id=eq.${vidId}`, {
-                    method: 'DELETE',
-                    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
-                });
+                const res = await callAdminRpc('admin_delete_video', { p_id: Number(vidId) });
 
                 if (res.ok) {
                     alert('영상이 삭제되었습니다.');
@@ -878,15 +884,12 @@
 
                 const fullUrl = R2_PUBLIC_DOMAIN + fileName;
 
-                const dbRes = await fetch(`${SUPABASE_URL}/rest/v1/archive_videos`, {
-                    method: 'POST',
-                    headers: {
-                        'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                        'Content-Type': 'application/json',
-                        'Prefer': 'return=minimal'
-                    },
-                    body: JSON.stringify({ project_date: date, tag, title, is_single: true, full_url: fullUrl, mode })
+                const dbRes = await callAdminRpc('admin_create_video', {
+                    p_project_date: date,
+                    p_tag: tag,
+                    p_title: title,
+                    p_mode: mode,
+                    p_full_url: fullUrl
                 });
 
                 document.getElementById('loadingSpinner').style.display = 'none';
