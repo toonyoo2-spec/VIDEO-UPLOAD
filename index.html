@@ -369,6 +369,7 @@
             <div style="flex: 1; display: flex; align-items: center; justify-content: center; background: #000; overflow: auto; padding: 1rem;">
                 <img id="previewImage" style="max-width: 100%; max-height: 100%; object-fit: contain; display: none;">
                 <video id="previewVideo" controls style="max-width: 100%; max-height: 100%; display: none;"></video>
+                <iframe id="previewPdf" style="width: 100%; height: 100%; border: none; display: none;"></iframe>
                 <div id="previewUnsupported" style="color: var(--text-secondary); display: none;">이 파일 형식은 미리보기를 지원하지 않습니다.</div>
             </div>
         </div>
@@ -1218,16 +1219,19 @@
             const ext = fileName.split('.').pop().toLowerCase();
             const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'];
             const videoExts = ['mp4', 'webm', 'ogg', 'mov'];
+            const pdfExts = ['pdf'];
 
             const modal = document.getElementById('filePreviewModal');
             const previewFileName = document.getElementById('previewFileName');
             const previewImage = document.getElementById('previewImage');
             const previewVideo = document.getElementById('previewVideo');
+            const previewPdf = document.getElementById('previewPdf');
             const previewUnsupported = document.getElementById('previewUnsupported');
 
             previewFileName.textContent = fileName;
             previewImage.style.display = 'none';
             previewVideo.style.display = 'none';
+            previewPdf.style.display = 'none';
             previewUnsupported.style.display = 'none';
 
             if (imageExts.includes(ext)) {
@@ -1236,6 +1240,9 @@
             } else if (videoExts.includes(ext)) {
                 previewVideo.src = url;
                 previewVideo.style.display = 'block';
+            } else if (pdfExts.includes(ext)) {
+                previewPdf.src = url;
+                previewPdf.style.display = 'block';
             } else {
                 previewUnsupported.style.display = 'block';
             }
@@ -1248,10 +1255,12 @@
             if (event && event.target.id !== 'filePreviewModal') return;
             const modal = document.getElementById('filePreviewModal');
             const previewVideo = document.getElementById('previewVideo');
+            const previewPdf = document.getElementById('previewPdf');
 
             modal.classList.remove('active');
             previewVideo.pause();
             previewVideo.src = '';
+            previewPdf.src = '';
             document.body.style.overflow = 'auto';
         }
 
