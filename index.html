@@ -747,6 +747,7 @@
                         <div class="video-card" onclick="openDualModal(${jsonItem})">
                             <div class="thumb-cover ${item.mode || 'landscape'}">
                                 <video src="${thumbSource}#t=0.1" class="thumb-video" preload="metadata" muted playsinline
+                                    controlsList="nodownload" disablePictureInPicture oncontextmenu="return false;"
                                     onloadedmetadata="if(this.videoWidth && this.videoHeight){ this.closest('.thumb-cover').style.aspectRatio = (this.videoWidth / this.videoHeight); }"></video>
                                 <div class="play-btn"></div>
                             </div>
