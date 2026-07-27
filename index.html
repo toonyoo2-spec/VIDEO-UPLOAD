@@ -1112,15 +1112,18 @@
             const archiveContainer = document.getElementById('archiveContainer');
             const libraryContainer = document.getElementById('libraryContainer');
             const navBarWrapper = document.querySelector('.nav-bar-wrapper');
+            const addProjBtn = document.getElementById('btnAddProject');
 
             if (tabName === 'archive') {
                 archiveContainer.style.display = 'block';
                 libraryContainer.style.display = 'none';
                 navBarWrapper.style.display = 'block';
+                if (isAdmin) addProjBtn.style.display = 'block';
             } else if (tabName === 'library') {
                 archiveContainer.style.display = 'none';
                 libraryContainer.style.display = 'block';
                 navBarWrapper.style.display = 'none';
+                addProjBtn.style.display = 'none';
                 loadLibraryFiles();
             }
         }
