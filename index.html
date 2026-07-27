@@ -583,7 +583,7 @@
                         isAdmin = true;
                         adminToken = token;
                         localStorage.setItem(ADMIN_TOKEN_KEY, token);
-                        localStorage.setItem(ADMIN_EXP_KEY, String(Date.now() + 12 * 60 * 60 * 1000));
+                        localStorage.setItem(ADMIN_EXP_KEY, String(Date.now() + 20 * 60 * 1000)); // 20분
                         applyAdminMode();
                         renderArchive();
                         alert('관리자로 인증되었습니다.');
