@@ -573,6 +573,7 @@
                     localStorage.removeItem(ADMIN_EXP_KEY);
                     applyAdminMode();
                     renderArchive();
+                    if (currentMainTab === 'library') loadLibraryFiles();
                 }
             } else {
                 const inputPw = prompt('관리자 비밀번호를 입력하세요');
@@ -597,6 +598,7 @@
                         localStorage.setItem(ADMIN_EXP_KEY, String(Date.now() + 20 * 60 * 1000)); // 20분
                         applyAdminMode();
                         renderArchive();
+                        if (currentMainTab === 'library') loadLibraryFiles();
                         alert('관리자로 인증되었습니다.');
                     } else {
                         alert('비밀번호가 틀렸습니다.');
