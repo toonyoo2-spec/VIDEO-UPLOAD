@@ -160,7 +160,7 @@
         /* Main Menu Navigation */
         .main-menu-wrapper { background: var(--card-bg); border-bottom: 1px solid var(--border-color); padding: 0.8rem 0; margin-bottom: 1rem; }
         .main-menu-container { display: flex; gap: 0.5rem; }
-        .main-menu-tab { background: transparent; border: none; color: var(--text-secondary); font-size: 1rem; font-weight: 700; padding: 0.5rem 1rem; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; }
+        .main-menu-tab { background: transparent; border: none; color: var(--text-secondary); font-size: 1rem; font-weight: 700; padding: 0.5rem 1rem; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; text-decoration: none; display: inline-block; }
         .main-menu-tab.active { color: var(--accent-red); border-bottom-color: var(--accent-red); }
         .main-menu-tab:hover { color: var(--text-primary); }
 
@@ -191,8 +191,8 @@
     <!-- Main Menu Navigation -->
     <div class="main-menu-wrapper">
         <div class="main-menu-container grid-layout-align">
-            <button class="main-menu-tab active" onclick="switchMainTab('archive')">아카이브</button>
-            <button class="main-menu-tab" onclick="switchMainTab('library')">자료실</button>
+            <a href="#archive" class="main-menu-tab active" onclick="switchMainTab('archive')">아카이브</a>
+            <a href="#library" class="main-menu-tab" onclick="switchMainTab('library')">자료실</a>
         </div>
     </div>
 
@@ -1145,7 +1145,10 @@
             currentMainTab = tabName;
             const tabs = document.querySelectorAll('.main-menu-tab');
             tabs.forEach(tab => tab.classList.remove('active'));
-            event.target.classList.add('active');
+
+            // 현재 탭 활성화
+            const activeTab = document.querySelector(`a[href="#${tabName}"]`);
+            if (activeTab) activeTab.classList.add('active');
 
             const archiveContainer = document.getElementById('archiveContainer');
             const libraryContainer = document.getElementById('libraryContainer');
@@ -1170,6 +1173,18 @@
                 loadLibraryFiles();
             }
         }
+
+        // URL 해시 변경 감지
+        function handleHashChange() {
+            const hash = window.location.hash.slice(1) || 'archive';
+            if (hash === 'archive' || hash === 'library') {
+                switchMainTab(hash);
+            }
+        }
+
+        // 페이지 로드 시 URL 해시에 따라 탭 설정
+        window.addEventListener('hashchange', handleHashChange);
+        window.addEventListener('load', handleHashChange);
 
         // Library Functions
         async function loadLibraryFiles() {
