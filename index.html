@@ -1252,10 +1252,12 @@
         }
 
         function previewFile(url, fileName) {
-            const ext = fileName.split('.').pop().toLowerCase();
+            const ext = fileName.toLowerCase().split('.').pop();
             const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'];
             const videoExts = ['mp4', 'webm', 'ogg', 'mov'];
             const pdfExts = ['pdf'];
+
+            console.log('Preview file:', fileName, 'Extension:', ext); // 디버깅
 
             const modal = document.getElementById('filePreviewModal');
             const previewFileName = document.getElementById('previewFileName');
@@ -1277,10 +1279,12 @@
                 previewVideo.src = url;
                 previewVideo.style.display = 'block';
             } else if (pdfExts.includes(ext)) {
-                previewPdf.src = url;
+                previewPdf.src = url + '#toolbar=1';
                 previewPdf.style.display = 'block';
+                console.log('Loading PDF:', url); // 디버깅
             } else {
                 previewUnsupported.style.display = 'block';
+                console.log('Unsupported file type:', ext); // 디버깅
             }
 
             modal.classList.add('active');
