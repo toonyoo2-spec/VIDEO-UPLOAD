@@ -399,7 +399,7 @@
                     </div>
                     <div class="column-media" onclick="togglePlay('videoLeft', 'overlayLeft')">
                         <div id="overlayLeft" class="overlay-play-btn"></div>
-                        <video id="videoLeft" preload="auto" playsinline></video>
+                        <video id="videoLeft" preload="auto" playsinline controlsList="nodownload" disablePictureInPicture oncontextmenu="return false;"></video>
                         <div class="video-control-bar" onclick="event.stopPropagation();">
                             <div class="progress-container" onclick="seekVideo(event, 'videoLeft')">
                                 <div class="progress-bg"><div id="fillLeft" class="progress-fill"></div></div>
@@ -416,7 +416,7 @@
                     </div>
                     <div class="column-media" onclick="togglePlay('videoRight', 'overlayRight')">
                         <div id="overlayRight" class="overlay-play-btn"></div>
-                        <video id="videoRight" preload="auto" playsinline></video>
+                        <video id="videoRight" preload="auto" playsinline controlsList="nodownload" disablePictureInPicture oncontextmenu="return false;"></video>
                         <div class="video-control-bar" onclick="event.stopPropagation();">
                             <div class="progress-container" onclick="seekVideo(event, 'videoRight')">
                                 <div class="progress-bg"><div id="fillRight" class="progress-fill"></div></div>
