@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Socra Brandteam Archive</title>
+    <title>Socra Brandteam</title>
 
     <style>
         :root {
@@ -167,7 +167,7 @@
         /* Library Styles */
         .library-header { display: flex; justify-content: flex-start; align-items: center; margin-bottom: 1.5rem; }
         .file-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
-        @media (min-width: 768px) { .file-list { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.5rem; } }
+        @media (min-width: 768px) { .file-list { grid-template-columns: repeat(5, 1fr); gap: 1.5rem; } }
 
         .file-item { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 1rem; display: flex; flex-direction: column; transition: border-color 0.2s, transform 0.2s; }
         .file-item:hover { border-color: var(--border-hover); transform: translateY(-2px); }
@@ -222,7 +222,7 @@
 
     <!-- Library Page -->
     <main id="libraryContainer" class="grid-layout-align" style="display: none;">
-        <div style="max-width: 900px; margin: 2rem auto;">
+        <div style="margin-top: 1.5rem;">
             <div id="libraryHeaderAdmin" class="library-header" style="display: none;">
                 <button class="btn-admin-action" style="display: inline-block;" onclick="openFileUploadModal()">+ 파일 업로드</button>
             </div>
@@ -1258,10 +1258,15 @@
             }).join('');
         }
 
+        function getFileExt(name) {
+            const clean = name.split('?')[0].split('#')[0];
+            const lastDotIndex = clean.lastIndexOf('.');
+            return lastDotIndex > -1 ? clean.substring(lastDotIndex + 1).toLowerCase() : '';
+        }
+
         function previewFile(url, fileName) {
-            // 마지막 점(.) 이후를 확장자로 추출
-            const lastDotIndex = fileName.lastIndexOf('.');
-            const ext = lastDotIndex > -1 ? fileName.substring(lastDotIndex + 1).toLowerCase() : '';
+            // 표시 이름에 확장자가 없으면 파일 URL에서 추출 시도
+            const ext = getFileExt(fileName) || getFileExt(url);
 
             const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'];
             const videoExts = ['mp4', 'webm', 'ogg', 'mov'];
@@ -1418,7 +1423,10 @@
             }
 
             const file = fileInput.files[0];
-            const fileName = fileNameInput;
+            const realExt = getFileExt(file.name);
+            const fileName = (realExt && getFileExt(fileNameInput) !== realExt)
+                ? `${fileNameInput}.${realExt}`
+                : fileNameInput;
 
             document.getElementById('loadingSpinner').style.display = 'flex';
             document.getElementById('spinnerText').textContent = '⏳ 파일 업로드 중...';
