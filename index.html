@@ -1118,6 +1118,8 @@
 
         videoLeft.addEventListener('timeupdate', () => updateProgress(videoLeft, 'fillLeft', 'timeLeft'));
         videoRight.addEventListener('timeupdate', () => updateProgress(videoRight, 'fillRight', 'timeRight'));
+        videoLeft.addEventListener('loadedmetadata', () => updateProgress(videoLeft, 'fillLeft', 'timeLeft'));
+        videoRight.addEventListener('loadedmetadata', () => updateProgress(videoRight, 'fillRight', 'timeRight'));
         videoLeft.addEventListener('ended', () => { overlayLeft.classList.remove('hidden'); });
         videoRight.addEventListener('ended', () => { overlayRight.classList.remove('hidden'); });
 
