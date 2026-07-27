@@ -323,8 +323,22 @@
                     <option value="portrait">세로 숏폼 (9:16)</option>
                 </select>
             </div>
+            <div class="admin-input-group" style="flex-direction: row; align-items: center; gap: 0.5rem;">
+                <input type="checkbox" id="checkVidDual" onchange="toggleDualUploadFields()" style="width: auto;">
+                <label style="margin: 0;">듀얼 비교 모드 (INTRO + FULL 영상 2개 업로드)</label>
+            </div>
+            <div id="dualIntroFields" style="display: none; flex-direction: column; gap: 0.6rem;">
+                <div class="admin-input-group">
+                    <label>왼쪽(인트로) 제목</label>
+                    <input type="text" id="inputVidLeftTitle" class="admin-input" placeholder="INTRO_02">
+                </div>
+                <div class="admin-input-group">
+                    <label>인트로(왼쪽) 영상 파일 (.mp4)</label>
+                    <input type="file" id="inputFileVideoIntro" class="admin-input" accept="video/mp4,video/*">
+                </div>
+            </div>
             <div class="admin-input-group">
-                <label>영상 파일 (.mp4)</label>
+                <label id="labelFileVideoFull">영상 파일 (.mp4)</label>
                 <input type="file" id="inputFileVideo" class="admin-input" accept="video/mp4,video/*">
             </div>
             <div class="admin-btn-row">
@@ -970,9 +984,33 @@
 
         function openVideoUploadModal(date) {
             document.getElementById('uploadTargetDate').value = date;
+            document.getElementById('checkVidDual').checked = false;
+            document.getElementById('inputVidLeftTitle').value = '';
+            document.getElementById('inputFileVideoIntro').value = '';
+            toggleDualUploadFields();
             document.getElementById('videoModalUpload').classList.add('active');
         }
         function closeVideoUploadModal() { document.getElementById('videoModalUpload').classList.remove('active'); }
+
+        function toggleDualUploadFields() {
+            const isDual = document.getElementById('checkVidDual').checked;
+            document.getElementById('dualIntroFields').style.display = isDual ? 'flex' : 'none';
+            document.getElementById('labelFileVideoFull').textContent = isDual ? '메인(오른쪽/FULL) 영상 파일 (.mp4)' : '영상 파일 (.mp4)';
+        }
+
+        async function uploadVideoFile(file) {
+            const uploadRes = await fetch(WORKER_PRESIGN_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': file.type,
+                    'X-File-Name': encodeURIComponent(file.name)
+                },
+                body: file
+            });
+            if (!uploadRes.ok) throw new Error(`업로드 실패: ${uploadRes.status}`);
+            const { fileName } = await uploadRes.json();
+            return R2_PUBLIC_DOMAIN + fileName;
+        }
 
         // 🚀 Cloudflare Worker(*.workers.dev)로 파일을 직접 전송 — r2.cloudflarestorage.com은 거치지 않음
         // (시크릿 키는 이 파일에 존재하지 않으며, Worker 안에서 R2 바인딩으로만 처리됩니다)
@@ -982,32 +1020,27 @@
             const title = document.getElementById('inputVidTitle').value.trim();
             const mode = document.getElementById('selectVidMode').value;
             const fileInput = document.getElementById('inputFileVideo');
+            const isDual = document.getElementById('checkVidDual').checked;
+            const leftTitle = document.getElementById('inputVidLeftTitle').value.trim();
+            const introFileInput = document.getElementById('inputFileVideoIntro');
 
             if (!tag || !title || fileInput.files.length === 0) return alert('모든 정보와 파일 선택을 완료해주세요.');
+            if (isDual && (!leftTitle || introFileInput.files.length === 0)) return alert('듀얼 비교 모드에서는 왼쪽(인트로) 제목과 인트로 영상 파일도 필요합니다.');
 
-            const file = fileInput.files[0];
             document.getElementById('loadingSpinner').style.display = 'flex';
 
             try {
-                const uploadRes = await fetch(WORKER_PRESIGN_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': file.type,
-                        'X-File-Name': encodeURIComponent(file.name)
-                    },
-                    body: file
-                });
-                if (!uploadRes.ok) throw new Error(`업로드 실패: ${uploadRes.status}`);
-                const { fileName } = await uploadRes.json();
-
-                const fullUrl = R2_PUBLIC_DOMAIN + fileName;
+                const fullUrl = await uploadVideoFile(fileInput.files[0]);
+                const introUrl = isDual ? await uploadVideoFile(introFileInput.files[0]) : null;
 
                 const dbRes = await callAdminRpc('admin_create_video', {
                     p_project_date: date,
                     p_tag: tag,
                     p_title: title,
                     p_mode: mode,
-                    p_full_url: fullUrl
+                    p_full_url: fullUrl,
+                    p_intro_url: introUrl,
+                    p_left_title: isDual ? leftTitle : null
                 });
 
                 document.getElementById('loadingSpinner').style.display = 'none';
