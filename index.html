@@ -156,14 +156,45 @@
         .top-btn { position: fixed; bottom: 1.5rem; right: 1rem; width: 40px; height: 40px; background: #18181b; border: 1px solid var(--border-hover); color: var(--text-primary); border-radius: 50%; font-size: 0.7rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 99; }
 
         #loadingSpinner { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); color: white; z-index: 20000; align-items: center; justify-content: center; font-weight: 700; flex-direction: column; gap: 1rem; text-align: center; padding: 1rem; }
+
+        /* Main Menu Navigation */
+        .main-menu-wrapper { background: var(--card-bg); border-bottom: 1px solid var(--border-color); padding: 0.8rem 0; margin-bottom: 1rem; }
+        .main-menu-container { display: flex; gap: 0.5rem; }
+        .main-menu-tab { background: transparent; border: none; color: var(--text-secondary); font-size: 1rem; font-weight: 700; padding: 0.5rem 1rem; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; }
+        .main-menu-tab.active { color: var(--accent-red); border-bottom-color: var(--accent-red); }
+        .main-menu-tab:hover { color: var(--text-primary); }
+
+        /* Library Styles */
+        .library-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--border-color); }
+        .file-list { display: flex; flex-direction: column; gap: 0.8rem; }
+        .file-item { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 1rem; display: flex; justify-content: space-between; align-items: center; transition: border-color 0.2s; }
+        .file-item:hover { border-color: var(--border-hover); }
+        .file-info { flex: 1; }
+        .file-name { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.3rem; }
+        .file-meta { font-size: 0.75rem; color: var(--text-secondary); }
+        .file-actions { display: flex; gap: 0.5rem; }
+        .btn-download { background: var(--accent-blue); color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 700; transition: background 0.2s; }
+        .btn-download:hover { background: #2563eb; }
+        .btn-delete-file { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.4); padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 700; transition: all 0.2s; }
+        .btn-delete-file:hover { background: var(--accent-red); color: white; }
     </style>
 </head>
 <body>
 
     <header class="grid-layout-align">
         <div class="header-tag" id="mainHeaderTitle">Socra Brandteam Archive</div>
-        <button id="btnAddProject" class="btn-admin-action" onclick="openProjectModal()">+ 새 프로젝트</button>
+        <div style="display: flex; gap: 0.8rem; align-items: center;">
+            <button id="btnAddProject" class="btn-admin-action" onclick="openProjectModal()">+ 새 프로젝트</button>
+        </div>
     </header>
+
+    <!-- Main Menu Navigation -->
+    <div class="main-menu-wrapper">
+        <div class="main-menu-container grid-layout-align">
+            <button class="main-menu-tab active" onclick="switchMainTab('archive')">아카이브</button>
+            <button class="main-menu-tab" onclick="switchMainTab('library')">자료실</button>
+        </div>
+    </div>
 
     <div class="nav-bar-wrapper">
         <div class="nav-bar-container grid-layout-align">
@@ -176,7 +207,19 @@
         </div>
     </div>
 
-    <main id="archiveContainer" class="grid-layout-align"></main>
+    <!-- Archive Page -->
+    <main id="archiveContainer" class="grid-layout-align" style="display: block;"></main>
+
+    <!-- Library Page -->
+    <main id="libraryContainer" class="grid-layout-align" style="display: none;">
+        <div style="max-width: 900px; margin: 2rem auto;">
+            <div class="library-header">
+                <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 1rem;">자료실</h2>
+                <button id="btnUploadFile" class="btn-admin-action" style="display: none;" onclick="openFileUploadModal()">+ 파일 업로드</button>
+            </div>
+            <div id="fileListContainer" class="file-list"></div>
+        </div>
+    </main>
 
     <button class="top-btn" onclick="scrollToTop()">TOP ▲</button>
 
@@ -282,6 +325,25 @@
         </div>
     </div>
 
+    <!-- File Upload Modal -->
+    <div id="fileUploadModal" class="admin-modal-overlay">
+        <div class="admin-modal-box">
+            <div class="admin-modal-title">파일 업로드</div>
+            <div class="admin-input-group">
+                <label>파일 이름 (확장자 포함)</label>
+                <input type="text" id="inputFileName" class="admin-input" placeholder="예: 문서.pdf">
+            </div>
+            <div class="admin-input-group">
+                <label>파일 선택</label>
+                <input type="file" id="inputLibraryFile" class="admin-input">
+            </div>
+            <div class="admin-btn-row">
+                <button class="btn-cancel" onclick="closeFileUploadModal()">취소</button>
+                <button class="btn-submit" onclick="submitFileUpload()">업로드</button>
+            </div>
+        </div>
+    </div>
+
     <div id="videoModal" class="modal-overlay" onclick="closeVideo(event)">
         <div class="modal-container">
             <div class="modal-header">
@@ -345,6 +407,8 @@
             localStorage.removeItem(ADMIN_EXP_KEY);
             adminToken = null;
         }
+
+        let currentMainTab = 'archive'; // 'archive' or 'library'
 
         // 관리자 전용 RPC 호출 공용 헬퍼. 비밀번호 확인은 서버(Postgres) 안에서만 이뤄지고,
         // 여기서는 로그인 시 발급받은 세션 토큰만 함께 보냅니다.
@@ -506,12 +570,15 @@
         function applyAdminMode() {
             const toggleBtn = document.getElementById('adminToggleBtn');
             const addProjBtn = document.getElementById('btnAddProject');
+            const uploadFileBtn = document.getElementById('btnUploadFile');
             if (isAdmin) {
                 toggleBtn.textContent = '관리자 모드 (로그아웃)';
                 addProjBtn.style.display = 'block';
+                if (uploadFileBtn) uploadFileBtn.style.display = 'block';
             } else {
                 toggleBtn.textContent = '관리자 로그인';
                 addProjBtn.style.display = 'none';
+                if (uploadFileBtn) uploadFileBtn.style.display = 'none';
             }
         }
 
@@ -1033,6 +1100,183 @@
                     slider.scrollLeft += e.deltaY;
                 }
             }, { passive: false });
+        }
+
+        // Main Tab Switching
+        function switchMainTab(tabName) {
+            currentMainTab = tabName;
+            const tabs = document.querySelectorAll('.main-menu-tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const archiveContainer = document.getElementById('archiveContainer');
+            const libraryContainer = document.getElementById('libraryContainer');
+            const navBarWrapper = document.querySelector('.nav-bar-wrapper');
+
+            if (tabName === 'archive') {
+                archiveContainer.style.display = 'block';
+                libraryContainer.style.display = 'none';
+                navBarWrapper.style.display = 'block';
+            } else if (tabName === 'library') {
+                archiveContainer.style.display = 'none';
+                libraryContainer.style.display = 'block';
+                navBarWrapper.style.display = 'none';
+                loadLibraryFiles();
+            }
+        }
+
+        // Library Functions
+        async function loadLibraryFiles() {
+            try {
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/library_files?select=*&order=created_at.desc`, {
+                    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+                });
+                const files = await res.json();
+                renderLibraryFiles(files);
+            } catch (e) {
+                console.error("파일 로드 실패:", e);
+                renderLibraryFiles([]);
+            }
+        }
+
+        function renderLibraryFiles(files) {
+            const container = document.getElementById('fileListContainer');
+            if (!Array.isArray(files) || files.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 2rem;">등록된 파일이 없습니다.</div>';
+                return;
+            }
+
+            container.innerHTML = files.map(file => {
+                const fileSize = file.file_size ? formatFileSize(file.file_size) : '';
+                const uploadDate = file.created_at ? new Date(file.created_at).toLocaleDateString('ko-KR') : '';
+
+                const deleteBtn = isAdmin ? `<button class="btn-delete-file" onclick="deleteLibraryFile(${file.id}, '${file.file_url}')">삭제</button>` : '';
+
+                return `
+                    <div class="file-item">
+                        <div class="file-info">
+                            <div class="file-name">${file.file_name}</div>
+                            <div class="file-meta">${fileSize} · ${uploadDate}</div>
+                        </div>
+                        <div class="file-actions">
+                            <button class="btn-download" onclick="downloadFile('${file.file_url}', '${file.file_name}')">다운로드</button>
+                            ${deleteBtn}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function formatFileSize(bytes) {
+            if (!bytes) return '';
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+            return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB';
+        }
+
+        function downloadFile(url, fileName) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            a.target = '_blank';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        async function deleteLibraryFile(fileId, fileUrl) {
+            if (!confirm('이 파일을 삭제하시겠습니까?')) return;
+
+            try {
+                // Delete from R2
+                if (fileUrl && fileUrl.startsWith(R2_PUBLIC_DOMAIN)) {
+                    const fileName = decodeURIComponent(fileUrl.replace(R2_PUBLIC_DOMAIN, ''));
+                    await fetch(WORKER_PRESIGN_URL, {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ fileName })
+                    });
+                }
+
+                // Delete from DB
+                const res = await callAdminRpc('admin_delete_library_file', { p_id: Number(fileId) });
+
+                if (res.ok) {
+                    alert('파일이 삭제되었습니다.');
+                    loadLibraryFiles();
+                } else {
+                    alert('삭제 실패');
+                }
+            } catch (e) {
+                console.error(e);
+                alert('삭제 중 오류가 발생했습니다.');
+            }
+        }
+
+        function openFileUploadModal() {
+            document.getElementById('fileUploadModal').classList.add('active');
+        }
+
+        function closeFileUploadModal() {
+            document.getElementById('fileUploadModal').classList.remove('active');
+            document.getElementById('inputFileName').value = '';
+            document.getElementById('inputLibraryFile').value = '';
+        }
+
+        async function submitFileUpload() {
+            const fileNameInput = document.getElementById('inputFileName').value.trim();
+            const fileInput = document.getElementById('inputLibraryFile');
+
+            if (!fileNameInput || fileInput.files.length === 0) {
+                return alert('파일 이름과 파일을 모두 선택해주세요.');
+            }
+
+            const file = fileInput.files[0];
+            const fileName = fileNameInput;
+
+            document.getElementById('loadingSpinner').style.display = 'flex';
+            document.getElementById('spinnerText').textContent = '⏳ 파일 업로드 중...';
+
+            try {
+                // Upload to R2
+                const uploadRes = await fetch(WORKER_PRESIGN_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': file.type || 'application/octet-stream',
+                        'X-File-Name': encodeURIComponent(fileName)
+                    },
+                    body: file
+                });
+
+                if (!uploadRes.ok) throw new Error(`업로드 실패: ${uploadRes.status}`);
+                const { fileName: uploadedFileName } = await uploadRes.json();
+
+                const fileUrl = R2_PUBLIC_DOMAIN + uploadedFileName;
+
+                // Save to DB
+                const dbRes = await callAdminRpc('admin_create_library_file', {
+                    p_file_name: fileName,
+                    p_file_url: fileUrl,
+                    p_file_size: file.size
+                });
+
+                document.getElementById('loadingSpinner').style.display = 'none';
+                document.getElementById('spinnerText').textContent = '⏳ Cloudflare R2 스토리지로 영상 업로드 중...';
+
+                if (dbRes.ok) {
+                    alert('파일이 업로드되었습니다!');
+                    closeFileUploadModal();
+                    loadLibraryFiles();
+                } else {
+                    alert('DB 저장 실패');
+                }
+            } catch (err) {
+                document.getElementById('loadingSpinner').style.display = 'none';
+                document.getElementById('spinnerText').textContent = '⏳ Cloudflare R2 스토리지로 영상 업로드 중...';
+                console.error("업로드 실패:", err);
+                alert("업로드 중 오류가 발생했습니다: " + err.message);
+            }
         }
 
         (async function init() {
