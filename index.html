@@ -1229,9 +1229,13 @@
                 else if (ext === 'pdf') icon = '📕';
                 else if (['zip', 'rar', '7z'].includes(ext)) icon = '📦';
 
-                const previewBtn = `<button class="btn-preview" onclick="previewFile('${file.file_url}', '${file.file_name.replace(/'/g, "\\'")}')">미리보기</button>`;
-                const editBtn = isAdmin ? `<button class="btn-edit-file" onclick="openFileEditModal(${file.id}, '${file.file_name.replace(/'/g, "\\'")}')">수정</button>` : '';
-                const deleteBtn = isAdmin ? `<button class="btn-delete-file" onclick="deleteLibraryFile(${file.id}, '${file.file_url}')">삭제</button>` : '';
+                // 파일 이름과 URL을 안전하게 이스케이프
+                const safeFileName = file.file_name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                const safeUrl = file.file_url.replace(/'/g, "\\'");
+
+                const previewBtn = `<button class="btn-preview" onclick='previewFile("${safeUrl}", "${safeFileName}")'>미리보기</button>`;
+                const editBtn = isAdmin ? `<button class="btn-edit-file" onclick='openFileEditModal(${file.id}, "${safeFileName}")'>수정</button>` : '';
+                const deleteBtn = isAdmin ? `<button class="btn-delete-file" onclick='deleteLibraryFile(${file.id}, "${safeUrl}")'>삭제</button>` : '';
 
                 return `
                     <div class="file-item">
@@ -1242,7 +1246,7 @@
                         </div>
                         <div class="file-actions">
                             ${previewBtn}
-                            <button class="btn-download" onclick="downloadFile('${file.file_url}', '${file.file_name}')">다운로드</button>
+                            <button class="btn-download" onclick='downloadFile("${safeUrl}", "${safeFileName}")'>다운로드</button>
                             ${editBtn}
                             ${deleteBtn}
                         </div>
