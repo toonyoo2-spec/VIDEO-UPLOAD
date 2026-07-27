@@ -282,6 +282,8 @@
         <div class="admin-modal-box">
             <div class="admin-modal-title">영상 시안 정보 수정</div>
             <input type="hidden" id="editVidTargetId">
+            <input type="hidden" id="editVidCurrentFullUrl">
+            <input type="hidden" id="editVidCurrentIntroUrl">
             <div class="admin-input-group">
                 <label>태그 (예: OPTION 01)</label>
                 <input type="text" id="editVidTagInput" class="admin-input">
@@ -296,6 +298,24 @@
                     <option value="landscape">가로 영상 (16:9)</option>
                     <option value="portrait">세로 숏폼 (9:16)</option>
                 </select>
+            </div>
+            <div class="admin-input-group" style="flex-direction: row; align-items: center; gap: 0.5rem;">
+                <input type="checkbox" id="editVidDualCheck" onchange="toggleEditDualFields()" style="width: auto;">
+                <label style="margin: 0;">듀얼 비교 모드 (INTRO + FULL)</label>
+            </div>
+            <div id="editDualIntroFields" style="display: none; flex-direction: column; gap: 0.6rem;">
+                <div class="admin-input-group">
+                    <label>왼쪽(인트로) 제목</label>
+                    <input type="text" id="editVidLeftTitleInput" class="admin-input">
+                </div>
+                <div class="admin-input-group">
+                    <label>인트로(왼쪽) 영상 교체 (선택, 비워두면 기존 파일 유지)</label>
+                    <input type="file" id="editFileVideoIntro" class="admin-input" accept="video/mp4,video/*">
+                </div>
+            </div>
+            <div class="admin-input-group">
+                <label id="editLabelFileVideoFull">영상 파일 교체 (선택, 비워두면 기존 파일 유지)</label>
+                <input type="file" id="editFileVideoFull" class="admin-input" accept="video/mp4,video/*">
             </div>
             <div class="admin-btn-row">
                 <button class="btn-cancel" onclick="closeVideoEditModal()">취소</button>
@@ -748,7 +768,7 @@
 
                     const canEdit = isAdmin && item.id;
                     const editClickAttr = canEdit
-                        ? `onclick="event.stopPropagation(); openVideoEditModal(${item.id}, '${item.tag.replace(/'/g, "\\'")}', '${item.title.replace(/'/g, "\\'")}', '${item.mode || 'landscape'}')"`
+                        ? `onclick="event.stopPropagation(); openVideoEditModal(${jsonItem})"`
                         : '';
 
                     const vidAdminBtnsHtml = canEdit ? `
@@ -922,37 +942,99 @@
             } catch(e) { console.error(e); }
         }
 
-        function openVideoEditModal(vidId, currentTag, currentTitle, currentMode) {
-            document.getElementById('editVidTargetId').value = vidId;
-            document.getElementById('editVidTagInput').value = currentTag;
-            document.getElementById('editVidTitleInput').value = currentTitle;
-            document.getElementById('editVidModeSelect').value = currentMode;
+        function openVideoEditModal(item) {
+            document.getElementById('editVidTargetId').value = item.id;
+            document.getElementById('editVidTagInput').value = item.tag;
+            document.getElementById('editVidTitleInput').value = item.title;
+            document.getElementById('editVidModeSelect').value = item.mode || 'landscape';
+            document.getElementById('editVidCurrentFullUrl').value = item.fullUrl || '';
+            document.getElementById('editVidCurrentIntroUrl').value = item.introUrl || '';
+            document.getElementById('editVidDualCheck').checked = !item.isSingle;
+            document.getElementById('editVidLeftTitleInput').value = item.leftTitle || '';
+            document.getElementById('editFileVideoIntro').value = '';
+            document.getElementById('editFileVideoFull').value = '';
+            toggleEditDualFields();
             document.getElementById('videoEditModal').classList.add('active');
         }
         function closeVideoEditModal() { document.getElementById('videoEditModal').classList.remove('active'); }
+
+        function toggleEditDualFields() {
+            const isDual = document.getElementById('editVidDualCheck').checked;
+            document.getElementById('editDualIntroFields').style.display = isDual ? 'flex' : 'none';
+            document.getElementById('editLabelFileVideoFull').textContent = isDual
+                ? '메인(오른쪽/FULL) 영상 교체 (선택, 비워두면 기존 파일 유지)'
+                : '영상 파일 교체 (선택, 비워두면 기존 파일 유지)';
+        }
 
         async function submitEditVideo() {
             const vidId = document.getElementById('editVidTargetId').value;
             const newTag = document.getElementById('editVidTagInput').value.trim();
             const newTitle = document.getElementById('editVidTitleInput').value.trim();
             const newMode = document.getElementById('editVidModeSelect').value;
+            const isDual = document.getElementById('editVidDualCheck').checked;
+            const newLeftTitle = document.getElementById('editVidLeftTitleInput').value.trim();
+            const fullFileInput = document.getElementById('editFileVideoFull');
+            const introFileInput = document.getElementById('editFileVideoIntro');
+            const currentFullUrl = document.getElementById('editVidCurrentFullUrl').value;
+            const currentIntroUrl = document.getElementById('editVidCurrentIntroUrl').value;
 
             if (!newTag || !newTitle) return alert('태그와 제목을 모두 입력해 주세요.');
+            if (isDual && !newLeftTitle) return alert('듀얼 비교 모드에서는 왼쪽(인트로) 제목이 필요합니다.');
+            if (isDual && !currentIntroUrl && introFileInput.files.length === 0) return alert('듀얼 비교 모드로 전환하려면 인트로 영상 파일이 필요합니다.');
+
+            document.getElementById('loadingSpinner').style.display = 'flex';
 
             try {
+                const fullUrl = fullFileInput.files.length > 0 ? await uploadVideoFile(fullFileInput.files[0]) : currentFullUrl;
+                const introUrl = isDual
+                    ? (introFileInput.files.length > 0 ? await uploadVideoFile(introFileInput.files[0]) : currentIntroUrl)
+                    : null;
+
                 const res = await callAdminRpc('admin_update_video', {
                     p_id: Number(vidId),
                     p_tag: newTag,
                     p_title: newTitle,
-                    p_mode: newMode
+                    p_mode: newMode,
+                    p_full_url: fullUrl,
+                    p_intro_url: introUrl,
+                    p_left_title: isDual ? newLeftTitle : null
                 });
 
+                document.getElementById('loadingSpinner').style.display = 'none';
+
                 if (res.ok) {
+                    if (fullFileInput.files.length > 0 && currentFullUrl && currentFullUrl !== fullUrl) {
+                        await deleteR2File(currentFullUrl);
+                    }
+                    if (isDual) {
+                        if (introFileInput.files.length > 0 && currentIntroUrl && currentIntroUrl !== introUrl) {
+                            await deleteR2File(currentIntroUrl);
+                        }
+                    } else if (currentIntroUrl) {
+                        await deleteR2File(currentIntroUrl);
+                    }
+
                     alert('영상 정보가 수정되었습니다.');
                     closeVideoEditModal();
                     loadArchiveFromDB();
                 } else { alert('수정 실패'); }
-            } catch(e) { console.error(e); }
+            } catch(e) {
+                document.getElementById('loadingSpinner').style.display = 'none';
+                console.error(e);
+                alert('수정 중 오류가 발생했습니다: ' + e.message);
+            }
+        }
+
+        async function deleteR2File(fileUrl) {
+            if (!fileUrl || !fileUrl.startsWith(R2_PUBLIC_DOMAIN)) return;
+            const fileName = decodeURIComponent(fileUrl.replace(R2_PUBLIC_DOMAIN, ''));
+            try {
+                await fetch(WORKER_PRESIGN_URL, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fileName })
+                });
+            } catch (e) { console.error('기존 파일 삭제 실패:', e); }
         }
 
         async function deleteVideo(vidId) {
@@ -964,13 +1046,9 @@
                     if (found) { targetItem = found; break; }
                 }
 
-                if (targetItem && targetItem.fullUrl && targetItem.fullUrl.startsWith(R2_PUBLIC_DOMAIN)) {
-                    const fileName = decodeURIComponent(targetItem.fullUrl.replace(R2_PUBLIC_DOMAIN, ''));
-                    await fetch(WORKER_PRESIGN_URL, {
-                        method: 'DELETE',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ fileName })
-                    });
+                if (targetItem) {
+                    await deleteR2File(targetItem.fullUrl);
+                    await deleteR2File(targetItem.introUrl);
                 }
 
                 const res = await callAdminRpc('admin_delete_video', { p_id: Number(vidId) });
