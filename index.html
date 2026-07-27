@@ -343,6 +343,22 @@
         </div>
     </div>
 
+    <!-- File Edit Modal -->
+    <div id="fileEditModal" class="admin-modal-overlay">
+        <div class="admin-modal-box">
+            <div class="admin-modal-title">파일 이름 수정</div>
+            <input type="hidden" id="editFileTargetId">
+            <div class="admin-input-group">
+                <label>파일 이름 (확장자 포함)</label>
+                <input type="text" id="editFileNameInput" class="admin-input">
+            </div>
+            <div class="admin-btn-row">
+                <button class="btn-cancel" onclick="closeFileEditModal()">취소</button>
+                <button class="btn-submit" onclick="submitEditFileName()">수정 완료</button>
+            </div>
+        </div>
+    </div>
+
     <!-- File Preview Modal -->
     <div id="filePreviewModal" class="modal-overlay" onclick="closeFilePreview(event)">
         <div class="modal-container">
@@ -1179,6 +1195,7 @@
                 const fileSize = file.file_size ? formatFileSize(file.file_size) : '';
                 const uploadDate = file.created_at ? new Date(file.created_at).toLocaleDateString('ko-KR') : '';
 
+                const editBtn = isAdmin ? `<button class="btn-download" style="background: #8b5cf6;" onclick="openFileEditModal(${file.id}, '${file.file_name.replace(/'/g, "\\'")}')">수정</button>` : '';
                 const deleteBtn = isAdmin ? `<button class="btn-delete-file" onclick="deleteLibraryFile(${file.id}, '${file.file_url}')">삭제</button>` : '';
 
                 return `
@@ -1189,6 +1206,7 @@
                         </div>
                         <div class="file-actions">
                             <button class="btn-download" onclick="downloadFile('${file.file_url}', '${file.file_name}')">다운로드</button>
+                            ${editBtn}
                             ${deleteBtn}
                         </div>
                     </div>
@@ -1292,6 +1310,43 @@
             document.getElementById('fileUploadModal').classList.remove('active');
             document.getElementById('inputFileName').value = '';
             document.getElementById('inputLibraryFile').value = '';
+        }
+
+        function openFileEditModal(fileId, currentName) {
+            document.getElementById('editFileTargetId').value = fileId;
+            document.getElementById('editFileNameInput').value = currentName;
+            document.getElementById('fileEditModal').classList.add('active');
+        }
+
+        function closeFileEditModal() {
+            document.getElementById('fileEditModal').classList.remove('active');
+        }
+
+        async function submitEditFileName() {
+            const fileId = document.getElementById('editFileTargetId').value;
+            const newFileName = document.getElementById('editFileNameInput').value.trim();
+
+            if (!newFileName) {
+                return alert('파일 이름을 입력해주세요.');
+            }
+
+            try {
+                const res = await callAdminRpc('admin_update_library_file', {
+                    p_id: Number(fileId),
+                    p_file_name: newFileName
+                });
+
+                if (res.ok) {
+                    alert('파일 이름이 수정되었습니다.');
+                    closeFileEditModal();
+                    loadLibraryFiles();
+                } else {
+                    alert('수정 실패');
+                }
+            } catch (e) {
+                console.error(e);
+                alert('수정 중 오류가 발생했습니다.');
+            }
         }
 
         async function submitFileUpload() {
