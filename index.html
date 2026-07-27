@@ -1052,6 +1052,7 @@
                 rightColumn.style.display = 'flex';
                 rightColumnHeader.style.display = 'none';
                 videoRight.src = item.fullUrl;
+                videoRight.load();
             } else {
                 modalBodyDual.classList.remove('single-mode');
                 leftColumn.style.display = 'flex';
@@ -1061,10 +1062,12 @@
                 rightTitle.textContent = item.rightTitle || 'FULL EXAMPLE';
                 videoLeft.src = item.introUrl;
                 videoRight.src = item.fullUrl;
+                videoLeft.load();
+                videoRight.load();
             }
 
-            videoRight.currentTime = 0.1;
-            if (!item.isSingle) videoLeft.currentTime = 0.1;
+            videoRight.currentTime = 0;
+            if (!item.isSingle) videoLeft.currentTime = 0;
             overlayLeft.classList.remove('hidden');
             overlayRight.classList.remove('hidden');
             modal.classList.add('active');
@@ -1256,7 +1259,10 @@
         }
 
         function previewFile(url, fileName) {
-            const ext = fileName.toLowerCase().split('.').pop();
+            // 마지막 점(.) 이후를 확장자로 추출
+            const lastDotIndex = fileName.lastIndexOf('.');
+            const ext = lastDotIndex > -1 ? fileName.substring(lastDotIndex + 1).toLowerCase() : '';
+
             const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'];
             const videoExts = ['mp4', 'webm', 'ogg', 'mov'];
             const pdfExts = ['pdf'];
@@ -1281,6 +1287,7 @@
                 previewImage.style.display = 'block';
             } else if (videoExts.includes(ext)) {
                 previewVideo.src = url;
+                previewVideo.currentTime = 0;
                 previewVideo.style.display = 'block';
             } else if (pdfExts.includes(ext)) {
                 previewPdf.src = url + '#toolbar=1';
