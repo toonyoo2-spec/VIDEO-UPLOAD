@@ -122,6 +122,12 @@
         .dual-column { display: flex; flex-direction: column; background: #121212; border-radius: 8px; border: 1px solid var(--border-color); overflow: hidden; min-height: 320px; }
         @media (min-width: 768px) { .dual-column { height: 100%; min-height: 0; } }
 
+        /* 모바일에서 세로(9:16) 영상은 고정 높이 대신 실제 화면비로 박스 크기를 잡아서, 위아래로 쌓여도 레터박스 없이 꽉 차게 보이게 함 */
+        @media (max-width: 767px) {
+            .modal-body-dual.mode-portrait .dual-column { min-height: 0; height: auto; align-self: start; }
+            .modal-body-dual.mode-portrait .column-media { flex: none; min-height: 0; height: auto; aspect-ratio: 9 / 16; }
+        }
+
         .column-header { height: 38px; padding: 0 0.8rem; background: #18181b; border-bottom: 1px solid var(--border-color); font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
         .column-header .badge { font-size: 0.65rem; padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 800; }
         .left-badge { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.4); }
@@ -141,6 +147,9 @@
         .progress-bg { width: 100%; height: 4px; background: rgba(255, 255, 255, 0.3); border-radius: 2px; position: relative; overflow: hidden; }
         .progress-fill { width: 0%; height: 100%; background: var(--accent-red); border-radius: 2px; }
         .time-display { font-size: 0.7rem; font-family: monospace; color: #ffffff; font-weight: 600; white-space: nowrap; }
+
+        .fullscreen-btn { background: none; border: none; padding: 0.2rem; margin: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; opacity: 0.9; }
+        .fullscreen-btn:hover { opacity: 1; }
 
         .admin-modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85); display: none; align-items: center; justify-content: center; z-index: 10000; padding: 1rem; }
         .admin-modal-overlay.active { display: flex; }
@@ -463,6 +472,9 @@
                                 <div class="progress-bg"><div id="fillLeft" class="progress-fill"></div></div>
                             </div>
                             <span id="timeLeft" class="time-display">00:00 / 00:00</span>
+                            <button class="fullscreen-btn" onclick="toggleFullscreen('videoLeft')" aria-label="전체화면">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3m11-5v3a2 2 0 0 1-2 2h-3"/></svg>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -480,6 +492,9 @@
                                 <div class="progress-bg"><div id="fillRight" class="progress-fill"></div></div>
                             </div>
                             <span id="timeRight" class="time-display">00:00 / 00:00</span>
+                            <button class="fullscreen-btn" onclick="toggleFullscreen('videoRight')" aria-label="전체화면">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3m11-5v3a2 2 0 0 1-2 2h-3"/></svg>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -1257,6 +1272,8 @@
             modalContainerEl.style.width = '';
             modalContainerEl.style.height = '';
 
+            modalBodyDual.classList.toggle('mode-portrait', item.mode === 'portrait');
+
             const leftBadgeEl = document.getElementById('leftBadge');
             const rightBadgeEl = document.getElementById('rightBadge');
 
@@ -1313,6 +1330,28 @@
             if (v.paused) { v.play(); o.classList.add('hidden'); }
             else { v.pause(); o.classList.remove('hidden'); }
         }
+
+        function toggleFullscreen(videoId) {
+            const v = document.getElementById(videoId);
+            if (v.requestFullscreen) {
+                v.controls = true;
+                v.requestFullscreen();
+            } else if (v.webkitRequestFullscreen) {
+                v.controls = true;
+                v.webkitRequestFullscreen();
+            } else if (v.webkitEnterFullscreen) {
+                // iOS Safari: <video> 전용 네이티브 전체화면 (자체 컨트롤 내장)
+                v.webkitEnterFullscreen();
+            }
+        }
+
+        function exitVideoFullscreenControls() {
+            if (document.fullscreenElement || document.webkitFullscreenElement) return;
+            videoLeft.controls = false;
+            videoRight.controls = false;
+        }
+        document.addEventListener('fullscreenchange', exitVideoFullscreenControls);
+        document.addEventListener('webkitfullscreenchange', exitVideoFullscreenControls);
 
         function formatTime(sec) {
             if (isNaN(sec) || !isFinite(sec)) return "00:00";
