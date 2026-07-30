@@ -1636,10 +1636,16 @@
         }
 
         function downloadFile(url, fileName) {
+            // R2는 CORS/Content-Disposition을 내려주지 않아 브라우저가 download 속성을 무시하고
+            // 새 탭에서 파일을 열어버린다. Worker를 통해 attachment 헤더를 붙여 우회한다.
+            let downloadUrl = url;
+            if (url.startsWith(R2_PUBLIC_DOMAIN)) {
+                const key = decodeURIComponent(url.slice(R2_PUBLIC_DOMAIN.length).split('?')[0]);
+                downloadUrl = `${WORKER_PRESIGN_URL}/?key=${encodeURIComponent(key)}&filename=${encodeURIComponent(fileName)}`;
+            }
             const a = document.createElement('a');
-            a.href = url;
+            a.href = downloadUrl;
             a.download = fileName;
-            a.target = '_blank';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
