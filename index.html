@@ -115,16 +115,19 @@
         .modal-header-title { font-size: 0.9rem; font-weight: 800; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 0.5rem; }
         .close-btn { background: none; border: none; color: var(--text-secondary); font-size: 1.4rem; cursor: pointer; padding: 0.2rem; }
 
-        .modal-body-dual { flex: 1; display: grid; grid-template-columns: 1fr; gap: 0.8rem; padding: 0.6rem; background: #000000; overflow-y: auto; }
-        @media (min-width: 768px) { .modal-body-dual { grid-template-columns: 1fr 1fr; gap: 1rem; padding: 1rem; overflow: hidden; } }
+        /* 모바일은 grid가 아닌 flex-column을 사용합니다. grid-auto-rows가 aspect-ratio로 계산되는
+           자식 높이를 무시하고 트랙을 균등 분할해버려서, 두 번째 영상이 첫 번째 영상 위로 겹치는
+           버그가 있었습니다 (Chromium: auto row + align-self:start + aspect-ratio 조합 이슈). */
+        .modal-body-dual { flex: 1; display: flex; flex-direction: column; gap: 0.8rem; padding: 0.6rem; background: #000000; overflow-y: auto; }
+        @media (min-width: 768px) { .modal-body-dual { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding: 1rem; overflow: hidden; } }
         .modal-body-dual.single-mode { grid-template-columns: 1fr !important; }
 
-        .dual-column { display: flex; flex-direction: column; background: #121212; border-radius: 8px; border: 1px solid var(--border-color); overflow: hidden; min-height: 320px; }
+        .dual-column { display: flex; flex-direction: column; flex-shrink: 0; background: #121212; border-radius: 8px; border: 1px solid var(--border-color); overflow: hidden; min-height: 320px; }
         @media (min-width: 768px) { .dual-column { height: 100%; min-height: 0; } }
 
         /* 모바일에서 세로(9:16) 영상은 고정 높이 대신 실제 화면비로 박스 크기를 잡아서, 위아래로 쌓여도 레터박스 없이 꽉 차게 보이게 함 */
         @media (max-width: 767px) {
-            .modal-body-dual.mode-portrait .dual-column { min-height: 0; height: auto; align-self: start; }
+            .modal-body-dual.mode-portrait .dual-column { min-height: 0; height: auto; }
             .modal-body-dual.mode-portrait .column-media { flex: none; min-height: 0; height: auto; aspect-ratio: 9 / 16; }
         }
 
