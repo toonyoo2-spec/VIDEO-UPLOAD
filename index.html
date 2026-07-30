@@ -512,6 +512,28 @@
         // 관리자 전용 RPC 호출 공용 헬퍼. 비밀번호 확인은 서버(Postgres) 안에서만 이뤄지고,
         // 여기서는 로그인 시 발급받은 세션 토큰만 함께 보냅니다.
         async function callAdminRpc(fnName, params) {
+            // 토큰 만료 체크
+            if (!isAdmin || !adminToken) {
+                alert('관리자 권한이 필요합니다. 다시 로그인해주세요.');
+                isAdmin = false;
+                adminToken = null;
+                localStorage.removeItem(ADMIN_TOKEN_KEY);
+                localStorage.removeItem(ADMIN_EXP_KEY);
+                applyAdminMode();
+                throw new Error('Admin token expired or missing');
+            }
+
+            const expTime = Number(localStorage.getItem(ADMIN_EXP_KEY));
+            if (expTime <= Date.now()) {
+                alert('관리자 세션이 만료되었습니다. 다시 로그인해주세요.');
+                isAdmin = false;
+                adminToken = null;
+                localStorage.removeItem(ADMIN_TOKEN_KEY);
+                localStorage.removeItem(ADMIN_EXP_KEY);
+                applyAdminMode();
+                throw new Error('Admin token expired');
+            }
+
             return fetch(`${SUPABASE_URL}/rest/v1/rpc/${fnName}`, {
                 method: 'POST',
                 headers: {
@@ -695,16 +717,19 @@
         }
 
         async function loadArchiveFromDB() {
+            console.log('loadArchiveFromDB 시작...');
             try {
                 const projRes = await fetch(`${SUPABASE_URL}/rest/v1/archive_projects?select=*`, {
                     headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
                 });
                 const dbProjects = await projRes.json();
+                console.log('프로젝트 로드 완료:', dbProjects.length);
 
                 const vidRes = await fetch(`${SUPABASE_URL}/rest/v1/archive_videos?select=*`, {
                     headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
                 });
                 const dbVideos = await vidRes.json();
+                console.log('비디오 로드 완료:', dbVideos.length);
 
                 displayArchive = JSON.parse(JSON.stringify(defaultProjectsArchive));
 
@@ -727,9 +752,9 @@
                                     title: v.title,
                                     isSingle: v.is_single !== false,
                                     leftTitle: v.left_title,
-                                    rightTitle: v.right_title,
-                                    leftBadge: v.left_badge,
-                                    rightBadge: v.right_badge,
+                                    rightTitle: v.title,
+                                    leftBadge: '',
+                                    rightBadge: '',
                                     fullUrl: v.full_url,
                                     introUrl: v.intro_url,
                                     mode: v.mode
@@ -952,7 +977,11 @@
                     alert('프로젝트 제목이 수정되었습니다.');
                     closeProjectEditModal();
                     loadArchiveFromDB();
-                } else { alert('수정 실패'); }
+                } else {
+                    const errorText = await res.text();
+                    console.error('프로젝트 수정 실패 상세:', { status: res.status, statusText: res.statusText, body: errorText });
+                    alert('수정 실패\n\n상태 코드: ' + res.status + '\n에러: ' + (errorText || res.statusText) + '\n\n개발자 도구 콘솔을 확인해주세요.');
+                }
             } catch(e) { console.error(e); }
         }
 
@@ -1042,6 +1071,9 @@
                 document.getElementById('loadingSpinner').style.display = 'none';
 
                 if (res.ok) {
+                    const result = await res.json();
+                    console.log('수정 성공:', result);
+
                     if (fullFileInput.files.length > 0 && currentFullUrl && currentFullUrl !== fullUrl) {
                         await deleteR2File(currentFullUrl);
                     }
@@ -1055,8 +1087,13 @@
 
                     alert('영상 정보가 수정되었습니다.');
                     closeVideoEditModal();
-                    loadArchiveFromDB();
-                } else { alert('수정 실패'); }
+                    await loadArchiveFromDB();
+                    console.log('데이터 새로고침 완료');
+                } else {
+                    const errorText = await res.text();
+                    console.error('수정 실패 상세:', { status: res.status, statusText: res.statusText, body: errorText });
+                    alert('수정 실패\n\n상태 코드: ' + res.status + '\n에러: ' + (errorText || res.statusText) + '\n\n개발자 도구 콘솔을 확인해주세요.');
+                }
             } catch(e) {
                 document.getElementById('loadingSpinner').style.display = 'none';
                 console.error(e);
@@ -1116,17 +1153,30 @@
         }
 
         async function uploadVideoFile(file) {
-            const uploadRes = await fetch(WORKER_PRESIGN_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': file.type,
-                    'X-File-Name': encodeURIComponent(file.name)
-                },
-                body: file
-            });
-            if (!uploadRes.ok) throw new Error(`업로드 실패: ${uploadRes.status}`);
-            const { fileName } = await uploadRes.json();
-            return R2_PUBLIC_DOMAIN + fileName;
+            try {
+                const uploadRes = await fetch(WORKER_PRESIGN_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': file.type,
+                        'X-File-Name': encodeURIComponent(file.name)
+                    },
+                    body: file
+                });
+
+                if (!uploadRes.ok) {
+                    const errorText = await uploadRes.text();
+                    console.error('R2 업로드 실패:', { status: uploadRes.status, statusText: uploadRes.statusText, body: errorText });
+                    throw new Error(`업로드 실패 (${uploadRes.status}): ${errorText || uploadRes.statusText}`);
+                }
+
+                const result = await uploadRes.json();
+                console.log('R2 업로드 성공:', result);
+                const { fileName } = result;
+                return R2_PUBLIC_DOMAIN + fileName;
+            } catch (error) {
+                console.error('uploadVideoFile 에러:', error);
+                throw error;
+            }
         }
 
         // 🚀 Cloudflare Worker(*.workers.dev)로 파일을 직접 전송 — r2.cloudflarestorage.com은 거치지 않음
@@ -1173,7 +1223,9 @@
                     closeVideoUploadModal();
                     loadArchiveFromDB();
                 } else {
-                    alert('DB 저장 실패. Supabase 설정을 확인해 주세요.');
+                    const errorText = await dbRes.text();
+                    console.error('DB 저장 실패 상세:', { status: dbRes.status, statusText: dbRes.statusText, body: errorText });
+                    alert('DB 저장 실패\n\n상태 코드: ' + dbRes.status + '\n에러: ' + (errorText || dbRes.statusText) + '\n\n개발자 도구 콘솔을 확인해 주세요.');
                 }
             } catch (err) {
                 document.getElementById('loadingSpinner').style.display = 'none';
@@ -1655,7 +1707,9 @@
                     closeFileUploadModal();
                     loadLibraryFiles();
                 } else {
-                    alert('DB 저장 실패');
+                    const errorText = await dbRes.text();
+                    console.error('파일 DB 저장 실패 상세:', { status: dbRes.status, statusText: dbRes.statusText, body: errorText });
+                    alert('DB 저장 실패\n\n상태 코드: ' + dbRes.status + '\n에러: ' + (errorText || dbRes.statusText));
                 }
             } catch (err) {
                 document.getElementById('loadingSpinner').style.display = 'none';
