@@ -1071,8 +1071,7 @@
                 document.getElementById('loadingSpinner').style.display = 'none';
 
                 if (res.ok) {
-                    const result = await res.json();
-                    console.log('수정 성공:', result);
+                    console.log('수정 성공: 응답 상태', res.status);
 
                     if (fullFileInput.files.length > 0 && currentFullUrl && currentFullUrl !== fullUrl) {
                         await deleteR2File(currentFullUrl);
