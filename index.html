@@ -316,14 +316,14 @@
                     <label>인트로(왼쪽) 영상 교체 (선택, 비워두면 기존 파일 유지)</label>
                     <input type="file" id="editFileVideoIntro" class="admin-input" accept="video/mp4,video/*">
                 </div>
-            </div>
-            <div class="admin-input-group">
-                <label>우측(메인) 제목 (듀얼 모드일 때만 사용)</label>
-                <input type="text" id="editVidRightTitleInput" class="admin-input">
-            </div>
-            <div class="admin-input-group">
-                <label>우측 배지 텍스트 (선택, 비워두면 배지 숨김)</label>
-                <input type="text" id="editVidRightBadgeInput" class="admin-input" placeholder="FULL EXAMPLE">
+                <div class="admin-input-group">
+                    <label>우측(메인) 제목</label>
+                    <input type="text" id="editVidRightTitleInput" class="admin-input">
+                </div>
+                <div class="admin-input-group">
+                    <label>우측 배지 텍스트 (선택, 비워두면 배지 숨김)</label>
+                    <input type="text" id="editVidRightBadgeInput" class="admin-input" placeholder="FULL EXAMPLE">
+                </div>
             </div>
             <div class="admin-input-group">
                 <label id="editLabelFileVideoFull">영상 파일 교체 (선택, 비워두면 기존 파일 유지)</label>
@@ -372,14 +372,14 @@
                     <label>인트로(왼쪽) 영상 파일 (.mp4)</label>
                     <input type="file" id="inputFileVideoIntro" class="admin-input" accept="video/mp4,video/*">
                 </div>
-            </div>
-            <div class="admin-input-group">
-                <label>우측(메인) 제목 (듀얼 모드일 때만 사용)</label>
-                <input type="text" id="inputVidRightTitle" class="admin-input" placeholder="우측 비디오 제목">
-            </div>
-            <div class="admin-input-group">
-                <label>우측 배지 텍스트 (선택, 비워두면 배지 숨김)</label>
-                <input type="text" id="inputVidRightBadge" class="admin-input" placeholder="FULL EXAMPLE">
+                <div class="admin-input-group">
+                    <label>우측(메인) 제목</label>
+                    <input type="text" id="inputVidRightTitle" class="admin-input" placeholder="우측 비디오 제목">
+                </div>
+                <div class="admin-input-group">
+                    <label>우측 배지 텍스트 (선택, 비워두면 배지 숨김)</label>
+                    <input type="text" id="inputVidRightBadge" class="admin-input" placeholder="FULL EXAMPLE">
+                </div>
             </div>
             <div class="admin-input-group">
                 <label id="labelFileVideoFull">영상 파일 (.mp4)</label>
@@ -1248,8 +1248,8 @@
         const modalContainerEl = document.querySelector('.modal-container');
 
         function openDualModal(item) {
-            // 모달 헤더에 태그 표시
-            modalHeaderTitle.textContent = item.tag || item.title.replace('<br>', ' ');
+            // 모달 헤더에 비디오 제목 표시
+            modalHeaderTitle.textContent = item.title.replace('<br>', ' ');
             resetProgressUI('fillLeft', 'timeLeft');
             resetProgressUI('fillRight', 'timeRight');
 
