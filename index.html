@@ -475,6 +475,9 @@
                                 <div class="progress-bg"><div id="fillLeft" class="progress-fill"></div></div>
                             </div>
                             <span id="timeLeft" class="time-display">00:00 / 00:00</span>
+                            <button class="fullscreen-btn" onclick="downloadVideoSrc('videoLeft')" aria-label="다운로드" title="다운로드">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
+                            </button>
                             <button class="fullscreen-btn" onclick="toggleFullscreen('videoLeft')" aria-label="전체화면">
                                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3m11-5v3a2 2 0 0 1-2 2h-3"/></svg>
                             </button>
@@ -495,6 +498,9 @@
                                 <div class="progress-bg"><div id="fillRight" class="progress-fill"></div></div>
                             </div>
                             <span id="timeRight" class="time-display">00:00 / 00:00</span>
+                            <button class="fullscreen-btn" onclick="downloadVideoSrc('videoRight')" aria-label="다운로드" title="다운로드">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
+                            </button>
                             <button class="fullscreen-btn" onclick="toggleFullscreen('videoRight')" aria-label="전체화면">
                                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3m11-5v3a2 2 0 0 1-2 2h-3"/></svg>
                             </button>
@@ -1325,6 +1331,16 @@
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
             history.pushState({ videoModalOpen: true }, '');
+        }
+
+        function downloadVideoSrc(videoId) {
+            const v = document.getElementById(videoId);
+            if (!v || !v.src) return;
+            let fileName = 'video.mp4';
+            try {
+                fileName = decodeURIComponent(v.src.split('/').pop().split('?')[0]) || fileName;
+            } catch (e) {}
+            downloadFile(v.src, fileName);
         }
 
         function togglePlay(videoId, overlayId) {
