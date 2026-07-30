@@ -309,9 +309,21 @@
                     <input type="text" id="editVidLeftTitleInput" class="admin-input">
                 </div>
                 <div class="admin-input-group">
+                    <label>왼쪽 배지 텍스트 (선택, 비워두면 배지 숨김)</label>
+                    <input type="text" id="editVidLeftBadgeInput" class="admin-input" placeholder="ONLY INTRO">
+                </div>
+                <div class="admin-input-group">
                     <label>인트로(왼쪽) 영상 교체 (선택, 비워두면 기존 파일 유지)</label>
                     <input type="file" id="editFileVideoIntro" class="admin-input" accept="video/mp4,video/*">
                 </div>
+            </div>
+            <div class="admin-input-group">
+                <label>우측(메인) 제목 (듀얼 모드일 때만 사용)</label>
+                <input type="text" id="editVidRightTitleInput" class="admin-input">
+            </div>
+            <div class="admin-input-group">
+                <label>우측 배지 텍스트 (선택, 비워두면 배지 숨김)</label>
+                <input type="text" id="editVidRightBadgeInput" class="admin-input" placeholder="FULL EXAMPLE">
             </div>
             <div class="admin-input-group">
                 <label id="editLabelFileVideoFull">영상 파일 교체 (선택, 비워두면 기존 파일 유지)</label>
@@ -353,9 +365,21 @@
                     <input type="text" id="inputVidLeftTitle" class="admin-input" placeholder="INTRO_02">
                 </div>
                 <div class="admin-input-group">
+                    <label>왼쪽 배지 텍스트 (선택, 비워두면 배지 숨김)</label>
+                    <input type="text" id="inputVidLeftBadge" class="admin-input" placeholder="ONLY INTRO">
+                </div>
+                <div class="admin-input-group">
                     <label>인트로(왼쪽) 영상 파일 (.mp4)</label>
                     <input type="file" id="inputFileVideoIntro" class="admin-input" accept="video/mp4,video/*">
                 </div>
+            </div>
+            <div class="admin-input-group">
+                <label>우측(메인) 제목 (듀얼 모드일 때만 사용)</label>
+                <input type="text" id="inputVidRightTitle" class="admin-input" placeholder="우측 비디오 제목">
+            </div>
+            <div class="admin-input-group">
+                <label>우측 배지 텍스트 (선택, 비워두면 배지 숨김)</label>
+                <input type="text" id="inputVidRightBadge" class="admin-input" placeholder="FULL EXAMPLE">
             </div>
             <div class="admin-input-group">
                 <label id="labelFileVideoFull">영상 파일 (.mp4)</label>
@@ -428,8 +452,8 @@
             <div id="modalBodyDual" class="modal-body-dual">
                 <div id="leftColumn" class="dual-column">
                     <div class="column-header">
-                        <span id="leftTitle" class="column-header-text">INTRO_02</span>
-                        <span class="badge left-badge">ONLY INTRO</span>
+                        <span id="leftTitle" class="column-header-text">좌측 비디오 제목</span>
+                        <span id="leftBadge" class="badge left-badge" style="display: none;">ONLY INTRO</span>
                     </div>
                     <div class="column-media" onclick="togglePlay('videoLeft', 'overlayLeft')">
                         <div id="overlayLeft" class="overlay-play-btn"></div>
@@ -445,8 +469,8 @@
 
                 <div id="rightColumn" class="dual-column">
                     <div id="rightColumnHeader" class="column-header">
-                        <span id="rightTitle" class="column-header-text">INTRO_REF_02</span>
-                        <span class="badge right-badge">FULL EXAMPLE</span>
+                        <span id="rightTitle" class="column-header-text">우측 비디오 제목</span>
+                        <span id="rightBadge" class="badge right-badge" style="display: none;">FULL EXAMPLE</span>
                     </div>
                     <div class="column-media" onclick="togglePlay('videoRight', 'overlayRight')">
                         <div id="overlayRight" class="overlay-play-btn"></div>
@@ -541,6 +565,8 @@
                         title: "INTRO_REF_02<br>(IP+THIS IS REAL CLASS)",
                         leftTitle: "INTRO_02",
                         rightTitle: "INTRO_REF_02 (IP+THIS IS REAL CLASS)",
+                        leftBadge: "ONLY INTRO",
+                        rightBadge: "FULL EXAMPLE",
                         introUrl: R2_PUBLIC_DOMAIN + "INTRO_02.mp4",
                         fullUrl: R2_PUBLIC_DOMAIN + encodeURIComponent("INTRO_REF_02 (IP+THIS IS REAL CLASS).mp4"),
                         mode: "portrait"
@@ -550,6 +576,8 @@
                         title: "INTRO_REF_02_<br>(IP+THIS IS REAL CLASS_develop)",
                         leftTitle: "INTRO_02_",
                         rightTitle: "INTRO_REF_02_ (IP+THIS IS REAL CLASS_develop)",
+                        leftBadge: "ONLY INTRO",
+                        rightBadge: "FULL EXAMPLE",
                         introUrl: R2_PUBLIC_DOMAIN + "INTRO_02_.mp4",
                         fullUrl: R2_PUBLIC_DOMAIN + encodeURIComponent("INTRO_REF_02_.mp4"),
                         mode: "portrait"
@@ -700,6 +728,8 @@
                                     isSingle: v.is_single !== false,
                                     leftTitle: v.left_title,
                                     rightTitle: v.right_title,
+                                    leftBadge: v.left_badge,
+                                    rightBadge: v.right_badge,
                                     fullUrl: v.full_url,
                                     introUrl: v.intro_url,
                                     mode: v.mode
@@ -951,6 +981,9 @@
             document.getElementById('editVidCurrentIntroUrl').value = item.introUrl || '';
             document.getElementById('editVidDualCheck').checked = !item.isSingle;
             document.getElementById('editVidLeftTitleInput').value = item.leftTitle || '';
+            document.getElementById('editVidRightTitleInput').value = item.rightTitle || '';
+            document.getElementById('editVidLeftBadgeInput').value = item.leftBadge || '';
+            document.getElementById('editVidRightBadgeInput').value = item.rightBadge || '';
             document.getElementById('editFileVideoIntro').value = '';
             document.getElementById('editFileVideoFull').value = '';
             toggleEditDualFields();
@@ -973,6 +1006,9 @@
             const newMode = document.getElementById('editVidModeSelect').value;
             const isDual = document.getElementById('editVidDualCheck').checked;
             const newLeftTitle = document.getElementById('editVidLeftTitleInput').value.trim();
+            const newRightTitle = document.getElementById('editVidRightTitleInput').value.trim();
+            const newLeftBadge = document.getElementById('editVidLeftBadgeInput').value.trim();
+            const newRightBadge = document.getElementById('editVidRightBadgeInput').value.trim();
             const fullFileInput = document.getElementById('editFileVideoFull');
             const introFileInput = document.getElementById('editFileVideoIntro');
             const currentFullUrl = document.getElementById('editVidCurrentFullUrl').value;
@@ -997,7 +1033,10 @@
                     p_mode: newMode,
                     p_full_url: fullUrl,
                     p_intro_url: introUrl,
-                    p_left_title: isDual ? newLeftTitle : null
+                    p_left_title: isDual ? newLeftTitle : null,
+                    p_right_title: isDual ? newRightTitle : null,
+                    p_left_badge: isDual ? newLeftBadge : null,
+                    p_right_badge: isDual ? newRightBadge : null
                 });
 
                 document.getElementById('loadingSpinner').style.display = 'none';
@@ -1100,6 +1139,9 @@
             const fileInput = document.getElementById('inputFileVideo');
             const isDual = document.getElementById('checkVidDual').checked;
             const leftTitle = document.getElementById('inputVidLeftTitle').value.trim();
+            const rightTitle = document.getElementById('inputVidRightTitle').value.trim();
+            const leftBadge = document.getElementById('inputVidLeftBadge').value.trim();
+            const rightBadge = document.getElementById('inputVidRightBadge').value.trim();
             const introFileInput = document.getElementById('inputFileVideoIntro');
 
             if (!tag || !title || fileInput.files.length === 0) return alert('모든 정보와 파일 선택을 완료해주세요.');
@@ -1118,7 +1160,10 @@
                     p_mode: mode,
                     p_full_url: fullUrl,
                     p_intro_url: introUrl,
-                    p_left_title: isDual ? leftTitle : null
+                    p_left_title: isDual ? leftTitle : null,
+                    p_right_title: isDual ? rightTitle : null,
+                    p_left_badge: isDual ? leftBadge : null,
+                    p_right_badge: isDual ? rightBadge : null
                 });
 
                 document.getElementById('loadingSpinner').style.display = 'none';
@@ -1152,13 +1197,17 @@
         const modalContainerEl = document.querySelector('.modal-container');
 
         function openDualModal(item) {
-            modalHeaderTitle.textContent = item.title.replace('<br>', ' ');
+            // 모달 헤더에 태그 표시
+            modalHeaderTitle.textContent = item.tag || item.title.replace('<br>', ' ');
             resetProgressUI('fillLeft', 'timeLeft');
             resetProgressUI('fillRight', 'timeRight');
 
             // 모달 크기는 CSS(.modal-container 미디어쿼리)가 항상 담당합니다.
             modalContainerEl.style.width = '';
             modalContainerEl.style.height = '';
+
+            const leftBadgeEl = document.getElementById('leftBadge');
+            const rightBadgeEl = document.getElementById('rightBadge');
 
             if (item.isSingle) {
                 modalBodyDual.classList.add('single-mode');
@@ -1172,8 +1221,26 @@
                 leftColumn.style.display = 'flex';
                 rightColumn.style.display = 'flex';
                 rightColumnHeader.style.display = 'flex';
-                leftTitle.textContent = item.leftTitle || 'INTRO';
-                rightTitle.textContent = item.rightTitle || 'FULL EXAMPLE';
+
+                // 좌측/우측 제목 표시
+                leftTitle.textContent = item.leftTitle || '좌측 비디오';
+                rightTitle.textContent = item.rightTitle || '우측 비디오';
+
+                // 배지 텍스트 표시 (값이 있을 때만)
+                if (item.leftBadge) {
+                    leftBadgeEl.textContent = item.leftBadge;
+                    leftBadgeEl.style.display = 'inline-block';
+                } else {
+                    leftBadgeEl.style.display = 'none';
+                }
+
+                if (item.rightBadge) {
+                    rightBadgeEl.textContent = item.rightBadge;
+                    rightBadgeEl.style.display = 'inline-block';
+                } else {
+                    rightBadgeEl.style.display = 'none';
+                }
+
                 videoLeft.src = item.introUrl;
                 videoRight.src = item.fullUrl;
                 videoLeft.load();
