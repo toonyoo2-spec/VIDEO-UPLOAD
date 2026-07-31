@@ -202,6 +202,13 @@
         .btn-edit-file:hover { background: #d97706; }
         .btn-delete-file { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.4); padding: 0.5rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 700; transition: all 0.2s; text-align: center; }
         .btn-delete-file:hover { background: var(--accent-red); color: white; }
+
+        /* 드래그 앤 드롭 스타일 */
+        .video-card.draggable { cursor: grab; }
+        .video-card.dragging { opacity: 0.5; cursor: grabbing; }
+        .video-card.drag-over { border: 2px dashed var(--accent-blue); }
+        .drag-handle { position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.6); color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; z-index: 10; cursor: grab; }
+        .video-card:hover .drag-handle { background: rgba(0,0,0,0.8); }
     </style>
 </head>
 <body>
@@ -752,7 +759,7 @@
                 const dbProjects = await projRes.json();
                 console.log('프로젝트 로드 완료:', dbProjects.length);
 
-                const vidRes = await fetch(`${SUPABASE_URL}/rest/v1/archive_videos?select=*`, {
+                const vidRes = await fetch(`${SUPABASE_URL}/rest/v1/archive_videos?select=*&order=display_order.asc`, {
                     headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
                 });
                 const dbVideos = await vidRes.json();
@@ -784,10 +791,14 @@
                                     rightBadge: v.right_badge || '',
                                     fullUrl: v.full_url,
                                     introUrl: v.intro_url,
-                                    mode: v.mode
+                                    mode: v.mode,
+                                    displayOrder: v.display_order || 0
                                 });
                             }
                         });
+
+                        // display_order로 정렬
+                        targetGroup.items.sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
                     });
                 }
 
@@ -844,7 +855,7 @@
                 section.id = sectionId;
 
                 let gridCardsHtml = '';
-                group.items.forEach((item) => {
+                group.items.forEach((item, itemIndex) => {
                     const jsonItem = JSON.stringify(item).replace(/"/g, '&quot;');
                     const thumbSource = item.isSingle ? item.fullUrl : item.introUrl;
 
@@ -853,6 +864,12 @@
                         ? `onclick="event.stopPropagation(); openVideoEditModal(${jsonItem})"`
                         : '';
 
+                    const draggableAttrs = canEdit
+                        ? `draggable="true" ondragstart="handleDragStart(event, ${itemIndex}, '${group.date}')" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${itemIndex}, '${group.date}')" ondragend="handleDragEnd(event)"`
+                        : '';
+
+                    const dragHandleHtml = canEdit ? `<div class="drag-handle">⋮⋮</div>` : '';
+
                     const vidAdminBtnsHtml = canEdit ? `
                         <div class="video-admin-bar" onclick="event.stopPropagation();">
                             <button class="admin-delete-badge" onclick="deleteVideo(${item.id})">삭제</button>
@@ -860,7 +877,8 @@
                     ` : '';
 
                     gridCardsHtml += `
-                        <div class="video-card" onclick="openDualModal(${jsonItem})">
+                        <div class="video-card ${canEdit ? 'draggable' : ''}" onclick="openDualModal(${jsonItem})" ${draggableAttrs} data-video-id="${item.id || ''}" data-item-index="${itemIndex}">
+                            ${dragHandleHtml}
                             <div class="thumb-cover ${item.mode || 'landscape'}">
                                 <video src="${thumbSource}#t=0.1" class="thumb-video" preload="metadata" muted playsinline
                                     controlsList="nodownload" disablePictureInPicture oncontextmenu="return false;"
@@ -1670,11 +1688,17 @@
                 // Delete from R2
                 if (fileUrl && fileUrl.startsWith(R2_PUBLIC_DOMAIN)) {
                     const fileName = decodeURIComponent(fileUrl.replace(R2_PUBLIC_DOMAIN, ''));
-                    await fetch(WORKER_PRESIGN_URL, {
+                    const r2DeleteRes = await fetch(WORKER_PRESIGN_URL, {
                         method: 'DELETE',
+                        mode: 'cors',
+                        credentials: 'omit',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ fileName })
                     });
+
+                    if (!r2DeleteRes.ok) {
+                        console.error('R2 삭제 실패:', await r2DeleteRes.text());
+                    }
                 }
 
                 // Delete from DB
@@ -1684,11 +1708,13 @@
                     alert('파일이 삭제되었습니다.');
                     loadLibraryFiles();
                 } else {
-                    alert('삭제 실패');
+                    const errorText = await res.text();
+                    console.error('DB 삭제 실패:', errorText);
+                    alert('삭제 실패: ' + errorText);
                 }
             } catch (e) {
-                console.error(e);
-                alert('삭제 중 오류가 발생했습니다.');
+                console.error('삭제 중 오류:', e);
+                alert('삭제 중 오류가 발생했습니다: ' + e.message);
             }
         }
 
@@ -1796,6 +1822,84 @@
                 document.getElementById('spinnerText').textContent = '⏳ Cloudflare R2 스토리지로 영상 업로드 중...';
                 console.error("업로드 실패:", err);
                 alert("업로드 중 오류가 발생했습니다: " + err.message);
+            }
+        }
+
+        // 드래그 앤 드롭 핸들러
+        let draggedElement = null;
+        let draggedIndex = null;
+        let draggedDate = null;
+
+        function handleDragStart(event, index, date) {
+            draggedElement = event.currentTarget;
+            draggedIndex = index;
+            draggedDate = date;
+            event.currentTarget.classList.add('dragging');
+            event.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.dataTransfer.dropEffect = 'move';
+            const target = event.currentTarget;
+            if (target !== draggedElement && target.classList.contains('video-card')) {
+                target.classList.add('drag-over');
+            }
+        }
+
+        function handleDrop(event, targetIndex, targetDate) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const target = event.currentTarget;
+            target.classList.remove('drag-over');
+
+            if (draggedDate !== targetDate) {
+                alert('같은 프로젝트 내에서만 순서를 변경할 수 있습니다.');
+                return;
+            }
+
+            if (draggedIndex === targetIndex) return;
+
+            // 배열에서 순서 변경
+            const group = displayArchive.find(g => g.date === targetDate);
+            if (!group) return;
+
+            const [movedItem] = group.items.splice(draggedIndex, 1);
+            group.items.splice(targetIndex, 0, movedItem);
+
+            // DB에 순서 저장
+            saveVideoOrder(group);
+
+            // UI 다시 렌더링
+            renderArchive();
+        }
+
+        function handleDragEnd(event) {
+            event.currentTarget.classList.remove('dragging');
+            document.querySelectorAll('.video-card.drag-over').forEach(el => {
+                el.classList.remove('drag-over');
+            });
+            draggedElement = null;
+            draggedIndex = null;
+            draggedDate = null;
+        }
+
+        async function saveVideoOrder(group) {
+            try {
+                for (let i = 0; i < group.items.length; i++) {
+                    const item = group.items[i];
+                    if (item.id) {
+                        await callAdminRpc('admin_update_video_order', {
+                            p_video_id: item.id,
+                            p_new_order: i
+                        });
+                    }
+                }
+                console.log('순서 저장 완료');
+            } catch (e) {
+                console.error('순서 저장 실패:', e);
+                alert('순서 저장 중 오류가 발생했습니다.');
             }
         }
 
