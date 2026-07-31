@@ -859,6 +859,17 @@
                     const jsonItem = JSON.stringify(item).replace(/"/g, '&quot;');
                     const thumbSource = item.isSingle ? item.fullUrl : item.introUrl;
 
+                    // 썸네일 URL 인코딩
+                    const encodeThumbUrl = (url) => {
+                        if (!url || !url.startsWith(R2_PUBLIC_DOMAIN)) return url;
+                        const afterDomain = url.slice(R2_PUBLIC_DOMAIN.length);
+                        // 이미 인코딩되어 있는지 확인
+                        if (afterDomain.includes('%')) return url; // 이미 인코딩됨
+                        return R2_PUBLIC_DOMAIN + encodeURIComponent(afterDomain);
+                    };
+
+                    const encodedThumbSource = encodeThumbUrl(thumbSource);
+
                     const canEdit = isAdmin && item.id;
                     const editClickAttr = canEdit
                         ? `onclick="event.stopPropagation(); openVideoEditModal(${jsonItem})"`
@@ -880,7 +891,7 @@
                         <div class="video-card ${canEdit ? 'draggable' : ''}" onclick="openDualModal(${jsonItem})" ${draggableAttrs} data-video-id="${item.id || ''}" data-item-index="${itemIndex}">
                             ${dragHandleHtml}
                             <div class="thumb-cover ${item.mode || 'landscape'}">
-                                <video src="${thumbSource}#t=0.1" class="thumb-video" preload="metadata" muted playsinline
+                                <video src="${encodedThumbSource}#t=0.1" class="thumb-video" preload="metadata" muted playsinline
                                     controlsList="nodownload" disablePictureInPicture oncontextmenu="return false;"
                                     onloadedmetadata="if(this.videoWidth && this.videoHeight){ this.closest('.thumb-cover').style.aspectRatio = (this.videoWidth / this.videoHeight); }"></video>
                                 <div class="play-btn"></div>
