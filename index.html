@@ -856,7 +856,6 @@
 
                 let gridCardsHtml = '';
                 group.items.forEach((item, itemIndex) => {
-                    const jsonItem = JSON.stringify(item).replace(/"/g, '&quot;');
                     const thumbSource = item.isSingle ? item.fullUrl : item.introUrl;
 
                     // 썸네일 URL 인코딩 - 한글이 있으면 인코딩
@@ -872,8 +871,12 @@
                     const encodedThumbSource = encodeThumbUrl(thumbSource);
 
                     const canEdit = isAdmin && item.id;
+
+                    // JSON을 data 속성에 저장 (HTML 속성 안전)
+                    const dataItem = JSON.stringify(item);
+
                     const editClickAttr = canEdit
-                        ? `onclick="event.stopPropagation(); openVideoEditModal(${jsonItem})"`
+                        ? `onclick="event.stopPropagation(); openVideoEditModal(JSON.parse(this.closest('.video-card').dataset.item))"`
                         : '';
 
                     const draggableAttrs = canEdit
@@ -889,7 +892,7 @@
                     ` : '';
 
                     gridCardsHtml += `
-                        <div class="video-card ${canEdit ? 'draggable' : ''}" onclick="openDualModal(${jsonItem})" ${draggableAttrs} data-video-id="${item.id || ''}" data-item-index="${itemIndex}">
+                        <div class="video-card ${canEdit ? 'draggable' : ''}" onclick="openDualModalFromCard(this)" ${draggableAttrs} data-video-id="${item.id || ''}" data-item-index="${itemIndex}" data-item='${dataItem.replace(/'/g, "&apos;")}'>
                             ${dragHandleHtml}
                             <div class="thumb-cover ${item.mode || 'landscape'}">
                                 <video src="${encodedThumbSource}#t=0.1" class="thumb-video" preload="metadata" muted playsinline
@@ -1315,6 +1318,11 @@
         const overlayLeft = document.getElementById('overlayLeft');
         const overlayRight = document.getElementById('overlayRight');
         const modalContainerEl = document.querySelector('.modal-container');
+
+        function openDualModalFromCard(cardElement) {
+            const item = JSON.parse(cardElement.dataset.item);
+            openDualModal(item);
+        }
 
         function openDualModal(item) {
             // 모달 헤더에 비디오 제목 표시
