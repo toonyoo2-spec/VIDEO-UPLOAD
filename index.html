@@ -1164,8 +1164,15 @@
 
         function openVideoUploadModal(date) {
             document.getElementById('uploadTargetDate').value = date;
+            document.getElementById('inputVidTag').value = '';
+            document.getElementById('inputVidTitle').value = '';
+            document.getElementById('selectVidMode').value = 'dual';
+            document.getElementById('inputFileVideo').value = '';
             document.getElementById('checkVidDual').checked = false;
             document.getElementById('inputVidLeftTitle').value = '';
+            document.getElementById('inputVidRightTitle').value = '';
+            document.getElementById('inputVidLeftBadge').value = '';
+            document.getElementById('inputVidRightBadge').value = '';
             document.getElementById('inputFileVideoIntro').value = '';
             toggleDualUploadFields();
             document.getElementById('videoModalUpload').classList.add('active');
