@@ -859,12 +859,13 @@
                     const jsonItem = JSON.stringify(item).replace(/"/g, '&quot;');
                     const thumbSource = item.isSingle ? item.fullUrl : item.introUrl;
 
-                    // 썸네일 URL 인코딩
+                    // 썸네일 URL 인코딩 - 한글이 있으면 인코딩
                     const encodeThumbUrl = (url) => {
                         if (!url || !url.startsWith(R2_PUBLIC_DOMAIN)) return url;
                         const afterDomain = url.slice(R2_PUBLIC_DOMAIN.length);
-                        // 이미 인코딩되어 있는지 확인
-                        if (afterDomain.includes('%')) return url; // 이미 인코딩됨
+                        // 한글이나 특수문자가 있는지 확인
+                        const hasNonAscii = /[^\x00-\x7F]/.test(afterDomain);
+                        if (!hasNonAscii) return url; // ASCII만 있으면 그대로
                         return R2_PUBLIC_DOMAIN + encodeURIComponent(afterDomain);
                     };
 
@@ -1334,13 +1335,10 @@
             const encodeVideoUrl = (url) => {
                 if (!url || !url.startsWith(R2_PUBLIC_DOMAIN)) return url;
                 const afterDomain = url.slice(R2_PUBLIC_DOMAIN.length);
-                // 이미 인코딩되어 있으면 그대로, 아니면 인코딩
-                try {
-                    decodeURIComponent(afterDomain);
-                    return url; // 이미 인코딩됨
-                } catch (e) {
-                    return R2_PUBLIC_DOMAIN + encodeURIComponent(afterDomain);
-                }
+                // 한글이나 특수문자(non-ASCII)가 있는지 확인
+                const hasNonAscii = /[^\x00-\x7F]/.test(afterDomain);
+                if (!hasNonAscii) return url; // ASCII만 있으면 그대로
+                return R2_PUBLIC_DOMAIN + encodeURIComponent(afterDomain);
             };
 
             if (item.isSingle) {
