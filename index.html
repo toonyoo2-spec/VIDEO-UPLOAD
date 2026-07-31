@@ -1685,9 +1685,12 @@
             if (!confirm('이 파일을 삭제하시겠습니까?')) return;
 
             try {
+                console.log('파일 삭제 시작:', fileId, fileUrl);
+
                 // Delete from R2
                 if (fileUrl && fileUrl.startsWith(R2_PUBLIC_DOMAIN)) {
                     const fileName = decodeURIComponent(fileUrl.replace(R2_PUBLIC_DOMAIN, ''));
+                    console.log('R2에서 삭제 중:', fileName);
                     const r2DeleteRes = await fetch(WORKER_PRESIGN_URL, {
                         method: 'DELETE',
                         mode: 'cors',
@@ -1698,22 +1701,30 @@
 
                     if (!r2DeleteRes.ok) {
                         console.error('R2 삭제 실패:', await r2DeleteRes.text());
+                    } else {
+                        console.log('R2 삭제 성공');
                     }
                 }
 
                 // Delete from DB using REST API directly
+                console.log('DB에서 삭제 중:', fileId);
                 const res = await fetch(`${SUPABASE_URL}/rest/v1/library_files?id=eq.${fileId}`, {
                     method: 'DELETE',
                     headers: {
                         'apikey': SUPABASE_ANON_KEY,
                         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=minimal'
                     }
                 });
 
-                if (res.ok) {
+                console.log('DB 삭제 응답:', res.status, res.statusText);
+
+                if (res.ok || res.status === 204) {
+                    console.log('DB 삭제 성공, 파일 목록 새로고침 중...');
                     alert('파일이 삭제되었습니다.');
-                    loadLibraryFiles();
+                    await loadLibraryFiles();
+                    console.log('파일 목록 새로고침 완료');
                 } else {
                     const errorText = await res.text();
                     console.error('DB 삭제 실패:', errorText);
