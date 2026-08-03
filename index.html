@@ -1881,12 +1881,12 @@
             document.getElementById('spinnerText').textContent = '⏳ 파일 업로드 중...';
 
             try {
-                // Upload to R2
+                // Upload to R2 (자료실 파일은 Download/ 폴더 아래에 정리)
                 const uploadRes = await fetch(WORKER_PRESIGN_URL, {
                     method: 'POST',
                     headers: {
                         'Content-Type': file.type || 'application/octet-stream',
-                        'X-File-Name': encodeURIComponent(fileName)
+                        'X-File-Name': encodeURIComponent(`Download/${fileName}`)
                     },
                     body: file
                 });
