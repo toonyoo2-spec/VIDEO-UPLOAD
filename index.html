@@ -1244,24 +1244,44 @@
                 return;
             }
 
-            const headerH = 44;
-            const bodyPadding = 16; // .modal-body-dual padding: 1rem (데스크톱)
-            const gap = 16; // .modal-body-dual gap: 1rem (데스크톱, 듀얼 모드일 때만 적용)
+            // 하드코딩된 여백 대신, 실제 CSS에 적용된 값을 그대로 읽어서 계산 (오차 없이 정확히 맞춤)
+            const headerEl = document.querySelector('#videoModal .modal-header');
+            const headerH = headerEl.getBoundingClientRect().height || 44;
+
+            const bodyStyle = getComputedStyle(modalBodyDual);
+            const padX = (parseFloat(bodyStyle.paddingLeft) || 0) + (parseFloat(bodyStyle.paddingRight) || 0);
+            const padY = (parseFloat(bodyStyle.paddingTop) || 0) + (parseFloat(bodyStyle.paddingBottom) || 0);
+            const gap = parseFloat(bodyStyle.columnGap || bodyStyle.gap) || 0;
+
+            const colEl = isSingle ? rightColumn : leftColumn;
+            const colStyle = getComputedStyle(colEl);
+            const colBorderX = (parseFloat(colStyle.borderLeftWidth) || 0) + (parseFloat(colStyle.borderRightWidth) || 0);
+            const colBorderY = (parseFloat(colStyle.borderTopWidth) || 0) + (parseFloat(colStyle.borderBottomWidth) || 0);
+            const colCount = isSingle ? 1 : 2;
+
+            // 컬럼 안의 제목바(태그/배지/다운로드 버튼)도 세로 공간을 차지하므로 반드시 포함해야 함
+            const colHeaderEl = colEl.querySelector('.column-header');
+            const colHeaderH = colHeaderEl.getBoundingClientRect().height || 38;
+
+            const containerStyle = getComputedStyle(modalContainerEl);
+            const containerBorderX = (parseFloat(containerStyle.borderLeftWidth) || 0) + (parseFloat(containerStyle.borderRightWidth) || 0);
+            const containerBorderY = (parseFloat(containerStyle.borderTopWidth) || 0) + (parseFloat(containerStyle.borderBottomWidth) || 0);
+
+            const chromeH = headerH + padY + colBorderY + containerBorderY + colHeaderH; // 컬럼 높이를 제외한 나머지 세로 공간
+            const chromeW = padX + colBorderX * colCount + containerBorderX + (isSingle ? 0 : gap); // 컬럼 너비를 제외한 나머지 가로 공간
+
             const maxH = window.innerHeight * 0.94;
             const maxW = Math.min(window.innerWidth * 0.95, 1800);
             const ratio = mode === 'portrait' ? 9 / 16 : 16 / 9; // 컬럼 1개의 width / height
 
             let targetH = maxH;
-            let contentH = targetH - headerH - bodyPadding * 2;
-            let colW = contentH * ratio;
-            let targetW = isSingle ? (colW + bodyPadding * 2) : (colW * 2 + gap + bodyPadding * 2);
+            let colW = (targetH - chromeH) * ratio;
+            let targetW = colW * colCount + chromeW;
 
             if (targetW > maxW) {
                 targetW = maxW;
-                const availContentW = targetW - bodyPadding * 2 - (isSingle ? 0 : gap);
-                colW = isSingle ? availContentW : availContentW / 2;
-                contentH = colW / ratio;
-                targetH = contentH + headerH + bodyPadding * 2;
+                colW = (targetW - chromeW) / colCount;
+                targetH = colW / ratio + chromeH;
             }
 
             modalContainerEl.style.width = Math.round(targetW) + 'px';
@@ -1273,9 +1293,6 @@
             modalHeaderTitle.textContent = item.title.replace('<br>', ' ');
             resetProgressUI('fillLeft', 'timeLeft');
             resetProgressUI('fillRight', 'timeRight');
-
-            // 팝업 자체를 실제 화면비(싱글=1개, 듀얼=2개 나란히)에 맞춰 리사이즈해서 여백을 없앰
-            sizeModalForVideo(item.mode, item.isSingle);
 
             modalBodyDual.classList.toggle('mode-portrait', item.mode === 'portrait');
 
@@ -1340,6 +1357,9 @@
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
             history.pushState({ videoModalOpen: true }, '');
+
+            // 팝업이 실제로 보이는 상태가 된 다음 재야 컬럼/헤더 실측이 정확해서, 활성화 이후에 크기 계산
+            sizeModalForVideo(item.mode, item.isSingle);
         }
 
         function downloadVideoSrc(videoId) {
