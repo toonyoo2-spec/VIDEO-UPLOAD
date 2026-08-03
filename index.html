@@ -315,6 +315,7 @@
             <input type="hidden" id="editVidTargetId">
             <input type="hidden" id="editVidCurrentFullUrl">
             <input type="hidden" id="editVidCurrentIntroUrl">
+            <input type="hidden" id="editVidProjectDate">
             <div class="admin-input-group">
                 <label>태그 (예: OPTION 01)</label>
                 <input type="text" id="editVidTagInput" class="admin-input">
@@ -783,6 +784,7 @@
                             if(!targetGroup.items.some(existVid => existVid.id === v.id || existVid.fullUrl === v.full_url)) {
                                 targetGroup.items.push({
                                     id: v.id,
+                                    projectDate: v.project_date,
                                     tag: v.tag,
                                     title: v.title,
                                     isSingle: v.is_single !== false,
@@ -1069,6 +1071,7 @@
             document.getElementById('editVidModeSelect').value = item.mode || 'landscape';
             document.getElementById('editVidCurrentFullUrl').value = item.fullUrl || '';
             document.getElementById('editVidCurrentIntroUrl').value = item.introUrl || '';
+            document.getElementById('editVidProjectDate').value = item.projectDate || '';
             document.getElementById('editVidDualCheck').checked = !item.isSingle;
             document.getElementById('editVidLeftTitleInput').value = item.leftTitle || '';
             document.getElementById('editVidRightTitleInput').value = item.rightTitle || '';
@@ -1103,6 +1106,7 @@
             const introFileInput = document.getElementById('editFileVideoIntro');
             const currentFullUrl = document.getElementById('editVidCurrentFullUrl').value;
             const currentIntroUrl = document.getElementById('editVidCurrentIntroUrl').value;
+            const projectDate = document.getElementById('editVidProjectDate').value;
 
             if (!newTag || !newTitle) return alert('태그와 제목을 모두 입력해 주세요.');
             if (isDual && !newLeftTitle) return alert('듀얼 비교 모드에서는 왼쪽(인트로) 제목이 필요합니다.');
@@ -1111,9 +1115,9 @@
             document.getElementById('loadingSpinner').style.display = 'flex';
 
             try {
-                const fullUrl = fullFileInput.files.length > 0 ? await uploadVideoFile(fullFileInput.files[0]) : currentFullUrl;
+                const fullUrl = fullFileInput.files.length > 0 ? await uploadVideoFile(fullFileInput.files[0], projectDate) : currentFullUrl;
                 const introUrl = isDual
-                    ? (introFileInput.files.length > 0 ? await uploadVideoFile(introFileInput.files[0]) : currentIntroUrl)
+                    ? (introFileInput.files.length > 0 ? await uploadVideoFile(introFileInput.files[0], projectDate) : currentIntroUrl)
                     : null;
 
                 const res = await callAdminRpc('admin_update_video', {
@@ -1219,15 +1223,16 @@
             document.getElementById('labelFileVideoFull').textContent = isDual ? '메인(오른쪽/FULL) 영상 파일 (.mp4)' : '영상 파일 (.mp4)';
         }
 
-        async function uploadVideoFile(file) {
+        async function uploadVideoFile(file, folder) {
             try {
+                const rawName = folder ? `${folder}/${file.name}` : file.name;
                 const uploadRes = await fetch(WORKER_PRESIGN_URL, {
                     method: 'POST',
                     mode: 'cors',
                     credentials: 'omit',
                     headers: {
                         'Content-Type': file.type,
-                        'X-File-Name': encodeURIComponent(file.name)
+                        'X-File-Name': encodeURIComponent(rawName)
                     },
                     body: file
                 });
@@ -1272,8 +1277,8 @@
             document.getElementById('loadingSpinner').style.display = 'flex';
 
             try {
-                const fullUrl = await uploadVideoFile(fileInput.files[0]);
-                const introUrl = isDual ? await uploadVideoFile(introFileInput.files[0]) : null;
+                const fullUrl = await uploadVideoFile(fileInput.files[0], date);
+                const introUrl = isDual ? await uploadVideoFile(introFileInput.files[0], date) : null;
 
                 const dbRes = await callAdminRpc('admin_create_video', {
                     p_project_date: date,
