@@ -1949,16 +1949,21 @@
                 for (let i = 0; i < group.items.length; i++) {
                     const item = group.items[i];
                     if (item.id) {
-                        await callAdminRpc('admin_update_video_order', {
+                        const res = await callAdminRpc('admin_update_video_order', {
                             p_video_id: item.id,
                             p_new_order: i
                         });
+                        if (!res.ok) {
+                            const errorText = await res.text();
+                            throw new Error(`상태 코드 ${res.status}: ${errorText}`);
+                        }
                     }
                 }
                 console.log('순서 저장 완료');
             } catch (e) {
                 console.error('순서 저장 실패:', e);
-                alert('순서 저장 중 오류가 발생했습니다.');
+                alert('순서 저장 중 오류가 발생했습니다: ' + e.message);
+                loadArchiveFromDB();
             }
         }
 
