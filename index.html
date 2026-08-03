@@ -103,7 +103,7 @@
 
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(12px); display: none; align-items: center; justify-content: center; z-index: 9999; padding: 0.5rem; }
         .modal-overlay.active { display: flex; }
-        .modal-container { position: relative; background: #0b0b0b; border-radius: 12px; border: 1px solid var(--border-color); overflow: hidden; display: flex; flex-direction: column; width: 100vw; height: 92vh; }
+        .modal-container { position: relative; background: #0b0b0b; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.18); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 25px 70px rgba(0, 0, 0, 0.7); overflow: hidden; display: flex; flex-direction: column; width: 100vw; height: 92vh; }
 
         /* ⚠️ 이 규칙 딱 하나만 존재해야 합니다 (예전에 중복된 낡은 규칙이 이 값을 덮어쓰고 있었음) */
         @media (min-width: 768px) {
