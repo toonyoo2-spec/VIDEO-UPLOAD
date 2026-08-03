@@ -131,11 +131,6 @@
             .modal-body-dual.mode-portrait .column-media { flex: none; min-height: 0; height: auto; aspect-ratio: 9 / 16; }
         }
 
-        /* 데스크톱에서 싱글(1개) 세로 영상은 그리드 전체 너비 대신 실제 화면비만큼만 차지하도록 해서, 좌우로 불필요하게 넓은 여백이 안 생기게 함 */
-        @media (min-width: 768px) {
-            .modal-body-dual.single-mode.mode-portrait .dual-column { width: auto; aspect-ratio: 9 / 16; justify-self: center; }
-        }
-
         .column-header { height: 38px; padding: 0 0.8rem; background: #18181b; border-bottom: 1px solid var(--border-color); font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; gap: 0.5rem; }
         .column-header .badge { font-size: 0.65rem; padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 800; }
         .column-header-actions { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
@@ -1330,15 +1325,44 @@
             openDualModal(item);
         }
 
+        function sizeModalForSingleVideo(mode) {
+            // 모바일은 항상 꽉 채운 전체화면 레이아웃을 쓰므로 CSS에 맡기고 건드리지 않음
+            if (window.innerWidth < 768) {
+                modalContainerEl.style.width = '';
+                modalContainerEl.style.height = '';
+                return;
+            }
+
+            const headerH = 44;
+            const maxH = window.innerHeight * 0.94;
+            const maxW = Math.min(window.innerWidth * 0.95, 1800);
+            const ratio = mode === 'portrait' ? 9 / 16 : 16 / 9; // width / height
+
+            let targetH = maxH;
+            let targetW = (targetH - headerH) * ratio;
+            if (targetW > maxW) {
+                targetW = maxW;
+                targetH = targetW / ratio + headerH;
+            }
+
+            modalContainerEl.style.width = Math.round(targetW) + 'px';
+            modalContainerEl.style.height = Math.round(targetH) + 'px';
+        }
+
         function openDualModal(item) {
             // 모달 헤더에 비디오 제목 표시
             modalHeaderTitle.textContent = item.title.replace('<br>', ' ');
             resetProgressUI('fillLeft', 'timeLeft');
             resetProgressUI('fillRight', 'timeRight');
 
-            // 모달 크기는 CSS(.modal-container 미디어쿼리)가 항상 담당합니다.
-            modalContainerEl.style.width = '';
-            modalContainerEl.style.height = '';
+            // 싱글(1개) 영상은 팝업 자체를 실제 화면비에 맞춰 리사이즈해서 좌우/상하 여백을 없앰
+            // (듀얼 비교 모드는 기존처럼 CSS 미디어쿼리가 크기를 담당)
+            if (item.isSingle) {
+                sizeModalForSingleVideo(item.mode);
+            } else {
+                modalContainerEl.style.width = '';
+                modalContainerEl.style.height = '';
+            }
 
             modalBodyDual.classList.toggle('mode-portrait', item.mode === 'portrait');
 
@@ -1359,8 +1383,9 @@
                 modalBodyDual.classList.add('single-mode');
                 leftColumn.style.display = 'none';
                 rightColumn.style.display = 'flex';
+                // 팝업 헤더에 이미 제목이 표시되므로, 컬럼 헤더에는 다운로드 버튼만 남기고 제목은 비워서 중복 표시를 없앰
                 rightColumnHeader.style.display = 'flex';
-                rightTitle.textContent = item.title ? item.title.replace('<br>', ' ') : '';
+                rightTitle.textContent = '';
                 rightBadgeEl.style.display = 'none';
                 videoRight.src = encodeVideoUrl(item.fullUrl);
                 videoRight.load();
