@@ -474,7 +474,10 @@
         <div class="modal-container">
             <div class="modal-header">
                 <span id="modalHeaderTitle" class="modal-header-title">시안 비교</span>
-                <button class="close-btn" onclick="requestClose()">✕</button>
+                <div class="column-header-actions">
+                    <button id="modalHeaderDownloadBtn" class="btn-download-video" style="display: none;" onclick="event.stopPropagation(); downloadVideoSrc('videoRight')">다운로드</button>
+                    <button class="close-btn" onclick="requestClose()">✕</button>
+                </div>
             </div>
             <div id="modalBodyDual" class="modal-body-dual">
                 <div id="leftColumn" class="dual-column">
@@ -1219,6 +1222,7 @@
 
         const modal = document.getElementById('videoModal');
         const modalHeaderTitle = document.getElementById('modalHeaderTitle');
+        const modalHeaderDownloadBtn = document.getElementById('modalHeaderDownloadBtn');
         const modalBodyDual = document.getElementById('modalBodyDual');
         const leftColumn = document.getElementById('leftColumn');
         const rightColumn = document.getElementById('rightColumn');
@@ -1261,7 +1265,8 @@
 
             // 컬럼 안의 제목바(태그/배지/다운로드 버튼)도 세로 공간을 차지하므로 반드시 포함해야 함
             const colHeaderEl = colEl.querySelector('.column-header');
-            const colHeaderH = colHeaderEl.getBoundingClientRect().height || 38;
+            // display:none이면 실제로 0이 맞음 (싱글 모드는 컬럼 헤더 자체를 숨기므로) - fallback으로 덮어쓰면 안 됨
+            const colHeaderH = colHeaderEl.getBoundingClientRect().height;
 
             const containerStyle = getComputedStyle(modalContainerEl);
             const containerBorderX = (parseFloat(containerStyle.borderLeftWidth) || 0) + (parseFloat(containerStyle.borderRightWidth) || 0);
@@ -1313,9 +1318,9 @@
                 modalBodyDual.classList.add('single-mode');
                 leftColumn.style.display = 'none';
                 rightColumn.style.display = 'flex';
-                // 팝업 헤더에 이미 제목이 표시되므로, 컬럼 헤더에는 다운로드 버튼만 남기고 제목은 비워서 중복 표시를 없앰
-                rightColumnHeader.style.display = 'flex';
-                rightTitle.textContent = '';
+                // 싱글 모드는 팝업 헤더 하나로 제목+다운로드를 합치고, 컬럼 헤더는 아예 없애서 영상이 바로 이어지게 함
+                rightColumnHeader.style.display = 'none';
+                modalHeaderDownloadBtn.style.display = 'inline-block';
                 rightBadgeEl.style.display = 'none';
                 videoRight.src = encodeVideoUrl(item.fullUrl);
                 videoRight.load();
@@ -1324,6 +1329,7 @@
                 leftColumn.style.display = 'flex';
                 rightColumn.style.display = 'flex';
                 rightColumnHeader.style.display = 'flex';
+                modalHeaderDownloadBtn.style.display = 'none';
 
                 // 좌측/우측 제목 표시
                 leftTitle.textContent = item.leftTitle || '좌측 비디오';
