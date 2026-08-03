@@ -1236,7 +1236,7 @@
             openDualModal(item);
         }
 
-        function sizeModalForSingleVideo(mode) {
+        function sizeModalForVideo(mode, isSingle) {
             // 모바일은 항상 꽉 채운 전체화면 레이아웃을 쓰므로 CSS에 맡기고 건드리지 않음
             if (window.innerWidth < 768) {
                 modalContainerEl.style.width = '';
@@ -1245,15 +1245,23 @@
             }
 
             const headerH = 44;
+            const bodyPadding = 16; // .modal-body-dual padding: 1rem (데스크톱)
+            const gap = 16; // .modal-body-dual gap: 1rem (데스크톱, 듀얼 모드일 때만 적용)
             const maxH = window.innerHeight * 0.94;
             const maxW = Math.min(window.innerWidth * 0.95, 1800);
-            const ratio = mode === 'portrait' ? 9 / 16 : 16 / 9; // width / height
+            const ratio = mode === 'portrait' ? 9 / 16 : 16 / 9; // 컬럼 1개의 width / height
 
             let targetH = maxH;
-            let targetW = (targetH - headerH) * ratio;
+            let contentH = targetH - headerH - bodyPadding * 2;
+            let colW = contentH * ratio;
+            let targetW = isSingle ? (colW + bodyPadding * 2) : (colW * 2 + gap + bodyPadding * 2);
+
             if (targetW > maxW) {
                 targetW = maxW;
-                targetH = targetW / ratio + headerH;
+                const availContentW = targetW - bodyPadding * 2 - (isSingle ? 0 : gap);
+                colW = isSingle ? availContentW : availContentW / 2;
+                contentH = colW / ratio;
+                targetH = contentH + headerH + bodyPadding * 2;
             }
 
             modalContainerEl.style.width = Math.round(targetW) + 'px';
@@ -1266,14 +1274,8 @@
             resetProgressUI('fillLeft', 'timeLeft');
             resetProgressUI('fillRight', 'timeRight');
 
-            // 싱글(1개) 영상은 팝업 자체를 실제 화면비에 맞춰 리사이즈해서 좌우/상하 여백을 없앰
-            // (듀얼 비교 모드는 기존처럼 CSS 미디어쿼리가 크기를 담당)
-            if (item.isSingle) {
-                sizeModalForSingleVideo(item.mode);
-            } else {
-                modalContainerEl.style.width = '';
-                modalContainerEl.style.height = '';
-            }
+            // 팝업 자체를 실제 화면비(싱글=1개, 듀얼=2개 나란히)에 맞춰 리사이즈해서 여백을 없앰
+            sizeModalForVideo(item.mode, item.isSingle);
 
             modalBodyDual.classList.toggle('mode-portrait', item.mode === 'portrait');
 
