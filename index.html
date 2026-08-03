@@ -131,6 +131,11 @@
             .modal-body-dual.mode-portrait .column-media { flex: none; min-height: 0; height: auto; aspect-ratio: 9 / 16; }
         }
 
+        /* 데스크톱에서 싱글(1개) 세로 영상은 그리드 전체 너비 대신 실제 화면비만큼만 차지하도록 해서, 좌우로 불필요하게 넓은 여백이 안 생기게 함 */
+        @media (min-width: 768px) {
+            .modal-body-dual.single-mode.mode-portrait .dual-column { width: auto; aspect-ratio: 9 / 16; justify-self: center; }
+        }
+
         .column-header { height: 38px; padding: 0 0.8rem; background: #18181b; border-bottom: 1px solid var(--border-color); font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; gap: 0.5rem; }
         .column-header .badge { font-size: 0.65rem; padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 800; }
         .column-header-actions { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
@@ -209,6 +214,10 @@
         .video-card.drag-over { border: 2px dashed var(--accent-blue); }
         .drag-handle { position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.6); color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; z-index: 10; cursor: grab; }
         .video-card:hover .drag-handle { background: rgba(0,0,0,0.8); }
+
+        .file-item.draggable { cursor: grab; }
+        .file-item.dragging { opacity: 0.5; cursor: grabbing; }
+        .file-item.drag-over { border: 2px dashed var(--accent-blue); }
     </style>
 </head>
 <body>
@@ -1567,15 +1576,19 @@
         window.addEventListener('load', handleHashChange);
 
         // Library Functions
+        let currentLibraryFiles = [];
+
         async function loadLibraryFiles() {
             try {
-                const res = await fetch(`${SUPABASE_URL}/rest/v1/library_files?select=*&order=created_at.desc`, {
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/library_files?select=*&order=display_order.asc`, {
                     headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
                 });
                 const files = await res.json();
-                renderLibraryFiles(files);
+                currentLibraryFiles = Array.isArray(files) ? files : [];
+                renderLibraryFiles(currentLibraryFiles);
             } catch (e) {
                 console.error("파일 로드 실패:", e);
+                currentLibraryFiles = [];
                 renderLibraryFiles([]);
             }
         }
@@ -1587,7 +1600,7 @@
                 return;
             }
 
-            container.innerHTML = files.map(file => {
+            container.innerHTML = files.map((file, index) => {
                 const fileSize = file.file_size ? formatFileSize(file.file_size) : '';
                 const uploadDate = file.created_at ? new Date(file.created_at).toLocaleDateString('ko-KR') : '';
 
@@ -1607,8 +1620,12 @@
                 const editBtn = isAdmin ? `<button class="btn-edit-file" onclick='openFileEditModal(${file.id}, "${safeFileName}")'>수정</button>` : '';
                 const deleteBtn = isAdmin ? `<button class="btn-delete-file" onclick='deleteLibraryFile(${file.id}, "${safeUrl}")'>삭제</button>` : '';
 
+                const draggableAttrs = isAdmin
+                    ? `draggable="true" ondragstart="handleFileDragStart(event, ${index})" ondragover="handleFileDragOver(event)" ondrop="handleFileDrop(event, ${index})" ondragend="handleFileDragEnd(event)"`
+                    : '';
+
                 return `
-                    <div class="file-item">
+                    <div class="file-item ${isAdmin ? 'draggable' : ''}" ${draggableAttrs}>
                         <div class="file-icon">${icon}</div>
                         <div class="file-info">
                             <div class="file-name">${file.file_name}</div>
@@ -1623,6 +1640,67 @@
                     </div>
                 `;
             }).join('');
+        }
+
+        let draggedFileIndex = null;
+
+        function handleFileDragStart(event, index) {
+            draggedFileIndex = index;
+            event.currentTarget.classList.add('dragging');
+            event.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleFileDragOver(event) {
+            event.preventDefault();
+            event.dataTransfer.dropEffect = 'move';
+            const target = event.currentTarget;
+            if (draggedFileIndex !== null && target.classList.contains('file-item')) {
+                target.classList.add('drag-over');
+            }
+        }
+
+        function handleFileDrop(event, targetIndex) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const target = event.currentTarget;
+            target.classList.remove('drag-over');
+
+            if (draggedFileIndex === null || draggedFileIndex === targetIndex) return;
+
+            const [movedItem] = currentLibraryFiles.splice(draggedFileIndex, 1);
+            currentLibraryFiles.splice(targetIndex, 0, movedItem);
+
+            saveFileOrder(currentLibraryFiles);
+            renderLibraryFiles(currentLibraryFiles);
+        }
+
+        function handleFileDragEnd(event) {
+            event.currentTarget.classList.remove('dragging');
+            document.querySelectorAll('.file-item.drag-over').forEach(el => {
+                el.classList.remove('drag-over');
+            });
+            draggedFileIndex = null;
+        }
+
+        async function saveFileOrder(files) {
+            try {
+                for (let i = 0; i < files.length; i++) {
+                    const res = await callAdminRpc('admin_update_library_file_order', {
+                        p_file_id: files[i].id,
+                        p_new_order: i
+                    });
+                    if (!res.ok) {
+                        const errorText = await res.text();
+                        throw new Error(`상태 코드 ${res.status}: ${errorText}`);
+                    }
+                }
+                console.log('파일 순서 저장 완료');
+            } catch (e) {
+                console.error('파일 순서 저장 실패:', e);
+                alert('순서 저장 중 오류가 발생했습니다: ' + e.message);
+                loadLibraryFiles();
+            }
         }
 
         function getFileExt(name) {
