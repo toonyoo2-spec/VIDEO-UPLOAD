@@ -250,6 +250,25 @@
         .note-date-section { margin-bottom: 2rem; }
         .note-date-section > .date-badge { display: inline-block; margin-bottom: 0.8rem; }
 
+        /* Note 왼쪽 사이드바 (노션 스타일 작성자/날짜 네비게이션) */
+        .note-list-layout { display: flex; gap: 2.5rem; align-items: flex-start; margin-top: 1.5rem; }
+        .note-sidebar { flex: 0 0 170px; position: sticky; top: 90px; }
+        .note-sidebar-section { margin-bottom: 1.6rem; }
+        .note-sidebar-label { font-size: 0.7rem; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.4rem; padding: 0 0.6rem; }
+        .note-sidebar-list { display: flex; flex-direction: column; gap: 0.1rem; }
+        .note-sidebar-item { background: none; border: none; text-align: left; padding: 0.45rem 0.6rem; border-radius: 6px; color: var(--text-secondary); font-size: 0.85rem; cursor: pointer; font-weight: 600; font-family: inherit; }
+        .note-sidebar-item:hover { background: rgba(255, 255, 255, 0.06); color: var(--text-primary); }
+        .note-sidebar-item.active { background: rgba(239, 68, 68, 0.15); color: var(--accent-red); font-weight: 800; }
+        .note-main { flex: 1; min-width: 0; }
+
+        @media (max-width: 767px) {
+            .note-list-layout { flex-direction: column; gap: 1rem; }
+            .note-sidebar { flex: none; width: 100%; position: static; display: flex; gap: 1.5rem; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 0.3rem; }
+            .note-sidebar-section { margin-bottom: 0; flex-shrink: 0; }
+            .note-sidebar-list { flex-direction: row; gap: 0.4rem; }
+            .note-sidebar-item { white-space: nowrap; }
+        }
+
         /* 드래그 앤 드롭 스타일 */
         .video-card.draggable { cursor: grab; }
         .video-card.dragging { opacity: 0.5; cursor: grabbing; }
@@ -327,12 +346,24 @@
 
         <!-- Note Page -->
         <main id="noteContainer" class="grid-layout-align" style="display: none;">
-            <div id="noteListView">
-                <div class="note-editor-header">
-                    <div id="noteAuthorTabs" class="nav-row"></div>
-                    <button class="btn-admin-action" style="display: inline-block;" onclick="openNoteEditor()">+ 새 글</button>
+            <div id="noteListView" class="note-list-layout">
+                <aside class="note-sidebar">
+                    <div class="note-sidebar-section">
+                        <div class="note-sidebar-label">작성자</div>
+                        <div id="noteAuthorTabs" class="note-sidebar-list"></div>
+                    </div>
+                    <div class="note-sidebar-section">
+                        <div class="note-sidebar-label">날짜</div>
+                        <div id="noteDateTabs" class="note-sidebar-list"></div>
+                    </div>
+                </aside>
+                <div class="note-main">
+                    <div class="note-editor-header">
+                        <div></div>
+                        <button class="btn-admin-action" style="display: inline-block;" onclick="openNoteEditor()">+ 새 글</button>
+                    </div>
+                    <div id="noteListContainer"></div>
                 </div>
-                <div id="noteListContainer"></div>
             </div>
             <div id="noteEditorView" style="display: none;">
                 <div class="note-editor-header">
@@ -1721,6 +1752,7 @@
         let currentNoteId = null;
         let noteEditMode = false;
         let noteAuthorFilter = 'ALL';
+        let noteDateFilter = 'ALL';
 
         async function loadNotes() {
             try {
@@ -1741,22 +1773,32 @@
 
         function noteAuthorName(n) { return (n.author_email || '').split('@')[0] || '알 수 없음'; }
 
-        function renderNoteAuthorTabs() {
-            const tabsContainer = document.getElementById('noteAuthorTabs');
+        function renderNoteSidebar() {
+            const authorTabs = document.getElementById('noteAuthorTabs');
             const authors = Array.from(new Set(currentNotes.map(noteAuthorName))).sort();
-            let html = `<button class="tab-btn ${noteAuthorFilter === 'ALL' ? 'active' : ''}" onclick="setNoteAuthorFilter('ALL')">전체</button>`;
+            let authorHtml = `<button class="note-sidebar-item ${noteAuthorFilter === 'ALL' ? 'active' : ''}" onclick="setNoteAuthorFilter('ALL')">전체</button>`;
             authors.forEach(a => {
-                html += `<button class="tab-btn ${noteAuthorFilter === a ? 'active' : ''}" onclick="setNoteAuthorFilter('${a}')">${a}</button>`;
+                authorHtml += `<button class="note-sidebar-item ${noteAuthorFilter === a ? 'active' : ''}" onclick="setNoteAuthorFilter('${a}')">${a}</button>`;
             });
-            tabsContainer.innerHTML = html;
+            authorTabs.innerHTML = authorHtml;
+
+            const dateTabs = document.getElementById('noteDateTabs');
+            const dates = Array.from(new Set(currentNotes.map(n => (n.created_at || '').slice(0, 10)).filter(Boolean))).sort().reverse();
+            let dateHtml = `<button class="note-sidebar-item ${noteDateFilter === 'ALL' ? 'active' : ''}" onclick="setNoteDateFilter('ALL')">전체</button>`;
+            dates.forEach(d => {
+                dateHtml += `<button class="note-sidebar-item ${noteDateFilter === d ? 'active' : ''}" onclick="setNoteDateFilter('${d}')">${d.replace(/-/g, '.')}</button>`;
+            });
+            dateTabs.innerHTML = dateHtml;
         }
 
         function setNoteAuthorFilter(author) { noteAuthorFilter = author; renderNoteList(); }
+        function setNoteDateFilter(date) { noteDateFilter = date; renderNoteList(); }
 
         function renderNoteList() {
-            renderNoteAuthorTabs();
+            renderNoteSidebar();
             const container = document.getElementById('noteListContainer');
-            const filtered = noteAuthorFilter === 'ALL' ? currentNotes : currentNotes.filter(n => noteAuthorName(n) === noteAuthorFilter);
+            let filtered = noteAuthorFilter === 'ALL' ? currentNotes : currentNotes.filter(n => noteAuthorName(n) === noteAuthorFilter);
+            if (noteDateFilter !== 'ALL') filtered = filtered.filter(n => (n.created_at || '').slice(0, 10) === noteDateFilter);
 
             if (filtered.length === 0) {
                 container.innerHTML = '<div class="note-empty">아직 작성된 글이 없습니다. "+ 새 글"로 시작해보세요.</div>';
@@ -1834,7 +1876,7 @@
 
         function closeNoteEditor() {
             document.getElementById('noteEditorView').style.display = 'none';
-            document.getElementById('noteListView').style.display = 'block';
+            document.getElementById('noteListView').style.display = 'flex';
             toggleNoteVideoLinkInput(false);
             currentNoteId = null;
             noteEditMode = false;
