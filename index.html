@@ -330,7 +330,7 @@
                     <button class="btn-cancel" onclick="closeNoteEditor()">← 목록으로</button>
                     <div style="display: flex; gap: 0.5rem;">
                         <button class="admin-delete-badge" id="noteDeleteBtn" style="display: none;" onclick="deleteCurrentNote()">삭제</button>
-                        <button class="btn-submit" onclick="saveCurrentNote()">저장</button>
+                        <button class="btn-submit" id="noteSaveBtn" onclick="saveCurrentNote()">저장</button>
                     </div>
                 </div>
                 <input type="text" id="noteTitleInput" class="note-title-input" placeholder="제목을 입력하세요">
@@ -1708,14 +1708,25 @@
             }).join('');
         }
 
+        function canEditNote(note) {
+            if (!note) return true; // 새 글은 작성자 본인이니 항상 편집 가능
+            return userRole === 'editor' || note.author_id === currentUserId;
+        }
+
         function openNoteEditor(id) {
             currentNoteId = id || null;
             const note = currentNoteId ? currentNotes.find(n => n.id === currentNoteId) : null;
+            const editable = canEditNote(note);
+
             document.getElementById('noteTitleInput').value = note ? note.title : '';
+            document.getElementById('noteTitleInput').readOnly = !editable;
             document.getElementById('noteContentEditable').innerHTML = note ? (note.content || '') : '';
-            document.getElementById('noteDeleteBtn').style.display = note ? 'inline-block' : 'none';
+            document.getElementById('noteContentEditable').contentEditable = editable ? 'true' : 'false';
+            document.querySelector('.note-toolbar').style.display = editable ? 'flex' : 'none';
+            document.getElementById('noteDeleteBtn').style.display = (note && editable) ? 'inline-block' : 'none';
+            document.getElementById('noteSaveBtn').style.display = editable ? 'inline-block' : 'none';
             document.getElementById('noteMetaInfo').textContent = note
-                ? `작성자: ${(note.author_email || '').split('@')[0]} · 마지막 수정: ${new Date(note.updated_at).toLocaleString('ko-KR')}`
+                ? `작성자: ${(note.author_email || '').split('@')[0]} · 마지막 수정: ${new Date(note.updated_at).toLocaleString('ko-KR')}${editable ? '' : ' · 읽기 전용 (작성자만 수정 가능)'}`
                 : '새 글 작성 중';
             document.getElementById('noteListView').style.display = 'none';
             document.getElementById('noteEditorView').style.display = 'block';
