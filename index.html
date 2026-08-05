@@ -21,6 +21,27 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg-dark); color: var(--text-primary); line-height: 1.6; overflow-x: hidden; }
 
+        /* --- 로그인 화면 스타일 --- */
+        #loginScreen {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: var(--bg-dark); display: flex; align-items: center; justify-content: center;
+            z-index: 99999;
+        }
+        .login-box {
+            background: #121212; border: 1px solid var(--border-color);
+            padding: 2.5rem 2.5rem; border-radius: 12px; width: 90%; max-width: 400px;
+            display: flex; flex-direction: column; gap: 1.2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+        }
+        .login-title { font-size: 1.8rem; font-weight: 800; color: var(--accent-red); text-align: center; margin-bottom: 0.5rem; letter-spacing: -1px; }
+        .login-input-group { display: flex; flex-direction: column; gap: 0.4rem; }
+        .login-input-group label { font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); }
+        .login-input { background: #18181b; border: 1px solid var(--border-color); color: white; padding: 0.9rem; border-radius: 8px; outline: none; font-size: 0.95rem; }
+        .login-input:focus { border-color: var(--accent-red); }
+        .btn-login { background: var(--accent-red); color: white; border: none; padding: 0.9rem; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 1rem; margin-top: 1rem; transition: background 0.2s; }
+        .btn-login:hover { background: #dc2626; }
+
+        /* --- 메인 앱 스타일 --- */
         .grid-layout-align {
             max-width: var(--container-max-width);
             margin-left: auto; margin-right: auto;
@@ -105,7 +126,6 @@
         .modal-overlay.active { display: flex; }
         .modal-container { position: relative; background: #0b0b0b; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.18); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 25px 70px rgba(0, 0, 0, 0.7); overflow: hidden; display: flex; flex-direction: column; width: 100vw; height: 92vh; }
 
-        /* ⚠️ 이 규칙 딱 하나만 존재해야 합니다 (예전에 중복된 낡은 규칙이 이 값을 덮어쓰고 있었음) */
         @media (min-width: 768px) {
             .modal-overlay { padding: 1rem; }
             .modal-container { width: 95vw; max-width: 1800px; height: 94vh; max-height: none; border-radius: 16px; }
@@ -115,9 +135,6 @@
         .modal-header-title { font-size: 0.9rem; font-weight: 800; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 0.5rem; }
         .close-btn { background: none; border: none; color: var(--text-secondary); font-size: 1.4rem; cursor: pointer; padding: 0.2rem; }
 
-        /* 모바일은 grid가 아닌 flex-column을 사용합니다. grid-auto-rows가 aspect-ratio로 계산되는
-           자식 높이를 무시하고 트랙을 균등 분할해버려서, 두 번째 영상이 첫 번째 영상 위로 겹치는
-           버그가 있었습니다 (Chromium: auto row + align-self:start + aspect-ratio 조합 이슈). */
         .modal-body-dual { flex: 1; display: flex; flex-direction: column; gap: 0.8rem; padding: 0.6rem; background: #ededed; overflow-y: auto; }
         @media (min-width: 768px) { .modal-body-dual { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding: 1rem; overflow: hidden; } }
         .modal-body-dual.single-mode { grid-template-columns: 1fr !important; }
@@ -125,7 +142,6 @@
         .dual-column { display: flex; flex-direction: column; flex-shrink: 0; background: #121212; border-radius: 8px; border: 1px solid var(--border-color); overflow: hidden; min-height: 320px; }
         @media (min-width: 768px) { .dual-column { height: 100%; min-height: 0; } }
 
-        /* 모바일에서 세로(9:16) 영상은 고정 높이 대신 실제 화면비로 박스 크기를 잡아서, 위아래로 쌓여도 레터박스 없이 꽉 차게 보이게 함 */
         @media (max-width: 767px) {
             .modal-body-dual.mode-portrait .dual-column { min-height: 0; height: auto; }
             .modal-body-dual.mode-portrait .column-media { flex: none; min-height: 0; height: auto; aspect-ratio: 9 / 16; }
@@ -217,316 +233,344 @@
 </head>
 <body>
 
-    <header class="grid-layout-align">
-        <div class="header-tag" id="mainHeaderTitle">Socra Brandteam</div>
-        <div style="display: flex; gap: 0.8rem; align-items: center;">
-            <button id="btnAddProject" class="btn-admin-action" onclick="openProjectModal()">+ 새 프로젝트</button>
-        </div>
-    </header>
-
-    <!-- Main Menu Navigation -->
-    <div class="main-menu-wrapper">
-        <div class="main-menu-container grid-layout-align">
-            <a href="#archive" class="main-menu-tab active" onclick="switchMainTab('archive')">아카이브</a>
-            <a href="#library" class="main-menu-tab" onclick="switchMainTab('library')">자료실</a>
+    <!-- 1. 로그인 스크린 (앱 진입 전 게이트) -->
+    <div id="loginScreen">
+        <div class="login-box">
+            <div class="login-title">Socra Brandteam</div>
+            <div style="text-align: center; color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem;">
+                워크스페이스에 접근하려면 로그인하세요.
+            </div>
+            <div class="login-input-group">
+                <label>이메일</label>
+                <input type="email" id="inputLoginEmail" class="login-input" placeholder="이메일을 입력하세요" onkeypress="if(event.key==='Enter') document.getElementById('inputLoginPw').focus()">
+            </div>
+            <div class="login-input-group">
+                <label>비밀번호</label>
+                <input type="password" id="inputLoginPw" class="login-input" placeholder="비밀번호를 입력하세요" onkeypress="if(event.key==='Enter') submitLogin()">
+            </div>
+            <button class="btn-login" onclick="submitLogin()">로그인</button>
         </div>
     </div>
 
-    <div class="nav-bar-wrapper">
-        <div class="nav-bar-container grid-layout-align">
-            <div class="nav-row">
-                <button id="btnAll" class="tab-btn active" onclick="filterYear('ALL')">ALL</button>
-                <div id="yearTabs" style="display:flex; gap:0.5rem;"></div>
-                <div id="monthTabs" style="display:none; gap:0.4rem; padding-left: 0.5rem; border-left: 1px solid var(--border-color);"></div>
+    <!-- 2. 메인 앱 컨테이너 (로그인 성공 시 보임) -->
+    <div id="appContainer" style="display: none;">
+        <header class="grid-layout-align">
+            <div class="header-tag" id="mainHeaderTitle">Socra Brandteam</div>
+            <div style="display: flex; gap: 0.8rem; align-items: center;">
+                <button id="btnAddProject" class="btn-admin-action" onclick="openProjectModal()">+ 새 프로젝트</button>
             </div>
-            <div id="quickLinks" class="nav-row-scroll"></div>
-        </div>
-    </div>
+        </header>
 
-    <!-- Archive Page -->
-    <main id="archiveContainer" class="grid-layout-align" style="display: block;"></main>
-
-    <!-- Library Page -->
-    <main id="libraryContainer" class="grid-layout-align" style="display: none;">
-        <div style="margin-top: 1.5rem;">
-            <div id="libraryHeaderAdmin" class="library-header" style="display: none;">
-                <button class="btn-admin-action" style="display: inline-block;" onclick="openFileUploadModal()">+ 파일 업로드</button>
+        <!-- Main Menu Navigation -->
+        <div class="main-menu-wrapper">
+            <div class="main-menu-container grid-layout-align">
+                <a href="#archive" class="main-menu-tab active" onclick="switchMainTab('archive')">아카이브</a>
+                <a href="#library" class="main-menu-tab" onclick="switchMainTab('library')">자료실</a>
+                <a href="#note" class="main-menu-tab" id="noteTab" style="display: none;" onclick="switchMainTab('note')">Note</a>
             </div>
-            <div id="fileListContainer" class="file-list"></div>
         </div>
-    </main>
 
-    <button class="top-btn" onclick="scrollToTop()">TOP ▲</button>
+        <div class="nav-bar-wrapper">
+            <div class="nav-bar-container grid-layout-align">
+                <div class="nav-row">
+                    <button id="btnAll" class="tab-btn active" onclick="filterYear('ALL')">ALL</button>
+                    <div id="yearTabs" style="display:flex; gap:0.5rem;"></div>
+                    <div id="monthTabs" style="display:none; gap:0.4rem; padding-left: 0.5rem; border-left: 1px solid var(--border-color);"></div>
+                </div>
+                <div id="quickLinks" class="nav-row-scroll"></div>
+            </div>
+        </div>
 
-    <footer class="grid-layout-align" style="padding-bottom: 2rem; font-size: 0.8rem;">
-        &copy; 2026 SOCRA BRAND TEAM. ALL RIGHTS RESERVED. <span style="color:var(--text-secondary);">by Kwanyun</span>
-        &nbsp;·&nbsp;
-        <span id="adminToggleBtn" style="cursor:pointer; text-decoration:underline; color:var(--text-secondary);" onclick="handleAdminToggle()">관리자 로그인</span>
-    </footer>
+        <!-- Archive Page -->
+        <main id="archiveContainer" class="grid-layout-align" style="display: block;"></main>
+
+        <!-- Library Page -->
+        <main id="libraryContainer" class="grid-layout-align" style="display: none;">
+            <div style="margin-top: 1.5rem;">
+                <div id="libraryHeaderAdmin" class="library-header" style="display: none;">
+                    <button class="btn-admin-action" style="display: inline-block;" onclick="openFileUploadModal()">+ 파일 업로드</button>
+                </div>
+                <div id="fileListContainer" class="file-list"></div>
+            </div>
+        </main>
+
+        <!-- Note Page -->
+        <main id="noteContainer" class="grid-layout-align" style="display: none;">
+            <div style="margin-top: 1.5rem; text-align: center; padding: 3rem; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color);">
+                <h3>Note 기능 준비 중</h3>
+                <p style="color: var(--text-secondary); margin-top: 1rem;">다음 스텝에서 에디터가 연동될 공간입니다.</p>
+            </div>
+        </main>
+
+        <button class="top-btn" onclick="scrollToTop()">TOP ▲</button>
+
+        <footer class="grid-layout-align" style="padding-bottom: 2rem; font-size: 0.8rem;">
+            &copy; 2026 SOCRA BRAND TEAM. ALL RIGHTS RESERVED. <span style="color:var(--text-secondary);">by Kwanyun</span>
+            &nbsp;·&nbsp;
+            <span id="logoutBtn" style="cursor:pointer; text-decoration:underline; color:var(--text-secondary);" onclick="handleLogout()">로그아웃</span>
+        </footer>
+
+        <!-- 모달 모음 -->
+        <div id="projectModal" class="admin-modal-overlay">
+            <div class="admin-modal-box">
+                <div class="admin-modal-title">새 프로젝트 생성</div>
+                <div class="admin-input-group">
+                    <label>날짜 (YYMMDD 형식, 예: 260801)</label>
+                    <input type="text" id="inputProjDate" class="admin-input" placeholder="260801">
+                </div>
+                <div class="admin-input-group">
+                    <label>프로젝트 제목</label>
+                    <input type="text" id="inputProjTitle" class="admin-input" placeholder="8월 영상 시안 모음">
+                </div>
+                <div class="admin-btn-row">
+                    <button class="btn-cancel" onclick="closeProjectModal()">취소</button>
+                    <button class="btn-submit" onclick="submitNewProject()">생성</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="projectEditModal" class="admin-modal-overlay">
+            <div class="admin-modal-box">
+                <div class="admin-modal-title">프로젝트 수정</div>
+                <input type="hidden" id="editProjTargetId">
+                <input type="hidden" id="editProjTargetDate">
+                <div class="admin-input-group">
+                    <label>프로젝트 제목</label>
+                    <input type="text" id="editProjTitleInput" class="admin-input">
+                </div>
+                <div class="admin-btn-row">
+                    <button class="btn-cancel" onclick="closeProjectEditModal()">취소</button>
+                    <button class="btn-submit" onclick="submitEditProject()">수정 완료</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="videoEditModal" class="admin-modal-overlay">
+            <div class="admin-modal-box">
+                <div class="admin-modal-title">영상 시안 정보 수정</div>
+                <input type="hidden" id="editVidTargetId">
+                <input type="hidden" id="editVidCurrentFullUrl">
+                <input type="hidden" id="editVidCurrentIntroUrl">
+                <input type="hidden" id="editVidProjectDate">
+                <div class="admin-input-group">
+                    <label>태그 (예: OPTION 01)</label>
+                    <input type="text" id="editVidTagInput" class="admin-input">
+                </div>
+                <div class="admin-input-group">
+                    <label>비디오 제목</label>
+                    <input type="text" id="editVidTitleInput" class="admin-input">
+                </div>
+                <div class="admin-input-group">
+                    <label>화면 비율 모드</label>
+                    <select id="editVidModeSelect" class="admin-input">
+                        <option value="landscape">가로 영상 (16:9)</option>
+                        <option value="portrait">세로 숏폼 (9:16)</option>
+                    </select>
+                </div>
+                <div class="admin-input-group" style="flex-direction: row; align-items: center; gap: 0.5rem;">
+                    <input type="checkbox" id="editVidDualCheck" onchange="toggleEditDualFields()" style="width: auto;">
+                    <label style="margin: 0;">듀얼 비교 모드 (INTRO + FULL)</label>
+                </div>
+                <div id="editDualIntroFields" style="display: none; flex-direction: column; gap: 0.6rem;">
+                    <div class="admin-input-group">
+                        <label>왼쪽(인트로) 제목</label>
+                        <input type="text" id="editVidLeftTitleInput" class="admin-input">
+                    </div>
+                    <div class="admin-input-group">
+                        <label>왼쪽 배지 텍스트 (선택, 비워두면 배지 숨김)</label>
+                        <input type="text" id="editVidLeftBadgeInput" class="admin-input" placeholder="ONLY INTRO">
+                    </div>
+                    <div class="admin-input-group">
+                        <label>인트로(왼쪽) 영상 교체 (선택, 비워두면 기존 파일 유지)</label>
+                        <input type="file" id="editFileVideoIntro" class="admin-input" accept="video/mp4,video/*">
+                    </div>
+                    <div class="admin-input-group">
+                        <label>우측(메인) 제목</label>
+                        <input type="text" id="editVidRightTitleInput" class="admin-input">
+                    </div>
+                    <div class="admin-input-group">
+                        <label>우측 배지 텍스트 (선택, 비워두면 배지 숨김)</label>
+                        <input type="text" id="editVidRightBadgeInput" class="admin-input" placeholder="FULL EXAMPLE">
+                    </div>
+                </div>
+                <div class="admin-input-group">
+                    <label id="editLabelFileVideoFull">영상 파일 교체 (선택, 비워두면 기존 파일 유지)</label>
+                    <input type="file" id="editFileVideoFull" class="admin-input" accept="video/mp4,video/*">
+                </div>
+                <div class="admin-btn-row">
+                    <button class="btn-cancel" onclick="closeVideoEditModal()">취소</button>
+                    <button class="btn-submit" onclick="submitEditVideo()">수정 완료</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="videoModalUpload" class="admin-modal-overlay">
+            <div class="admin-modal-box">
+                <div class="admin-modal-title">새 동영상 추가 (R2 자동 업로드)</div>
+                <input type="hidden" id="uploadTargetDate">
+                <div class="admin-input-group">
+                    <label>태그 (예: OPTION 01)</label>
+                    <input type="text" id="inputVidTag" class="admin-input" placeholder="OPTION 01">
+                </div>
+                <div class="admin-input-group">
+                    <label>비디오 제목</label>
+                    <input type="text" id="inputVidTitle" class="admin-input" placeholder="INTRO_REF_01">
+                </div>
+                <div class="admin-input-group">
+                    <label>화면 비율 모드</label>
+                    <select id="selectVidMode" class="admin-input">
+                        <option value="landscape">가로 영상 (16:9)</option>
+                        <option value="portrait">세로 숏폼 (9:16)</option>
+                    </select>
+                </div>
+                <div class="admin-input-group" style="flex-direction: row; align-items: center; gap: 0.5rem;">
+                    <input type="checkbox" id="checkVidDual" onchange="toggleDualUploadFields()" style="width: auto;">
+                    <label style="margin: 0;">듀얼 비교 모드 (INTRO + FULL 영상 2개 업로드)</label>
+                </div>
+                <div id="dualIntroFields" style="display: none; flex-direction: column; gap: 0.6rem;">
+                    <div class="admin-input-group">
+                        <label>왼쪽(인트로) 제목</label>
+                        <input type="text" id="inputVidLeftTitle" class="admin-input" placeholder="INTRO_02">
+                    </div>
+                    <div class="admin-input-group">
+                        <label>왼쪽 배지 텍스트 (선택, 비워두면 배지 숨김)</label>
+                        <input type="text" id="inputVidLeftBadge" class="admin-input" placeholder="ONLY INTRO">
+                    </div>
+                    <div class="admin-input-group">
+                        <label>인트로(왼쪽) 영상 파일 (.mp4)</label>
+                        <input type="file" id="inputFileVideoIntro" class="admin-input" accept="video/mp4,video/*">
+                    </div>
+                    <div class="admin-input-group">
+                        <label>우측(메인) 제목</label>
+                        <input type="text" id="inputVidRightTitle" class="admin-input" placeholder="우측 비디오 제목">
+                    </div>
+                    <div class="admin-input-group">
+                        <label>우측 배지 텍스트 (선택, 비워두면 배지 숨김)</label>
+                        <input type="text" id="inputVidRightBadge" class="admin-input" placeholder="FULL EXAMPLE">
+                    </div>
+                </div>
+                <div class="admin-input-group">
+                    <label id="labelFileVideoFull">영상 파일 (.mp4)</label>
+                    <input type="file" id="inputFileVideo" class="admin-input" accept="video/mp4,video/*">
+                </div>
+                <div class="admin-btn-row">
+                    <button class="btn-cancel" onclick="closeVideoUploadModal()">취소</button>
+                    <button class="btn-submit" onclick="submitNewVideo()">업로드 및 등록</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="fileUploadModal" class="admin-modal-overlay">
+            <div class="admin-modal-box">
+                <div class="admin-modal-title">파일 업로드</div>
+                <div class="admin-input-group">
+                    <label>파일 이름 (확장자 포함)</label>
+                    <input type="text" id="inputFileName" class="admin-input" placeholder="예: 문서.pdf">
+                </div>
+                <div class="admin-input-group">
+                    <label>파일 선택</label>
+                    <input type="file" id="inputLibraryFile" class="admin-input">
+                </div>
+                <div class="admin-btn-row">
+                    <button class="btn-cancel" onclick="closeFileUploadModal()">취소</button>
+                    <button class="btn-submit" onclick="submitFileUpload()">업로드</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="fileEditModal" class="admin-modal-overlay">
+            <div class="admin-modal-box">
+                <div class="admin-modal-title">파일 이름 수정</div>
+                <input type="hidden" id="editFileTargetId">
+                <div class="admin-input-group">
+                    <label>파일 이름 (확장자 포함)</label>
+                    <input type="text" id="editFileNameInput" class="admin-input">
+                </div>
+                <div class="admin-btn-row">
+                    <button class="btn-cancel" onclick="closeFileEditModal()">취소</button>
+                    <button class="btn-submit" onclick="submitEditFileName()">수정 완료</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="filePreviewModal" class="modal-overlay" onclick="closeFilePreview(event)">
+            <div class="modal-container">
+                <div class="modal-header">
+                    <span id="previewFileName" class="modal-header-title">파일 미리보기</span>
+                    <button class="close-btn" onclick="closeFilePreview()">✕</button>
+                </div>
+                <div style="flex: 1; display: flex; align-items: center; justify-content: center; background: #000; overflow: auto;">
+                    <img id="previewImage" style="max-width: 100%; max-height: 100%; object-fit: contain; display: none;">
+                    <video id="previewVideo" controls style="max-width: 100%; max-height: 100%; display: none;"></video>
+                    <iframe id="previewPdf" style="width: 100%; height: 100%; border: none; display: none;" allow="fullscreen"></iframe>
+                    <div id="previewUnsupported" style="color: var(--text-secondary); display: none;">이 파일 형식은 미리보기를 지원하지 않습니다.</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="videoModal" class="modal-overlay" onclick="closeVideo(event)">
+            <div class="modal-container">
+                <div class="modal-header">
+                    <span id="modalHeaderTitle" class="modal-header-title">시안 비교</span>
+                    <div class="column-header-actions">
+                        <button id="modalHeaderDownloadBtn" class="btn-download-video" style="display: none;" onclick="event.stopPropagation(); downloadVideoSrc('videoRight')">다운로드</button>
+                        <button class="close-btn" onclick="requestClose()">✕</button>
+                    </div>
+                </div>
+                <div id="modalBodyDual" class="modal-body-dual">
+                    <div id="leftColumn" class="dual-column">
+                        <div class="column-header">
+                            <span id="leftTitle" class="column-header-text">좌측 비디오 제목</span>
+                            <div class="column-header-actions">
+                                <span id="leftBadge" class="badge left-badge" style="display: none;">ONLY INTRO</span>
+                                <button class="btn-download-video" onclick="event.stopPropagation(); downloadVideoSrc('videoLeft')">다운로드</button>
+                            </div>
+                        </div>
+                        <div class="column-media" onclick="togglePlay('videoLeft', 'overlayLeft')">
+                            <div id="overlayLeft" class="overlay-play-btn"></div>
+                            <video id="videoLeft" preload="auto" playsinline controlsList="nodownload" disablePictureInPicture oncontextmenu="return false;"></video>
+                            <div class="video-control-bar" onclick="event.stopPropagation();">
+                                <div class="progress-container" onclick="seekVideo(event, 'videoLeft')">
+                                    <div class="progress-bg"><div id="fillLeft" class="progress-fill"></div></div>
+                                </div>
+                                <span id="timeLeft" class="time-display">00:00 / 00:00</span>
+                                <button class="fullscreen-btn" onclick="toggleFullscreen('videoLeft')" aria-label="전체화면">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3m11-5v3a2 2 0 0 1-2 2h-3"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="rightColumn" class="dual-column">
+                        <div id="rightColumnHeader" class="column-header">
+                            <span id="rightTitle" class="column-header-text">우측 비디오 제목</span>
+                            <div class="column-header-actions">
+                                <span id="rightBadge" class="badge right-badge" style="display: none;">FULL EXAMPLE</span>
+                                <button class="btn-download-video" onclick="event.stopPropagation(); downloadVideoSrc('videoRight')">다운로드</button>
+                            </div>
+                        </div>
+                        <div class="column-media" onclick="togglePlay('videoRight', 'overlayRight')">
+                            <div id="overlayRight" class="overlay-play-btn"></div>
+                            <video id="videoRight" preload="auto" playsinline controlsList="nodownload" disablePictureInPicture oncontextmenu="return false;"></video>
+                            <div class="video-control-bar" onclick="event.stopPropagation();">
+                                <div class="progress-container" onclick="seekVideo(event, 'videoRight')">
+                                    <div class="progress-bg"><div id="fillRight" class="progress-fill"></div></div>
+                                </div>
+                                <span id="timeRight" class="time-display">00:00 / 00:00</span>
+                                <button class="fullscreen-btn" onclick="toggleFullscreen('videoRight')" aria-label="전체화면">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3m11-5v3a2 2 0 0 1-2 2h-3"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> <!-- // end of appContainer -->
 
     <div id="loadingSpinner">
-        <div style="font-size: 1.1rem;" id="spinnerText">⏳ Cloudflare R2 스토리지로 영상 업로드 중...</div>
+        <div style="font-size: 1.1rem;" id="spinnerText">⏳ 처리 중...</div>
         <div style="font-size: 0.8rem; color: #a1a1aa;">대용량 파일의 경우 잠시만 기다려주세요.</div>
-    </div>
-
-    <!-- 모달 모음 (생성/수정/업로드/재생) -->
-    <div id="projectModal" class="admin-modal-overlay">
-        <div class="admin-modal-box">
-            <div class="admin-modal-title">새 프로젝트 생성</div>
-            <div class="admin-input-group">
-                <label>날짜 (YYMMDD 형식, 예: 260801)</label>
-                <input type="text" id="inputProjDate" class="admin-input" placeholder="260801">
-            </div>
-            <div class="admin-input-group">
-                <label>프로젝트 제목</label>
-                <input type="text" id="inputProjTitle" class="admin-input" placeholder="8월 영상 시안 모음">
-            </div>
-            <div class="admin-btn-row">
-                <button class="btn-cancel" onclick="closeProjectModal()">취소</button>
-                <button class="btn-submit" onclick="submitNewProject()">생성</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="projectEditModal" class="admin-modal-overlay">
-        <div class="admin-modal-box">
-            <div class="admin-modal-title">프로젝트 수정</div>
-            <input type="hidden" id="editProjTargetId">
-            <input type="hidden" id="editProjTargetDate">
-            <div class="admin-input-group">
-                <label>프로젝트 제목</label>
-                <input type="text" id="editProjTitleInput" class="admin-input">
-            </div>
-            <div class="admin-btn-row">
-                <button class="btn-cancel" onclick="closeProjectEditModal()">취소</button>
-                <button class="btn-submit" onclick="submitEditProject()">수정 완료</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="videoEditModal" class="admin-modal-overlay">
-        <div class="admin-modal-box">
-            <div class="admin-modal-title">영상 시안 정보 수정</div>
-            <input type="hidden" id="editVidTargetId">
-            <input type="hidden" id="editVidCurrentFullUrl">
-            <input type="hidden" id="editVidCurrentIntroUrl">
-            <input type="hidden" id="editVidProjectDate">
-            <div class="admin-input-group">
-                <label>태그 (예: OPTION 01)</label>
-                <input type="text" id="editVidTagInput" class="admin-input">
-            </div>
-            <div class="admin-input-group">
-                <label>비디오 제목</label>
-                <input type="text" id="editVidTitleInput" class="admin-input">
-            </div>
-            <div class="admin-input-group">
-                <label>화면 비율 모드</label>
-                <select id="editVidModeSelect" class="admin-input">
-                    <option value="landscape">가로 영상 (16:9)</option>
-                    <option value="portrait">세로 숏폼 (9:16)</option>
-                </select>
-            </div>
-            <div class="admin-input-group" style="flex-direction: row; align-items: center; gap: 0.5rem;">
-                <input type="checkbox" id="editVidDualCheck" onchange="toggleEditDualFields()" style="width: auto;">
-                <label style="margin: 0;">듀얼 비교 모드 (INTRO + FULL)</label>
-            </div>
-            <div id="editDualIntroFields" style="display: none; flex-direction: column; gap: 0.6rem;">
-                <div class="admin-input-group">
-                    <label>왼쪽(인트로) 제목</label>
-                    <input type="text" id="editVidLeftTitleInput" class="admin-input">
-                </div>
-                <div class="admin-input-group">
-                    <label>왼쪽 배지 텍스트 (선택, 비워두면 배지 숨김)</label>
-                    <input type="text" id="editVidLeftBadgeInput" class="admin-input" placeholder="ONLY INTRO">
-                </div>
-                <div class="admin-input-group">
-                    <label>인트로(왼쪽) 영상 교체 (선택, 비워두면 기존 파일 유지)</label>
-                    <input type="file" id="editFileVideoIntro" class="admin-input" accept="video/mp4,video/*">
-                </div>
-                <div class="admin-input-group">
-                    <label>우측(메인) 제목</label>
-                    <input type="text" id="editVidRightTitleInput" class="admin-input">
-                </div>
-                <div class="admin-input-group">
-                    <label>우측 배지 텍스트 (선택, 비워두면 배지 숨김)</label>
-                    <input type="text" id="editVidRightBadgeInput" class="admin-input" placeholder="FULL EXAMPLE">
-                </div>
-            </div>
-            <div class="admin-input-group">
-                <label id="editLabelFileVideoFull">영상 파일 교체 (선택, 비워두면 기존 파일 유지)</label>
-                <input type="file" id="editFileVideoFull" class="admin-input" accept="video/mp4,video/*">
-            </div>
-            <div class="admin-btn-row">
-                <button class="btn-cancel" onclick="closeVideoEditModal()">취소</button>
-                <button class="btn-submit" onclick="submitEditVideo()">수정 완료</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="videoModalUpload" class="admin-modal-overlay">
-        <div class="admin-modal-box">
-            <div class="admin-modal-title">새 동영상 추가 (R2 자동 업로드)</div>
-            <input type="hidden" id="uploadTargetDate">
-            <div class="admin-input-group">
-                <label>태그 (예: OPTION 01)</label>
-                <input type="text" id="inputVidTag" class="admin-input" placeholder="OPTION 01">
-            </div>
-            <div class="admin-input-group">
-                <label>비디오 제목</label>
-                <input type="text" id="inputVidTitle" class="admin-input" placeholder="INTRO_REF_01">
-            </div>
-            <div class="admin-input-group">
-                <label>화면 비율 모드</label>
-                <select id="selectVidMode" class="admin-input">
-                    <option value="landscape">가로 영상 (16:9)</option>
-                    <option value="portrait">세로 숏폼 (9:16)</option>
-                </select>
-            </div>
-            <div class="admin-input-group" style="flex-direction: row; align-items: center; gap: 0.5rem;">
-                <input type="checkbox" id="checkVidDual" onchange="toggleDualUploadFields()" style="width: auto;">
-                <label style="margin: 0;">듀얼 비교 모드 (INTRO + FULL 영상 2개 업로드)</label>
-            </div>
-            <div id="dualIntroFields" style="display: none; flex-direction: column; gap: 0.6rem;">
-                <div class="admin-input-group">
-                    <label>왼쪽(인트로) 제목</label>
-                    <input type="text" id="inputVidLeftTitle" class="admin-input" placeholder="INTRO_02">
-                </div>
-                <div class="admin-input-group">
-                    <label>왼쪽 배지 텍스트 (선택, 비워두면 배지 숨김)</label>
-                    <input type="text" id="inputVidLeftBadge" class="admin-input" placeholder="ONLY INTRO">
-                </div>
-                <div class="admin-input-group">
-                    <label>인트로(왼쪽) 영상 파일 (.mp4)</label>
-                    <input type="file" id="inputFileVideoIntro" class="admin-input" accept="video/mp4,video/*">
-                </div>
-                <div class="admin-input-group">
-                    <label>우측(메인) 제목</label>
-                    <input type="text" id="inputVidRightTitle" class="admin-input" placeholder="우측 비디오 제목">
-                </div>
-                <div class="admin-input-group">
-                    <label>우측 배지 텍스트 (선택, 비워두면 배지 숨김)</label>
-                    <input type="text" id="inputVidRightBadge" class="admin-input" placeholder="FULL EXAMPLE">
-                </div>
-            </div>
-            <div class="admin-input-group">
-                <label id="labelFileVideoFull">영상 파일 (.mp4)</label>
-                <input type="file" id="inputFileVideo" class="admin-input" accept="video/mp4,video/*">
-            </div>
-            <div class="admin-btn-row">
-                <button class="btn-cancel" onclick="closeVideoUploadModal()">취소</button>
-                <button class="btn-submit" onclick="submitNewVideo()">업로드 및 등록</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- File Upload Modal -->
-    <div id="fileUploadModal" class="admin-modal-overlay">
-        <div class="admin-modal-box">
-            <div class="admin-modal-title">파일 업로드</div>
-            <div class="admin-input-group">
-                <label>파일 이름 (확장자 포함)</label>
-                <input type="text" id="inputFileName" class="admin-input" placeholder="예: 문서.pdf">
-            </div>
-            <div class="admin-input-group">
-                <label>파일 선택</label>
-                <input type="file" id="inputLibraryFile" class="admin-input">
-            </div>
-            <div class="admin-btn-row">
-                <button class="btn-cancel" onclick="closeFileUploadModal()">취소</button>
-                <button class="btn-submit" onclick="submitFileUpload()">업로드</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- File Edit Modal -->
-    <div id="fileEditModal" class="admin-modal-overlay">
-        <div class="admin-modal-box">
-            <div class="admin-modal-title">파일 이름 수정</div>
-            <input type="hidden" id="editFileTargetId">
-            <div class="admin-input-group">
-                <label>파일 이름 (확장자 포함)</label>
-                <input type="text" id="editFileNameInput" class="admin-input">
-            </div>
-            <div class="admin-btn-row">
-                <button class="btn-cancel" onclick="closeFileEditModal()">취소</button>
-                <button class="btn-submit" onclick="submitEditFileName()">수정 완료</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- File Preview Modal -->
-    <div id="filePreviewModal" class="modal-overlay" onclick="closeFilePreview(event)">
-        <div class="modal-container">
-            <div class="modal-header">
-                <span id="previewFileName" class="modal-header-title">파일 미리보기</span>
-                <button class="close-btn" onclick="closeFilePreview()">✕</button>
-            </div>
-            <div style="flex: 1; display: flex; align-items: center; justify-content: center; background: #000; overflow: auto;">
-                <img id="previewImage" style="max-width: 100%; max-height: 100%; object-fit: contain; display: none;">
-                <video id="previewVideo" controls style="max-width: 100%; max-height: 100%; display: none;"></video>
-                <iframe id="previewPdf" style="width: 100%; height: 100%; border: none; display: none;" allow="fullscreen"></iframe>
-                <div id="previewUnsupported" style="color: var(--text-secondary); display: none;">이 파일 형식은 미리보기를 지원하지 않습니다.</div>
-            </div>
-        </div>
-    </div>
-
-    <div id="videoModal" class="modal-overlay" onclick="closeVideo(event)">
-        <div class="modal-container">
-            <div class="modal-header">
-                <span id="modalHeaderTitle" class="modal-header-title">시안 비교</span>
-                <div class="column-header-actions">
-                    <button id="modalHeaderDownloadBtn" class="btn-download-video" style="display: none;" onclick="event.stopPropagation(); downloadVideoSrc('videoRight')">다운로드</button>
-                    <button class="close-btn" onclick="requestClose()">✕</button>
-                </div>
-            </div>
-            <div id="modalBodyDual" class="modal-body-dual">
-                <div id="leftColumn" class="dual-column">
-                    <div class="column-header">
-                        <span id="leftTitle" class="column-header-text">좌측 비디오 제목</span>
-                        <div class="column-header-actions">
-                            <span id="leftBadge" class="badge left-badge" style="display: none;">ONLY INTRO</span>
-                            <button class="btn-download-video" onclick="event.stopPropagation(); downloadVideoSrc('videoLeft')">다운로드</button>
-                        </div>
-                    </div>
-                    <div class="column-media" onclick="togglePlay('videoLeft', 'overlayLeft')">
-                        <div id="overlayLeft" class="overlay-play-btn"></div>
-                        <video id="videoLeft" preload="auto" playsinline controlsList="nodownload" disablePictureInPicture oncontextmenu="return false;"></video>
-                        <div class="video-control-bar" onclick="event.stopPropagation();">
-                            <div class="progress-container" onclick="seekVideo(event, 'videoLeft')">
-                                <div class="progress-bg"><div id="fillLeft" class="progress-fill"></div></div>
-                            </div>
-                            <span id="timeLeft" class="time-display">00:00 / 00:00</span>
-                            <button class="fullscreen-btn" onclick="toggleFullscreen('videoLeft')" aria-label="전체화면">
-                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3m11-5v3a2 2 0 0 1-2 2h-3"/></svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="rightColumn" class="dual-column">
-                    <div id="rightColumnHeader" class="column-header">
-                        <span id="rightTitle" class="column-header-text">우측 비디오 제목</span>
-                        <div class="column-header-actions">
-                            <span id="rightBadge" class="badge right-badge" style="display: none;">FULL EXAMPLE</span>
-                            <button class="btn-download-video" onclick="event.stopPropagation(); downloadVideoSrc('videoRight')">다운로드</button>
-                        </div>
-                    </div>
-                    <div class="column-media" onclick="togglePlay('videoRight', 'overlayRight')">
-                        <div id="overlayRight" class="overlay-play-btn"></div>
-                        <video id="videoRight" preload="auto" playsinline controlsList="nodownload" disablePictureInPicture oncontextmenu="return false;"></video>
-                        <div class="video-control-bar" onclick="event.stopPropagation();">
-                            <div class="progress-container" onclick="seekVideo(event, 'videoRight')">
-                                <div class="progress-bg"><div id="fillRight" class="progress-fill"></div></div>
-                            </div>
-                            <span id="timeRight" class="time-display">00:00 / 00:00</span>
-                            <button class="fullscreen-btn" onclick="toggleFullscreen('videoRight')" aria-label="전체화면">
-                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3m11-5v3a2 2 0 0 1-2 2h-3"/></svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <script>
@@ -534,46 +578,141 @@
         const R2_PUBLIC_DOMAIN = "https://pub-427fa438eaa44e659bfdd77141c7ca95.r2.dev/";
         const SUPABASE_URL = "https://kblwddlquwlvumhwkirl.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtibHdkZGxxdXdsdnVtaHdraXJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3Mzg1NjksImV4cCI6MjEwMDMxNDU2OX0.OWH0eJXCGcJzjaMHqXWsurNuOEg4kNLuxpac6bxod1E";
-
-        // 🔒 R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY는 더 이상 여기 두지 않습니다.
-        // 업로드/삭제 로직은 Cloudflare Worker(r2-presign-worker)가 R2 바인딩으로 대신 처리합니다.
         const WORKER_PRESIGN_URL = "https://r2-presign-worker.kwan-yun.workers.dev";
 
         const ADMIN_TOKEN_KEY = 'socra_admin_token';
         const ADMIN_EXP_KEY = 'socra_admin_token_exp';
+        const USER_ROLE_KEY = 'socra_user_role';
+
         let adminToken = localStorage.getItem(ADMIN_TOKEN_KEY);
-        let isAdmin = !!(adminToken && Number(localStorage.getItem(ADMIN_EXP_KEY)) > Date.now());
-        if (!isAdmin && adminToken) {
+        let userRole = localStorage.getItem(USER_ROLE_KEY) || 'viewer';
+        let isAdmin = !!(adminToken && Number(localStorage.getItem(ADMIN_EXP_KEY)) > Date.now() && userRole === 'editor');
+        
+        // 토큰 만료 체크
+        if (adminToken && Number(localStorage.getItem(ADMIN_EXP_KEY)) <= Date.now()) {
+            adminToken = null;
+            userRole = 'viewer';
+            isAdmin = false;
             localStorage.removeItem(ADMIN_TOKEN_KEY);
             localStorage.removeItem(ADMIN_EXP_KEY);
-            adminToken = null;
+            localStorage.removeItem(USER_ROLE_KEY);
         }
 
-        let currentMainTab = 'archive'; // 'archive' or 'library'
+        let currentMainTab = 'archive'; 
 
-        // 관리자 전용 RPC 호출 공용 헬퍼. 비밀번호 확인은 서버(Postgres) 안에서만 이뤄지고,
-        // 여기서는 로그인 시 발급받은 세션 토큰만 함께 보냅니다.
-        async function callAdminRpc(fnName, params) {
-            // 토큰 만료 체크
-            if (!isAdmin || !adminToken) {
-                alert('관리자 권한이 필요합니다. 다시 로그인해주세요.');
+        // 앱 시작/분기 로직
+        async function initApp() {
+            const loginScreen = document.getElementById('loginScreen');
+            const appContainer = document.getElementById('appContainer');
+
+            if (adminToken) {
+                // 로그인 상태
+                loginScreen.style.display = 'none';
+                appContainer.style.display = 'block';
+                
+                applyAdminMode();
+                setupQuickLinksScroll();
+                await loadArchiveFromDB();
+            } else {
+                // 비로그인 상태
+                loginScreen.style.display = 'flex';
+                appContainer.style.display = 'none';
+            }
+        }
+
+        async function submitLogin() {
+            const email = document.getElementById('inputLoginEmail').value.trim();
+            const password = document.getElementById('inputLoginPw').value.trim();
+            
+            if (!email || !password) return alert('이메일과 비밀번호를 입력해주세요.');
+
+            const btn = document.querySelector('.btn-login');
+            btn.textContent = '로그인 중...';
+            btn.disabled = true;
+
+            try {
+                // 1. Supabase Auth 로그인 요청
+                const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+                    method: 'POST',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await res.json();
+
+                if (!res.ok) {
+                    btn.textContent = '로그인';
+                    btn.disabled = false;
+                    return alert('로그인 실패: 이메일이나 비밀번호를 확인해주세요.');
+                }
+
+                // 2. 권한(role) 가져오기
+                const profileRes = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${data.user.id}&select=role`, {
+                    headers: { 
+                        'apikey': SUPABASE_ANON_KEY, 
+                        'Authorization': `Bearer ${data.access_token}` 
+                    }
+                });
+                const profileData = await profileRes.json();
+                
+                if (profileData && profileData.length > 0) {
+                    userRole = profileData[0].role;
+                } else {
+                    userRole = 'viewer'; 
+                }
+
+                // 3. 상태 저장 및 UI 업데이트
+                adminToken = data.access_token;
+                isAdmin = (userRole === 'editor');
+                
+                localStorage.setItem(ADMIN_TOKEN_KEY, adminToken);
+                localStorage.setItem(ADMIN_EXP_KEY, String(Date.now() + (data.expires_in * 1000))); 
+                localStorage.setItem(USER_ROLE_KEY, userRole);
+                
+                // 로그인 창 비우기
+                document.getElementById('inputLoginEmail').value = '';
+                document.getElementById('inputLoginPw').value = '';
+                btn.textContent = '로그인';
+                btn.disabled = false;
+
+                initApp(); // 앱 실행
+            } catch (e) {
+                console.error("로그인 에러:", e);
+                alert('로그인 처리 중 오류가 발생했습니다.');
+                btn.textContent = '로그인';
+                btn.disabled = false;
+            }
+        }
+
+        function handleLogout() {
+            if (confirm('로그아웃 하시겠습니까?')) {
                 isAdmin = false;
                 adminToken = null;
+                userRole = 'viewer';
                 localStorage.removeItem(ADMIN_TOKEN_KEY);
                 localStorage.removeItem(ADMIN_EXP_KEY);
-                applyAdminMode();
-                throw new Error('Admin token expired or missing');
+                localStorage.removeItem(USER_ROLE_KEY);
+                
+                // 메인으로 되돌려놓고 앱 숨기기
+                switchMainTab('archive'); 
+                initApp();
             }
+        }
 
+        async function callAdminRpc(fnName, params) {
+            if (!adminToken) {
+                alert('로그인이 필요합니다.');
+                handleLogout();
+                throw new Error('No token');
+            }
             const expTime = Number(localStorage.getItem(ADMIN_EXP_KEY));
             if (expTime <= Date.now()) {
-                alert('관리자 세션이 만료되었습니다. 다시 로그인해주세요.');
-                isAdmin = false;
-                adminToken = null;
-                localStorage.removeItem(ADMIN_TOKEN_KEY);
-                localStorage.removeItem(ADMIN_EXP_KEY);
-                applyAdminMode();
-                throw new Error('Admin token expired');
+                alert('세션이 만료되었습니다. 다시 로그인해주세요.');
+                handleLogout();
+                throw new Error('Token expired');
             }
 
             return fetch(`${SUPABASE_URL}/rest/v1/rpc/${fnName}`, {
@@ -583,98 +722,97 @@
                     'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
                     'Content-Type': 'application/json'
                 },
+                // 기존 RPC 함수들이 p_token을 인자로 받는다면 그대로 넘겨줌
                 body: JSON.stringify({ p_token: adminToken, ...params })
             });
         }
 
         const defaultProjectsArchive = [];
-
         let displayArchive = [];
         let currentFilterYear = 'ALL';
         let currentFilterMonth = 'ALL';
 
-        async function handleAdminToggle() {
-            if (isAdmin) {
-                if (confirm('관리자 모드를 종료할까요?')) {
-                    isAdmin = false;
-                    adminToken = null;
-                    localStorage.removeItem(ADMIN_TOKEN_KEY);
-                    localStorage.removeItem(ADMIN_EXP_KEY);
-                    applyAdminMode();
-                    renderArchive();
-                    if (currentMainTab === 'library') loadLibraryFiles();
-                }
+        function applyAdminMode() {
+            const addProjBtn = document.getElementById('btnAddProject');
+            const libraryHeaderAdmin = document.getElementById('libraryHeaderAdmin');
+            const noteTab = document.getElementById('noteTab');
+
+            // Note 탭은 editor 권한일 때만 표시
+            if (userRole === 'editor') {
+                noteTab.style.display = 'inline-block';
             } else {
-                const inputPw = prompt('관리자 비밀번호를 입력하세요');
-                if (!inputPw) return;
+                noteTab.style.display = 'none';
+            }
 
-                try {
-                    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/admin_login`, {
-                        method: 'POST',
-                        headers: {
-                            'apikey': SUPABASE_ANON_KEY,
-                            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ p_password: inputPw })
-                    });
-                    const token = await res.json();
-
-                    if (token) {
-                        isAdmin = true;
-                        adminToken = token;
-                        localStorage.setItem(ADMIN_TOKEN_KEY, token);
-                        localStorage.setItem(ADMIN_EXP_KEY, String(Date.now() + 20 * 60 * 1000)); // 20분
-                        applyAdminMode();
-                        renderArchive();
-                        if (currentMainTab === 'library') loadLibraryFiles();
-                        alert('관리자로 인증되었습니다.');
-                    } else {
-                        alert('비밀번호가 틀렸습니다.');
-                    }
-                } catch (e) {
-                    console.error("인증 실패:", e);
-                    alert('인증 처리 중 오류가 발생했습니다.');
-                }
+            if (isAdmin) {
+                if (currentMainTab === 'archive') addProjBtn.style.display = 'block';
+                if (libraryHeaderAdmin && currentMainTab === 'library') libraryHeaderAdmin.style.display = 'flex';
+            } else {
+                addProjBtn.style.display = 'none';
+                if (libraryHeaderAdmin) libraryHeaderAdmin.style.display = 'none';
             }
         }
 
-        function applyAdminMode() {
-            const toggleBtn = document.getElementById('adminToggleBtn');
+        function switchMainTab(tabName) {
+            currentMainTab = tabName;
+            const tabs = document.querySelectorAll('.main-menu-tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            const activeTab = document.querySelector(`a[href="#${tabName}"]`);
+            if (activeTab) activeTab.classList.add('active');
+
+            const archiveContainer = document.getElementById('archiveContainer');
+            const libraryContainer = document.getElementById('libraryContainer');
+            const noteContainer = document.getElementById('noteContainer');
+            const navBarWrapper = document.querySelector('.nav-bar-wrapper');
             const addProjBtn = document.getElementById('btnAddProject');
             const libraryHeaderAdmin = document.getElementById('libraryHeaderAdmin');
 
-            if (isAdmin) {
-                toggleBtn.textContent = '관리자 모드 (로그아웃)';
-                if (currentMainTab === 'archive') {
-                    addProjBtn.style.display = 'block';
-                }
-                if (libraryHeaderAdmin && currentMainTab === 'library') {
-                    libraryHeaderAdmin.style.display = 'flex';
-                }
-            } else {
-                toggleBtn.textContent = '관리자 로그인';
+            if (tabName === 'archive') {
+                archiveContainer.style.display = 'block';
+                libraryContainer.style.display = 'none';
+                noteContainer.style.display = 'none';
+                navBarWrapper.style.display = 'block';
+                if (isAdmin) addProjBtn.style.display = 'block';
+                if (libraryHeaderAdmin) libraryHeaderAdmin.style.display = 'none';
+            } else if (tabName === 'library') {
+                archiveContainer.style.display = 'none';
+                libraryContainer.style.display = 'block';
+                noteContainer.style.display = 'none';
+                navBarWrapper.style.display = 'none';
                 addProjBtn.style.display = 'none';
-                if (libraryHeaderAdmin) {
-                    libraryHeaderAdmin.style.display = 'none';
-                }
+                if (libraryHeaderAdmin && isAdmin) libraryHeaderAdmin.style.display = 'flex';
+                loadLibraryFiles();
+            } else if (tabName === 'note') {
+                archiveContainer.style.display = 'none';
+                libraryContainer.style.display = 'none';
+                noteContainer.style.display = 'block';
+                navBarWrapper.style.display = 'none';
+                addProjBtn.style.display = 'none';
+                if (libraryHeaderAdmin) libraryHeaderAdmin.style.display = 'none';
             }
         }
 
+        function handleHashChange() {
+            const hash = window.location.hash.slice(1) || 'archive';
+            if (hash === 'archive' || hash === 'library' || hash === 'note') {
+                switchMainTab(hash);
+            }
+        }
+
+        window.addEventListener('hashchange', handleHashChange);
+
         async function loadArchiveFromDB() {
-            console.log('loadArchiveFromDB 시작...');
             try {
                 const projRes = await fetch(`${SUPABASE_URL}/rest/v1/archive_projects?select=*`, {
-                    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+                    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${adminToken}` }
                 });
                 const dbProjects = await projRes.json();
-                console.log('프로젝트 로드 완료:', dbProjects.length);
 
                 const vidRes = await fetch(`${SUPABASE_URL}/rest/v1/archive_videos?select=*&order=display_order.asc`, {
-                    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
+                    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${adminToken}` }
                 });
                 const dbVideos = await vidRes.json();
-                console.log('비디오 로드 완료:', dbVideos.length);
 
                 displayArchive = JSON.parse(JSON.stringify(defaultProjectsArchive));
 
@@ -708,8 +846,6 @@
                                 });
                             }
                         });
-
-                        // display_order로 정렬
                         targetGroup.items.sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
                     });
                 }
@@ -745,10 +881,7 @@
                 if (currentFilterYear !== 'ALL') {
                     if (dateInfo.year !== currentFilterYear) return;
                     availableMonthsSet.add(parseInt(dateInfo.month, 10));
-
-                    if (currentFilterMonth !== 'ALL' && parseInt(dateInfo.month, 10) !== parseInt(currentFilterMonth, 10)) {
-                        return;
-                    }
+                    if (currentFilterMonth !== 'ALL' && parseInt(dateInfo.month, 10) !== parseInt(currentFilterMonth, 10)) return;
                 }
 
                 const sectionId = `section-${group.date}-${idx}`;
@@ -769,34 +902,20 @@
                 let gridCardsHtml = '';
                 group.items.forEach((item, itemIndex) => {
                     const thumbSource = item.isSingle ? item.fullUrl : item.introUrl;
-
-                    // 썸네일 URL 인코딩 - 공백이나 한글이 있으면 인코딩
                     const encodeThumbUrl = (url) => {
                         if (!url || !url.startsWith(R2_PUBLIC_DOMAIN)) return url;
                         const afterDomain = url.slice(R2_PUBLIC_DOMAIN.length);
-                        // 공백이나 한글, 특수문자가 있는지 확인
                         const needsEncoding = /[^\w.-]/.test(afterDomain);
                         if (!needsEncoding) return url;
                         return R2_PUBLIC_DOMAIN + encodeURIComponent(afterDomain);
                     };
-
                     const encodedThumbSource = encodeThumbUrl(thumbSource);
-
                     const canEdit = isAdmin && item.id;
-
-                    // JSON을 data 속성에 저장 (HTML 속성 안전)
                     const dataItem = JSON.stringify(item);
 
-                    const editClickAttr = canEdit
-                        ? `onclick="event.stopPropagation(); openVideoEditModal(JSON.parse(this.closest('.video-card').dataset.item))"`
-                        : '';
-
-                    const draggableAttrs = canEdit
-                        ? `draggable="true" ondragstart="handleDragStart(event, ${itemIndex}, '${group.date}')" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${itemIndex}, '${group.date}')" ondragend="handleDragEnd(event)"`
-                        : '';
-
+                    const editClickAttr = canEdit ? `onclick="event.stopPropagation(); openVideoEditModal(JSON.parse(this.closest('.video-card').dataset.item))"` : '';
+                    const draggableAttrs = canEdit ? `draggable="true" ondragstart="handleDragStart(event, ${itemIndex}, '${group.date}')" ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${itemIndex}, '${group.date}')" ondragend="handleDragEnd(event)"` : '';
                     const dragHandleHtml = canEdit ? `<div class="drag-handle">⋮⋮</div>` : '';
-
                     const vidAdminBtnsHtml = canEdit ? `
                         <div class="video-admin-bar" onclick="event.stopPropagation();">
                             <button class="admin-delete-badge" onclick="deleteVideo(${item.id})">삭제</button>
@@ -821,10 +940,7 @@
                     `;
                 });
 
-                const addVideoBtnHtml = isAdmin
-                    ? `<button class="btn-admin-action" style="display:inline-block;" onclick="openVideoUploadModal('${group.date}')">+ 영상 추가</button>`
-                    : '';
-
+                const addVideoBtnHtml = isAdmin ? `<button class="btn-admin-action" style="display:inline-block;" onclick="openVideoUploadModal('${group.date}')">+ 영상 추가</button>` : '';
                 const projAdminBtnsHtml = (isAdmin && group.id && !String(group.id).startsWith('def_')) ? `
                     <button class="admin-edit-badge" onclick="openProjectEditModal('${group.id}', '${group.date}', '${group.title.replace(/'/g, "\\'")}')">제목 수정</button>
                     <button class="admin-delete-badge" onclick="deleteProject('${group.id}', '${group.date}')">프로젝트 삭제</button>
@@ -889,37 +1005,24 @@
             });
         }
 
-        function filterYear(year) {
-            currentFilterYear = year;
-            currentFilterMonth = 'ALL';
-            renderArchive();
-        }
-
-        function filterMonth(month) {
-            currentFilterMonth = month;
-            renderArchive();
-        }
-
+        function filterYear(year) { currentFilterYear = year; currentFilterMonth = 'ALL'; renderArchive(); }
+        function filterMonth(month) { currentFilterMonth = month; renderArchive(); }
         function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
+        // --- 모달 기능 들 ---
         function openProjectModal() { document.getElementById('projectModal').classList.add('active'); }
         function closeProjectModal() { document.getElementById('projectModal').classList.remove('active'); }
-
         async function submitNewProject() {
             const date = document.getElementById('inputProjDate').value.trim();
             const title = document.getElementById('inputProjTitle').value.trim();
             if (!date || !title) return alert('날짜와 제목을 모두 입력해 주세요.');
-
             try {
                 const res = await callAdminRpc('admin_create_project', { p_date: date, p_title: title });
-
                 if (res.ok) {
                     alert('새 프로젝트가 생성되었습니다!');
                     closeProjectModal();
                     loadArchiveFromDB();
-                } else {
-                    alert('프로젝트 생성 실패. DB 설정을 확인해 보세요.');
-                }
+                } else { alert('프로젝트 생성 실패. DB 설정을 확인해 보세요.'); }
             } catch (e) { console.error(e); }
         }
 
@@ -930,30 +1033,19 @@
             document.getElementById('projectEditModal').classList.add('active');
         }
         function closeProjectEditModal() { document.getElementById('projectEditModal').classList.remove('active'); }
-
         async function submitEditProject() {
             const id = document.getElementById('editProjTargetId').value;
             const date = document.getElementById('editProjTargetDate').value;
             const newTitle = document.getElementById('editProjTitleInput').value.trim();
             if (!newTitle) return alert('제목을 입력해주세요.');
-
             try {
                 const hasId = id && id !== 'undefined';
-                const res = await callAdminRpc('admin_update_project', {
-                    p_id: hasId ? Number(id) : null,
-                    p_date: date,
-                    p_title: newTitle
-                });
-
+                const res = await callAdminRpc('admin_update_project', { p_id: hasId ? Number(id) : null, p_date: date, p_title: newTitle });
                 if (res.ok) {
                     alert('프로젝트 제목이 수정되었습니다.');
                     closeProjectEditModal();
                     loadArchiveFromDB();
-                } else {
-                    const errorText = await res.text();
-                    console.error('프로젝트 수정 실패 상세:', { status: res.status, statusText: res.statusText, body: errorText });
-                    alert('수정 실패\n\n상태 코드: ' + res.status + '\n에러: ' + (errorText || res.statusText) + '\n\n개발자 도구 콘솔을 확인해주세요.');
-                }
+                } else { alert('수정 실패'); }
             } catch(e) { console.error(e); }
         }
 
@@ -961,11 +1053,7 @@
             if (!confirm('이 프로젝트를 삭제할까요? 관련 동영상 항목도 모두 삭제 권장됩니다.')) return;
             try {
                 const hasId = id && id !== 'undefined';
-                const res = await callAdminRpc('admin_delete_project', {
-                    p_id: hasId ? Number(id) : null,
-                    p_date: date
-                });
-
+                const res = await callAdminRpc('admin_delete_project', { p_id: hasId ? Number(id) : null, p_date: date });
                 if (res.ok) {
                     alert('프로젝트가 삭제되었습니다.');
                     loadArchiveFromDB();
@@ -992,13 +1080,10 @@
             document.getElementById('videoEditModal').classList.add('active');
         }
         function closeVideoEditModal() { document.getElementById('videoEditModal').classList.remove('active'); }
-
         function toggleEditDualFields() {
             const isDual = document.getElementById('editVidDualCheck').checked;
             document.getElementById('editDualIntroFields').style.display = isDual ? 'flex' : 'none';
-            document.getElementById('editLabelFileVideoFull').textContent = isDual
-                ? '메인(오른쪽/FULL) 영상 교체 (선택, 비워두면 기존 파일 유지)'
-                : '영상 파일 교체 (선택, 비워두면 기존 파일 유지)';
+            document.getElementById('editLabelFileVideoFull').textContent = isDual ? '메인(오른쪽/FULL) 영상 교체 (선택, 비워두면 기존 파일 유지)' : '영상 파일 교체 (선택, 비워두면 기존 파일 유지)';
         }
 
         async function submitEditVideo() {
@@ -1025,52 +1110,31 @@
 
             try {
                 const fullUrl = fullFileInput.files.length > 0 ? await uploadVideoFile(fullFileInput.files[0], projectDate) : currentFullUrl;
-                const introUrl = isDual
-                    ? (introFileInput.files.length > 0 ? await uploadVideoFile(introFileInput.files[0], projectDate) : currentIntroUrl)
-                    : null;
+                const introUrl = isDual ? (introFileInput.files.length > 0 ? await uploadVideoFile(introFileInput.files[0], projectDate) : currentIntroUrl) : null;
 
                 const res = await callAdminRpc('admin_update_video', {
-                    p_id: Number(vidId),
-                    p_tag: newTag,
-                    p_title: newTitle,
-                    p_mode: newMode,
-                    p_full_url: fullUrl,
-                    p_intro_url: introUrl,
-                    p_left_title: isDual ? newLeftTitle : null,
-                    p_right_title: isDual ? newRightTitle : null,
-                    p_left_badge: isDual ? newLeftBadge : null,
+                    p_id: Number(vidId), p_tag: newTag, p_title: newTitle, p_mode: newMode,
+                    p_full_url: fullUrl, p_intro_url: introUrl, p_left_title: isDual ? newLeftTitle : null,
+                    p_right_title: isDual ? newRightTitle : null, p_left_badge: isDual ? newLeftBadge : null,
                     p_right_badge: isDual ? newRightBadge : null
                 });
 
                 document.getElementById('loadingSpinner').style.display = 'none';
 
                 if (res.ok) {
-                    console.log('수정 성공: 응답 상태', res.status);
-
-                    if (fullFileInput.files.length > 0 && currentFullUrl && currentFullUrl !== fullUrl) {
-                        await deleteR2File(currentFullUrl);
-                    }
+                    if (fullFileInput.files.length > 0 && currentFullUrl && currentFullUrl !== fullUrl) await deleteR2File(currentFullUrl);
                     if (isDual) {
-                        if (introFileInput.files.length > 0 && currentIntroUrl && currentIntroUrl !== introUrl) {
-                            await deleteR2File(currentIntroUrl);
-                        }
+                        if (introFileInput.files.length > 0 && currentIntroUrl && currentIntroUrl !== introUrl) await deleteR2File(currentIntroUrl);
                     } else if (currentIntroUrl) {
                         await deleteR2File(currentIntroUrl);
                     }
-
                     alert('영상 정보가 수정되었습니다.');
                     closeVideoEditModal();
                     await loadArchiveFromDB();
-                    console.log('데이터 새로고침 완료');
-                } else {
-                    const errorText = await res.text();
-                    console.error('수정 실패 상세:', { status: res.status, statusText: res.statusText, body: errorText });
-                    alert('수정 실패\n\n상태 코드: ' + res.status + '\n에러: ' + (errorText || res.statusText) + '\n\n개발자 도구 콘솔을 확인해주세요.');
-                }
+                } else { alert('수정 실패'); }
             } catch(e) {
                 document.getElementById('loadingSpinner').style.display = 'none';
-                console.error(e);
-                alert('수정 중 오류가 발생했습니다: ' + e.message);
+                console.error(e); alert('수정 중 오류가 발생했습니다: ' + e.message);
             }
         }
 
@@ -1078,34 +1142,24 @@
             if (!fileUrl || !fileUrl.startsWith(R2_PUBLIC_DOMAIN)) return;
             const fileName = decodeURIComponent(fileUrl.replace(R2_PUBLIC_DOMAIN, ''));
             try {
-                await fetch(WORKER_PRESIGN_URL, {
-                    method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ fileName })
-                });
+                await fetch(WORKER_PRESIGN_URL, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ fileName }) });
             } catch (e) { console.error('기존 파일 삭제 실패:', e); }
         }
 
         async function deleteVideo(vidId) {
-            if (!confirm('이 영상 시안 항목을 삭제할까요? R2 저장소의 실제 파일도 함께 삭제됩니다.')) return;
+            if (!confirm('이 영상 시안 항목을 삭제할까요?')) return;
             try {
                 let targetItem = null;
                 for (const group of displayArchive) {
                     const found = group.items.find(v => v.id === vidId);
                     if (found) { targetItem = found; break; }
                 }
-
                 if (targetItem) {
                     await deleteR2File(targetItem.fullUrl);
                     await deleteR2File(targetItem.introUrl);
                 }
-
                 const res = await callAdminRpc('admin_delete_video', { p_id: Number(vidId) });
-
-                if (res.ok) {
-                    alert('영상이 삭제되었습니다.');
-                    loadArchiveFromDB();
-                } else { alert('삭제 실패'); }
+                if (res.ok) { alert('영상이 삭제되었습니다.'); loadArchiveFromDB(); } else { alert('삭제 실패'); }
             } catch(e) { console.error(e); }
         }
 
@@ -1125,7 +1179,6 @@
             document.getElementById('videoModalUpload').classList.add('active');
         }
         function closeVideoUploadModal() { document.getElementById('videoModalUpload').classList.remove('active'); }
-
         function toggleDualUploadFields() {
             const isDual = document.getElementById('checkVidDual').checked;
             document.getElementById('dualIntroFields').style.display = isDual ? 'flex' : 'none';
@@ -1136,37 +1189,16 @@
             try {
                 const rawName = folder ? `${folder}/${file.name}` : file.name;
                 const uploadRes = await fetch(WORKER_PRESIGN_URL, {
-                    method: 'POST',
-                    mode: 'cors',
-                    credentials: 'omit',
-                    headers: {
-                        'Content-Type': file.type,
-                        'X-File-Name': encodeURIComponent(rawName)
-                    },
+                    method: 'POST', mode: 'cors', credentials: 'omit',
+                    headers: { 'Content-Type': file.type, 'X-File-Name': encodeURIComponent(rawName) },
                     body: file
                 });
-
-                if (!uploadRes.ok) {
-                    const errorText = await uploadRes.text();
-                    console.error('R2 업로드 실패:', { status: uploadRes.status, statusText: uploadRes.statusText, body: errorText });
-                    throw new Error(`업로드 실패 (${uploadRes.status}): ${errorText || uploadRes.statusText}`);
-                }
-
+                if (!uploadRes.ok) throw new Error(`업로드 실패 (${uploadRes.status})`);
                 const result = await uploadRes.json();
-                console.log('R2 업로드 성공:', result);
-                const { fileName } = result;
-                return R2_PUBLIC_DOMAIN + fileName;
-            } catch (error) {
-                console.error('uploadVideoFile 에러:', error);
-                if (error.message === 'Failed to fetch') {
-                    throw new Error('CORS 오류: Worker가 올바른 CORS 헤더를 반환하지 않습니다. Worker 설정을 확인해주세요.');
-                }
-                throw error;
-            }
+                return R2_PUBLIC_DOMAIN + result.fileName;
+            } catch (error) { console.error('uploadVideoFile 에러:', error); throw error; }
         }
 
-        // 🚀 Cloudflare Worker(*.workers.dev)로 파일을 직접 전송 — r2.cloudflarestorage.com은 거치지 않음
-        // (시크릿 키는 이 파일에 존재하지 않으며, Worker 안에서 R2 바인딩으로만 처리됩니다)
         async function submitNewVideo() {
             const date = document.getElementById('uploadTargetDate').value;
             const tag = document.getElementById('inputVidTag').value.trim();
@@ -1190,36 +1222,23 @@
                 const introUrl = isDual ? await uploadVideoFile(introFileInput.files[0], date) : null;
 
                 const dbRes = await callAdminRpc('admin_create_video', {
-                    p_project_date: date,
-                    p_tag: tag,
-                    p_title: title,
-                    p_mode: mode,
-                    p_full_url: fullUrl,
-                    p_intro_url: introUrl,
-                    p_left_title: isDual ? leftTitle : null,
-                    p_right_title: isDual ? rightTitle : null,
-                    p_left_badge: isDual ? leftBadge : null,
-                    p_right_badge: isDual ? rightBadge : null
+                    p_project_date: date, p_tag: tag, p_title: title, p_mode: mode,
+                    p_full_url: fullUrl, p_intro_url: introUrl, p_left_title: isDual ? leftTitle : null,
+                    p_right_title: isDual ? rightTitle : null, p_left_badge: isDual ? leftBadge : null, p_right_badge: isDual ? rightBadge : null
                 });
 
                 document.getElementById('loadingSpinner').style.display = 'none';
-
                 if (dbRes.ok) {
                     alert('영상이 성공적으로 업로드되고 아카이브에 등록되었습니다!');
-                    closeVideoUploadModal();
-                    loadArchiveFromDB();
-                } else {
-                    const errorText = await dbRes.text();
-                    console.error('DB 저장 실패 상세:', { status: dbRes.status, statusText: dbRes.statusText, body: errorText });
-                    alert('DB 저장 실패\n\n상태 코드: ' + dbRes.status + '\n에러: ' + (errorText || dbRes.statusText) + '\n\n개발자 도구 콘솔을 확인해 주세요.');
-                }
+                    closeVideoUploadModal(); loadArchiveFromDB();
+                } else { alert('DB 저장 실패'); }
             } catch (err) {
                 document.getElementById('loadingSpinner').style.display = 'none';
-                console.error("업로드 실패:", err);
-                alert("업로드 중 오류가 발생했습니다: " + err.message);
+                console.error("업로드 실패:", err); alert("업로드 중 오류가 발생했습니다: " + err.message);
             }
         }
 
+        // --- 듀얼 영상 재생 모달 로직 ---
         const modal = document.getElementById('videoModal');
         const modalHeaderTitle = document.getElementById('modalHeaderTitle');
         const modalHeaderDownloadBtn = document.getElementById('modalHeaderDownloadBtn');
@@ -1235,136 +1254,77 @@
         const overlayRight = document.getElementById('overlayRight');
         const modalContainerEl = document.querySelector('#videoModal .modal-container');
 
-        function openDualModalFromCard(cardElement) {
-            const item = JSON.parse(cardElement.dataset.item);
-            openDualModal(item);
-        }
+        function openDualModalFromCard(cardElement) { openDualModal(JSON.parse(cardElement.dataset.item)); }
 
         function sizeModalForVideo(mode, isSingle) {
-            // 모바일은 항상 꽉 채운 전체화면 레이아웃을 쓰므로 CSS에 맡기고 건드리지 않음
             if (window.innerWidth < 768) {
-                modalContainerEl.style.width = '';
-                modalContainerEl.style.height = '';
-                return;
+                modalContainerEl.style.width = ''; modalContainerEl.style.height = ''; return;
             }
-
-            // 하드코딩된 여백 대신, 실제 CSS에 적용된 값을 그대로 읽어서 계산 (오차 없이 정확히 맞춤)
-            const headerEl = document.querySelector('#videoModal .modal-header');
-            const headerH = headerEl.getBoundingClientRect().height || 44;
-
+            const headerH = document.querySelector('#videoModal .modal-header').getBoundingClientRect().height || 44;
             const bodyStyle = getComputedStyle(modalBodyDual);
             const padX = (parseFloat(bodyStyle.paddingLeft) || 0) + (parseFloat(bodyStyle.paddingRight) || 0);
             const padY = (parseFloat(bodyStyle.paddingTop) || 0) + (parseFloat(bodyStyle.paddingBottom) || 0);
             const gap = parseFloat(bodyStyle.columnGap || bodyStyle.gap) || 0;
-
             const colEl = isSingle ? rightColumn : leftColumn;
             const colStyle = getComputedStyle(colEl);
             const colBorderX = (parseFloat(colStyle.borderLeftWidth) || 0) + (parseFloat(colStyle.borderRightWidth) || 0);
             const colBorderY = (parseFloat(colStyle.borderTopWidth) || 0) + (parseFloat(colStyle.borderBottomWidth) || 0);
             const colCount = isSingle ? 1 : 2;
-
-            // 컬럼 안의 제목바(태그/배지/다운로드 버튼)도 세로 공간을 차지하므로 반드시 포함해야 함
-            const colHeaderEl = colEl.querySelector('.column-header');
-            // display:none이면 실제로 0이 맞음 (싱글 모드는 컬럼 헤더 자체를 숨기므로) - fallback으로 덮어쓰면 안 됨
-            const colHeaderH = colHeaderEl.getBoundingClientRect().height;
-
+            const colHeaderH = colEl.querySelector('.column-header').getBoundingClientRect().height;
             const containerStyle = getComputedStyle(modalContainerEl);
             const containerBorderX = (parseFloat(containerStyle.borderLeftWidth) || 0) + (parseFloat(containerStyle.borderRightWidth) || 0);
             const containerBorderY = (parseFloat(containerStyle.borderTopWidth) || 0) + (parseFloat(containerStyle.borderBottomWidth) || 0);
 
-            const chromeH = headerH + padY + colBorderY + containerBorderY + colHeaderH; // 컬럼 높이를 제외한 나머지 세로 공간
-            const chromeW = padX + colBorderX * colCount + containerBorderX + (isSingle ? 0 : gap); // 컬럼 너비를 제외한 나머지 가로 공간
-
+            const chromeH = headerH + padY + colBorderY + containerBorderY + colHeaderH; 
+            const chromeW = padX + colBorderX * colCount + containerBorderX + (isSingle ? 0 : gap);
             const maxH = window.innerHeight * 0.94;
             const maxW = Math.min(window.innerWidth * 0.95, 1800);
-            const ratio = mode === 'portrait' ? 9 / 16 : 16 / 9; // 컬럼 1개의 width / height
+            const ratio = mode === 'portrait' ? 9 / 16 : 16 / 9;
 
             let targetH = maxH;
             let colW = (targetH - chromeH) * ratio;
             let targetW = colW * colCount + chromeW;
 
             if (targetW > maxW) {
-                targetW = maxW;
-                colW = (targetW - chromeW) / colCount;
-                targetH = colW / ratio + chromeH;
+                targetW = maxW; colW = (targetW - chromeW) / colCount; targetH = colW / ratio + chromeH;
             }
-
             modalContainerEl.style.width = Math.round(targetW) + 'px';
             modalContainerEl.style.height = Math.round(targetH) + 'px';
         }
 
         function openDualModal(item) {
-            // 모달 헤더에 비디오 제목 표시
             modalHeaderTitle.textContent = item.title.replace('<br>', ' ');
-            resetProgressUI('fillLeft', 'timeLeft');
-            resetProgressUI('fillRight', 'timeRight');
-
+            resetProgressUI('fillLeft', 'timeLeft'); resetProgressUI('fillRight', 'timeRight');
             modalBodyDual.classList.toggle('mode-portrait', item.mode === 'portrait');
-
             const leftBadgeEl = document.getElementById('leftBadge');
             const rightBadgeEl = document.getElementById('rightBadge');
-
-            // URL 인코딩 헬퍼 함수
             const encodeVideoUrl = (url) => {
                 if (!url || !url.startsWith(R2_PUBLIC_DOMAIN)) return url;
                 const afterDomain = url.slice(R2_PUBLIC_DOMAIN.length);
-                // 공백이나 한글, 특수문자가 있는지 확인
-                const needsEncoding = /[^\w.-]/.test(afterDomain); // 문자, 숫자, 언더스코어, 점, 하이픈 외의 모든 것
-                if (!needsEncoding) return url;
-                return R2_PUBLIC_DOMAIN + encodeURIComponent(afterDomain);
+                return /[^\w.-]/.test(afterDomain) ? R2_PUBLIC_DOMAIN + encodeURIComponent(afterDomain) : url;
             };
 
             if (item.isSingle) {
                 modalBodyDual.classList.add('single-mode');
-                leftColumn.style.display = 'none';
-                rightColumn.style.display = 'flex';
-                // 싱글 모드는 팝업 헤더 하나로 제목+다운로드를 합치고, 컬럼 헤더는 아예 없애서 영상이 바로 이어지게 함
-                rightColumnHeader.style.display = 'none';
-                modalHeaderDownloadBtn.style.display = 'inline-block';
-                rightBadgeEl.style.display = 'none';
-                videoRight.src = encodeVideoUrl(item.fullUrl);
-                videoRight.load();
+                leftColumn.style.display = 'none'; rightColumn.style.display = 'flex'; rightColumnHeader.style.display = 'none';
+                modalHeaderDownloadBtn.style.display = 'inline-block'; rightBadgeEl.style.display = 'none';
+                videoRight.src = encodeVideoUrl(item.fullUrl); videoRight.load();
             } else {
                 modalBodyDual.classList.remove('single-mode');
-                leftColumn.style.display = 'flex';
-                rightColumn.style.display = 'flex';
-                rightColumnHeader.style.display = 'flex';
+                leftColumn.style.display = 'flex'; rightColumn.style.display = 'flex'; rightColumnHeader.style.display = 'flex';
                 modalHeaderDownloadBtn.style.display = 'none';
-
-                // 좌측/우측 제목 표시
-                leftTitle.textContent = item.leftTitle || '좌측 비디오';
-                rightTitle.textContent = item.rightTitle || '우측 비디오';
-
-                // 배지 텍스트 표시 (값이 있을 때만)
-                if (item.leftBadge) {
-                    leftBadgeEl.textContent = item.leftBadge;
-                    leftBadgeEl.style.display = 'inline-block';
-                } else {
-                    leftBadgeEl.style.display = 'none';
-                }
-
-                if (item.rightBadge) {
-                    rightBadgeEl.textContent = item.rightBadge;
-                    rightBadgeEl.style.display = 'inline-block';
-                } else {
-                    rightBadgeEl.style.display = 'none';
-                }
-
-                videoLeft.src = encodeVideoUrl(item.introUrl);
-                videoRight.src = encodeVideoUrl(item.fullUrl);
-                videoLeft.load();
-                videoRight.load();
+                leftTitle.textContent = item.leftTitle || '좌측 비디오'; rightTitle.textContent = item.rightTitle || '우측 비디오';
+                if (item.leftBadge) { leftBadgeEl.textContent = item.leftBadge; leftBadgeEl.style.display = 'inline-block'; } else { leftBadgeEl.style.display = 'none'; }
+                if (item.rightBadge) { rightBadgeEl.textContent = item.rightBadge; rightBadgeEl.style.display = 'inline-block'; } else { rightBadgeEl.style.display = 'none'; }
+                videoLeft.src = encodeVideoUrl(item.introUrl); videoRight.src = encodeVideoUrl(item.fullUrl);
+                videoLeft.load(); videoRight.load();
             }
 
             videoRight.currentTime = 0;
             if (!item.isSingle) videoLeft.currentTime = 0;
-            overlayLeft.classList.remove('hidden');
-            overlayRight.classList.remove('hidden');
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
+            overlayLeft.classList.remove('hidden'); overlayRight.classList.remove('hidden');
+            modal.classList.add('active'); document.body.style.overflow = 'hidden';
             history.pushState({ videoModalOpen: true }, '');
-
-            // 팝업이 실제로 보이는 상태가 된 다음 재야 컬럼/헤더 실측이 정확해서, 활성화 이후에 크기 계산
             sizeModalForVideo(item.mode, item.isSingle);
         }
 
@@ -1372,72 +1332,47 @@
             const v = document.getElementById(videoId);
             if (!v || !v.src) return;
             let fileName = 'video.mp4';
-            try {
-                fileName = decodeURIComponent(v.src.split('/').pop().split('?')[0]) || fileName;
-            } catch (e) {}
+            try { fileName = decodeURIComponent(v.src.split('/').pop().split('?')[0]) || fileName; } catch (e) {}
             downloadFile(v.src, fileName);
         }
-
         function togglePlay(videoId, overlayId) {
-            const v = document.getElementById(videoId);
-            const o = document.getElementById(overlayId);
-            if (v.paused) { v.play(); o.classList.add('hidden'); }
-            else { v.pause(); o.classList.remove('hidden'); }
+            const v = document.getElementById(videoId); const o = document.getElementById(overlayId);
+            if (v.paused) { v.play(); o.classList.add('hidden'); } else { v.pause(); o.classList.remove('hidden'); }
         }
-
         function toggleFullscreen(videoId) {
             const v = document.getElementById(videoId);
-            if (v.requestFullscreen) {
-                v.controls = true;
-                v.requestFullscreen();
-            } else if (v.webkitRequestFullscreen) {
-                v.controls = true;
-                v.webkitRequestFullscreen();
-            } else if (v.webkitEnterFullscreen) {
-                // iOS Safari: <video> 전용 네이티브 전체화면 (자체 컨트롤 내장)
-                v.webkitEnterFullscreen();
-            }
+            if (v.requestFullscreen) { v.controls = true; v.requestFullscreen(); }
+            else if (v.webkitRequestFullscreen) { v.controls = true; v.webkitRequestFullscreen(); }
+            else if (v.webkitEnterFullscreen) { v.webkitEnterFullscreen(); }
         }
-
         function exitVideoFullscreenControls() {
             if (document.fullscreenElement || document.webkitFullscreenElement) return;
-            videoLeft.controls = false;
-            videoRight.controls = false;
+            videoLeft.controls = false; videoRight.controls = false;
         }
-        document.addEventListener('fullscreenchange', exitVideoFullscreenControls);
-        document.addEventListener('webkitfullscreenchange', exitVideoFullscreenControls);
+        document.addEventListener('fullscreenchange', exitVideoFullscreenControls); document.addEventListener('webkitfullscreenchange', exitVideoFullscreenControls);
 
         function formatTime(sec) {
             if (isNaN(sec) || !isFinite(sec)) return "00:00";
             const m = Math.floor(sec / 60); const s = Math.floor(sec % 60);
             return `${m < 10 ? '0' + m : m}:${s < 10 ? '0' + s : s}`;
         }
-
         function resetProgressUI(fillId, timeId) {
-            document.getElementById(fillId).style.width = '0%';
-            document.getElementById(timeId).textContent = "00:00 / 00:00";
+            document.getElementById(fillId).style.width = '0%'; document.getElementById(timeId).textContent = "00:00 / 00:00";
         }
-
         function updateProgress(v, fillId, timeId) {
-            const fill = document.getElementById(fillId);
-            const time = document.getElementById(timeId);
+            const fill = document.getElementById(fillId); const time = document.getElementById(timeId);
             if (v.duration && !isNaN(v.duration) && v.duration > 0) {
                 const pct = (v.currentTime / v.duration) * 100;
-                fill.style.width = `${pct}%`;
-                time.textContent = `${formatTime(v.currentTime)} / ${formatTime(v.duration)}`;
+                fill.style.width = `${pct}%`; time.textContent = `${formatTime(v.currentTime)} / ${formatTime(v.duration)}`;
             } else {
-                fill.style.width = '0%';
-                time.textContent = `00:00 / ${formatTime(v.duration)}`;
+                fill.style.width = '0%'; time.textContent = `00:00 / ${formatTime(v.duration)}`;
             }
         }
-
         function seekVideo(e, videoId) {
-            const v = document.getElementById(videoId);
-            const rect = e.currentTarget.getBoundingClientRect();
+            const v = document.getElementById(videoId); const rect = e.currentTarget.getBoundingClientRect();
             const pos = (e.clientX - rect.left) / rect.width;
             if (v.duration && !isNaN(v.duration)) { v.currentTime = pos * v.duration; }
         }
-
         videoLeft.addEventListener('timeupdate', () => updateProgress(videoLeft, 'fillLeft', 'timeLeft'));
         videoRight.addEventListener('timeupdate', () => updateProgress(videoRight, 'fillRight', 'timeRight'));
         videoLeft.addEventListener('loadedmetadata', () => updateProgress(videoLeft, 'fillLeft', 'timeLeft'));
@@ -1446,570 +1381,215 @@
         videoRight.addEventListener('ended', () => { overlayRight.classList.remove('hidden'); });
 
         function closeVideo(event) { if (event.target === modal) requestClose(); }
-        function requestClose() {
-            if (modal.classList.contains('active')) history.back();
-        }
+        function requestClose() { if (modal.classList.contains('active')) history.back(); }
         function forceClose() {
-            modal.classList.remove('active');
-            videoLeft.pause(); videoRight.pause();
-            videoLeft.src = ''; videoRight.src = '';
-            document.body.style.overflow = 'auto';
+            modal.classList.remove('active'); videoLeft.pause(); videoRight.pause();
+            videoLeft.src = ''; videoRight.src = ''; document.body.style.overflow = 'auto';
         }
-        window.addEventListener('popstate', () => {
-            if (modal.classList.contains('active')) forceClose();
-        });
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && modal.classList.contains('active')) requestClose();
-        });
+        window.addEventListener('popstate', () => { if (modal.classList.contains('active')) forceClose(); });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.classList.contains('active')) requestClose(); });
 
         function setupQuickLinksScroll() {
-            const slider = document.getElementById('quickLinks');
-            let isDown = false;
-            let startX, scrollLeft;
-
-            slider.addEventListener('mousedown', (e) => {
-                isDown = true;
-                startX = e.pageX - slider.offsetLeft;
-                scrollLeft = slider.scrollLeft;
-            });
+            const slider = document.getElementById('quickLinks'); let isDown = false; let startX, scrollLeft;
+            slider.addEventListener('mousedown', (e) => { isDown = true; startX = e.pageX - slider.offsetLeft; scrollLeft = slider.scrollLeft; });
             slider.addEventListener('mouseleave', () => { isDown = false; });
             slider.addEventListener('mouseup', () => { isDown = false; });
             slider.addEventListener('mousemove', (e) => {
-                if(!isDown) return;
-                e.preventDefault();
-                const x = e.pageX - slider.offsetLeft;
-                const walk = (x - startX) * 2;
-                slider.scrollLeft = scrollLeft - walk;
+                if(!isDown) return; e.preventDefault(); const x = e.pageX - slider.offsetLeft; const walk = (x - startX) * 2; slider.scrollLeft = scrollLeft - walk;
             });
-
-            slider.addEventListener('wheel', (e) => {
-                if (e.deltaY !== 0) {
-                    e.preventDefault();
-                    slider.scrollLeft += e.deltaY;
-                }
-            }, { passive: false });
+            slider.addEventListener('wheel', (e) => { if (e.deltaY !== 0) { e.preventDefault(); slider.scrollLeft += e.deltaY; } }, { passive: false });
         }
 
-        // Main Tab Switching
-        function switchMainTab(tabName) {
-            currentMainTab = tabName;
-            const tabs = document.querySelectorAll('.main-menu-tab');
-            tabs.forEach(tab => tab.classList.remove('active'));
-
-            // 현재 탭 활성화
-            const activeTab = document.querySelector(`a[href="#${tabName}"]`);
-            if (activeTab) activeTab.classList.add('active');
-
-            const archiveContainer = document.getElementById('archiveContainer');
-            const libraryContainer = document.getElementById('libraryContainer');
-            const navBarWrapper = document.querySelector('.nav-bar-wrapper');
-            const addProjBtn = document.getElementById('btnAddProject');
-            const libraryHeaderAdmin = document.getElementById('libraryHeaderAdmin');
-
-            if (tabName === 'archive') {
-                archiveContainer.style.display = 'block';
-                libraryContainer.style.display = 'none';
-                navBarWrapper.style.display = 'block';
-                if (isAdmin) addProjBtn.style.display = 'block';
-                if (libraryHeaderAdmin) libraryHeaderAdmin.style.display = 'none';
-            } else if (tabName === 'library') {
-                archiveContainer.style.display = 'none';
-                libraryContainer.style.display = 'block';
-                navBarWrapper.style.display = 'none';
-                addProjBtn.style.display = 'none';
-                if (libraryHeaderAdmin && isAdmin) {
-                    libraryHeaderAdmin.style.display = 'flex';
-                }
-                loadLibraryFiles();
-            }
-        }
-
-        // URL 해시 변경 감지
-        function handleHashChange() {
-            const hash = window.location.hash.slice(1) || 'archive';
-            if (hash === 'archive' || hash === 'library') {
-                switchMainTab(hash);
-            }
-        }
-
-        // 페이지 로드 시 URL 해시에 따라 탭 설정
-        window.addEventListener('hashchange', handleHashChange);
-        window.addEventListener('load', handleHashChange);
-
-        // Library Functions
+        // --- 자료실 기능 ---
         let currentLibraryFiles = [];
-
         async function loadLibraryFiles() {
             try {
-                const res = await fetch(`${SUPABASE_URL}/rest/v1/library_files?select=*&order=display_order.asc`, {
-                    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }
-                });
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/library_files?select=*&order=display_order.asc`, { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${adminToken}` } });
                 const files = await res.json();
-                currentLibraryFiles = Array.isArray(files) ? files : [];
-                renderLibraryFiles(currentLibraryFiles);
-            } catch (e) {
-                console.error("파일 로드 실패:", e);
-                currentLibraryFiles = [];
-                renderLibraryFiles([]);
-            }
+                currentLibraryFiles = Array.isArray(files) ? files : []; renderLibraryFiles(currentLibraryFiles);
+            } catch (e) { console.error("파일 로드 실패:", e); currentLibraryFiles = []; renderLibraryFiles([]); }
         }
 
         function renderLibraryFiles(files) {
             const container = document.getElementById('fileListContainer');
             if (!Array.isArray(files) || files.length === 0) {
-                container.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 2rem; grid-column: 1 / -1;">등록된 파일이 없습니다.</div>';
-                return;
+                container.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 2rem; grid-column: 1 / -1;">등록된 파일이 없습니다.</div>'; return;
             }
-
             container.innerHTML = files.map((file, index) => {
                 const fileSize = file.file_size ? formatFileSize(file.file_size) : '';
                 const uploadDate = file.created_at ? new Date(file.created_at).toLocaleDateString('ko-KR') : '';
-
-                // 파일 확장자에 따른 아이콘
                 const ext = file.file_name.split('.').pop().toLowerCase();
                 let icon = '📄';
                 if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'].includes(ext)) icon = '🖼️';
                 else if (['mp4', 'webm', 'ogg', 'mov'].includes(ext)) icon = '🎬';
-                else if (ext === 'pdf') icon = '📕';
-                else if (['zip', 'rar', '7z'].includes(ext)) icon = '📦';
-
-                // 파일 이름과 URL을 안전하게 이스케이프
+                else if (ext === 'pdf') icon = '📕'; else if (['zip', 'rar', '7z'].includes(ext)) icon = '📦';
                 const safeFileName = file.file_name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
                 const safeUrl = file.file_url.replace(/'/g, "\\'");
-
                 const previewBtn = `<button class="btn-preview" onclick='previewFile("${safeUrl}", "${safeFileName}")'>미리보기</button>`;
                 const editBtn = isAdmin ? `<button class="btn-edit-file" onclick='openFileEditModal(${file.id}, "${safeFileName}")'>수정</button>` : '';
                 const deleteBtn = isAdmin ? `<button class="btn-delete-file" onclick='deleteLibraryFile(${file.id}, "${safeUrl}")'>삭제</button>` : '';
-
-                const draggableAttrs = isAdmin
-                    ? `draggable="true" ondragstart="handleFileDragStart(event, ${index})" ondragover="handleFileDragOver(event)" ondrop="handleFileDrop(event, ${index})" ondragend="handleFileDragEnd(event)"`
-                    : '';
-
+                const draggableAttrs = isAdmin ? `draggable="true" ondragstart="handleFileDragStart(event, ${index})" ondragover="handleFileDragOver(event)" ondrop="handleFileDrop(event, ${index})" ondragend="handleFileDragEnd(event)"` : '';
                 return `
                     <div class="file-item ${isAdmin ? 'draggable' : ''}" ${draggableAttrs}>
                         <div class="file-icon">${icon}</div>
-                        <div class="file-info">
-                            <div class="file-name">${file.file_name}</div>
-                            <div class="file-meta">${fileSize}${uploadDate ? ' · ' + uploadDate : ''}</div>
-                        </div>
-                        <div class="file-actions">
-                            ${previewBtn}
-                            <button class="btn-download" onclick='downloadFile("${safeUrl}", "${safeFileName}")'>다운로드</button>
-                            ${editBtn}
-                            ${deleteBtn}
-                        </div>
+                        <div class="file-info"><div class="file-name">${file.file_name}</div><div class="file-meta">${fileSize}${uploadDate ? ' · ' + uploadDate : ''}</div></div>
+                        <div class="file-actions">${previewBtn}<button class="btn-download" onclick='downloadFile("${safeUrl}", "${safeFileName}")'>다운로드</button>${editBtn}${deleteBtn}</div>
                     </div>
                 `;
             }).join('');
         }
 
         let draggedFileIndex = null;
-
-        function handleFileDragStart(event, index) {
-            draggedFileIndex = index;
-            event.currentTarget.classList.add('dragging');
-            event.dataTransfer.effectAllowed = 'move';
-        }
-
+        function handleFileDragStart(event, index) { draggedFileIndex = index; event.currentTarget.classList.add('dragging'); event.dataTransfer.effectAllowed = 'move'; }
         function handleFileDragOver(event) {
-            event.preventDefault();
-            event.dataTransfer.dropEffect = 'move';
-            const target = event.currentTarget;
-            if (draggedFileIndex !== null && target.classList.contains('file-item')) {
-                target.classList.add('drag-over');
-            }
+            event.preventDefault(); event.dataTransfer.dropEffect = 'move'; const target = event.currentTarget;
+            if (draggedFileIndex !== null && target.classList.contains('file-item')) target.classList.add('drag-over');
         }
-
         function handleFileDrop(event, targetIndex) {
-            event.preventDefault();
-            event.stopPropagation();
-
-            const target = event.currentTarget;
-            target.classList.remove('drag-over');
-
+            event.preventDefault(); event.stopPropagation(); event.currentTarget.classList.remove('drag-over');
             if (draggedFileIndex === null || draggedFileIndex === targetIndex) return;
-
-            const [movedItem] = currentLibraryFiles.splice(draggedFileIndex, 1);
-            currentLibraryFiles.splice(targetIndex, 0, movedItem);
-
-            saveFileOrder(currentLibraryFiles);
-            renderLibraryFiles(currentLibraryFiles);
+            const [movedItem] = currentLibraryFiles.splice(draggedFileIndex, 1); currentLibraryFiles.splice(targetIndex, 0, movedItem);
+            saveFileOrder(currentLibraryFiles); renderLibraryFiles(currentLibraryFiles);
         }
-
         function handleFileDragEnd(event) {
             event.currentTarget.classList.remove('dragging');
-            document.querySelectorAll('.file-item.drag-over').forEach(el => {
-                el.classList.remove('drag-over');
-            });
+            document.querySelectorAll('.file-item.drag-over').forEach(el => el.classList.remove('drag-over'));
             draggedFileIndex = null;
         }
 
         async function saveFileOrder(files) {
             try {
                 for (let i = 0; i < files.length; i++) {
-                    const res = await callAdminRpc('admin_update_library_file_order', {
-                        p_file_id: files[i].id,
-                        p_new_order: i
-                    });
-                    if (!res.ok) {
-                        const errorText = await res.text();
-                        throw new Error(`상태 코드 ${res.status}: ${errorText}`);
-                    }
+                    const res = await callAdminRpc('admin_update_library_file_order', { p_file_id: files[i].id, p_new_order: i });
+                    if (!res.ok) throw new Error(`상태 코드 ${res.status}`);
                 }
-                console.log('파일 순서 저장 완료');
-            } catch (e) {
-                console.error('파일 순서 저장 실패:', e);
-                alert('순서 저장 중 오류가 발생했습니다: ' + e.message);
-                loadLibraryFiles();
-            }
+            } catch (e) { alert('순서 저장 중 오류가 발생했습니다: ' + e.message); loadLibraryFiles(); }
         }
 
-        function getFileExt(name) {
-            const clean = name.split('?')[0].split('#')[0];
-            const lastDotIndex = clean.lastIndexOf('.');
-            return lastDotIndex > -1 ? clean.substring(lastDotIndex + 1).toLowerCase() : '';
-        }
-
+        function getFileExt(name) { const clean = name.split('?')[0].split('#')[0]; const lastDotIndex = clean.lastIndexOf('.'); return lastDotIndex > -1 ? clean.substring(lastDotIndex + 1).toLowerCase() : ''; }
         function previewFile(url, fileName) {
-            // 표시 이름에 확장자가 없으면 파일 URL에서 추출 시도
             const ext = getFileExt(fileName) || getFileExt(url);
-
             const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'];
             const videoExts = ['mp4', 'webm', 'ogg', 'mov'];
             const pdfExts = ['pdf'];
-
-            console.log('Preview file:', fileName, 'Extension:', ext); // 디버깅
-
             const modal = document.getElementById('filePreviewModal');
             const previewFileName = document.getElementById('previewFileName');
             const previewImage = document.getElementById('previewImage');
             const previewVideo = document.getElementById('previewVideo');
             const previewPdf = document.getElementById('previewPdf');
             const previewUnsupported = document.getElementById('previewUnsupported');
-
-            previewFileName.textContent = fileName;
-            previewImage.style.display = 'none';
-            previewVideo.style.display = 'none';
-            previewPdf.style.display = 'none';
-            previewUnsupported.style.display = 'none';
-
-            if (imageExts.includes(ext)) {
-                previewImage.src = url;
-                previewImage.style.display = 'block';
-            } else if (videoExts.includes(ext)) {
-                previewVideo.src = url;
-                previewVideo.currentTime = 0;
-                previewVideo.style.display = 'block';
-            } else if (pdfExts.includes(ext)) {
-                previewPdf.src = url + '#toolbar=1';
-                previewPdf.style.display = 'block';
-                console.log('Loading PDF:', url); // 디버깅
-            } else {
-                previewUnsupported.style.display = 'block';
-                console.log('Unsupported file type:', ext); // 디버깅
-            }
-
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
+            previewFileName.textContent = fileName; previewImage.style.display = 'none'; previewVideo.style.display = 'none'; previewPdf.style.display = 'none'; previewUnsupported.style.display = 'none';
+            if (imageExts.includes(ext)) { previewImage.src = url; previewImage.style.display = 'block'; }
+            else if (videoExts.includes(ext)) { previewVideo.src = url; previewVideo.currentTime = 0; previewVideo.style.display = 'block'; }
+            else if (pdfExts.includes(ext)) { previewPdf.src = url + '#toolbar=1'; previewPdf.style.display = 'block'; }
+            else { previewUnsupported.style.display = 'block'; }
+            modal.classList.add('active'); document.body.style.overflow = 'hidden';
         }
-
         function closeFilePreview(event) {
             if (event && event.target.id !== 'filePreviewModal') return;
-            const modal = document.getElementById('filePreviewModal');
-            const previewVideo = document.getElementById('previewVideo');
-            const previewPdf = document.getElementById('previewPdf');
-
-            modal.classList.remove('active');
-            previewVideo.pause();
-            previewVideo.src = '';
-            previewPdf.src = '';
-            document.body.style.overflow = 'auto';
+            const modal = document.getElementById('filePreviewModal'); const previewVideo = document.getElementById('previewVideo'); const previewPdf = document.getElementById('previewPdf');
+            modal.classList.remove('active'); previewVideo.pause(); previewVideo.src = ''; previewPdf.src = ''; document.body.style.overflow = 'auto';
         }
 
         function formatFileSize(bytes) {
-            if (!bytes) return '';
-            if (bytes < 1024) return bytes + ' B';
-            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-            if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-            return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB';
+            if (!bytes) return ''; if (bytes < 1024) return bytes + ' B'; if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB'; return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB';
         }
-
         function downloadFile(url, fileName) {
-            // R2는 CORS/Content-Disposition을 내려주지 않아 브라우저가 download 속성을 무시하고
-            // 새 탭에서 파일을 열어버린다. Worker를 통해 attachment 헤더를 붙여 우회한다.
-            console.log('downloadFile called - url:', url, 'fileName:', fileName);
-
             let downloadUrl = url;
             if (url.startsWith(R2_PUBLIC_DOMAIN)) {
-                // URL에서 R2_PUBLIC_DOMAIN 제거하고 파일명 추출
-                // URL이 이미 인코딩되어 있을 수 있으므로 그대로 사용
-                const urlAfterDomain = url.slice(R2_PUBLIC_DOMAIN.length);
-                const key = urlAfterDomain.split('?')[0].split('#')[0]; // 쿼리스트링과 해시 제거
-
-                console.log('Extracted key:', key);
-
-                // key를 디코딩하지 않고 그대로 전달 (이미 올바른 형식일 수 있음)
+                const key = url.slice(R2_PUBLIC_DOMAIN.length).split('?')[0].split('#')[0];
                 downloadUrl = `${WORKER_PRESIGN_URL}/?key=${key}&filename=${encodeURIComponent(fileName)}`;
-
-                console.log('Download URL:', downloadUrl);
             }
-            const a = document.createElement('a');
-            a.href = downloadUrl;
-            a.download = fileName;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            const a = document.createElement('a'); a.href = downloadUrl; a.download = fileName;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
         }
 
         async function deleteLibraryFile(fileId, fileUrl) {
             if (!confirm('이 파일을 삭제하시겠습니까?')) return;
-
             try {
-                console.log('파일 삭제 시작:', fileId, fileUrl);
-
-                // Delete from R2
                 if (fileUrl && fileUrl.startsWith(R2_PUBLIC_DOMAIN)) {
                     const fileName = decodeURIComponent(fileUrl.replace(R2_PUBLIC_DOMAIN, ''));
-                    console.log('R2에서 삭제 중:', fileName);
-                    const r2DeleteRes = await fetch(WORKER_PRESIGN_URL, {
-                        method: 'DELETE',
-                        mode: 'cors',
-                        credentials: 'omit',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ fileName })
-                    });
-
-                    if (!r2DeleteRes.ok) {
-                        console.error('R2 삭제 실패:', await r2DeleteRes.text());
-                    } else {
-                        console.log('R2 삭제 성공');
-                    }
+                    await fetch(WORKER_PRESIGN_URL, { method: 'DELETE', mode: 'cors', credentials: 'omit', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ fileName }) });
                 }
-
-                // Delete from DB using REST API directly
-                console.log('DB에서 삭제 중:', fileId);
                 const res = await fetch(`${SUPABASE_URL}/rest/v1/library_files?id=eq.${fileId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                        'Content-Type': 'application/json',
-                        'Prefer': 'return=minimal'
-                    }
+                    method: 'DELETE', headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${adminToken}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }
                 });
-
-                console.log('DB 삭제 응답:', res.status, res.statusText);
-
-                if (res.ok || res.status === 204) {
-                    console.log('DB 삭제 성공, 파일 목록 새로고침 중...');
-                    alert('파일이 삭제되었습니다.');
-                    await loadLibraryFiles();
-                    console.log('파일 목록 새로고침 완료');
-                } else {
-                    const errorText = await res.text();
-                    console.error('DB 삭제 실패:', errorText);
-                    alert('삭제 실패: ' + errorText);
-                }
-            } catch (e) {
-                console.error('삭제 중 오류:', e);
-                alert('삭제 중 오류가 발생했습니다: ' + e.message);
-            }
+                if (res.ok || res.status === 204) { alert('파일이 삭제되었습니다.'); await loadLibraryFiles(); } else { alert('삭제 실패'); }
+            } catch (e) { alert('삭제 중 오류가 발생했습니다: ' + e.message); }
         }
 
-        function openFileUploadModal() {
-            document.getElementById('fileUploadModal').classList.add('active');
-        }
-
-        function closeFileUploadModal() {
-            document.getElementById('fileUploadModal').classList.remove('active');
-            document.getElementById('inputFileName').value = '';
-            document.getElementById('inputLibraryFile').value = '';
-        }
-
-        function openFileEditModal(fileId, currentName) {
-            document.getElementById('editFileTargetId').value = fileId;
-            document.getElementById('editFileNameInput').value = currentName;
-            document.getElementById('fileEditModal').classList.add('active');
-        }
-
-        function closeFileEditModal() {
-            document.getElementById('fileEditModal').classList.remove('active');
-        }
-
+        function openFileUploadModal() { document.getElementById('fileUploadModal').classList.add('active'); }
+        function closeFileUploadModal() { document.getElementById('fileUploadModal').classList.remove('active'); document.getElementById('inputFileName').value = ''; document.getElementById('inputLibraryFile').value = ''; }
+        function openFileEditModal(fileId, currentName) { document.getElementById('editFileTargetId').value = fileId; document.getElementById('editFileNameInput').value = currentName; document.getElementById('fileEditModal').classList.add('active'); }
+        function closeFileEditModal() { document.getElementById('fileEditModal').classList.remove('active'); }
+        
         async function submitEditFileName() {
-            const fileId = document.getElementById('editFileTargetId').value;
-            const newFileName = document.getElementById('editFileNameInput').value.trim();
-
-            if (!newFileName) {
-                return alert('파일 이름을 입력해주세요.');
-            }
-
+            const fileId = document.getElementById('editFileTargetId').value; const newFileName = document.getElementById('editFileNameInput').value.trim();
+            if (!newFileName) return alert('파일 이름을 입력해주세요.');
             try {
-                const res = await callAdminRpc('admin_update_library_file', {
-                    p_id: Number(fileId),
-                    p_file_name: newFileName
-                });
-
-                if (res.ok) {
-                    alert('파일 이름이 수정되었습니다.');
-                    closeFileEditModal();
-                    loadLibraryFiles();
-                } else {
-                    alert('수정 실패');
-                }
-            } catch (e) {
-                console.error(e);
-                alert('수정 중 오류가 발생했습니다.');
-            }
+                const res = await callAdminRpc('admin_update_library_file', { p_id: Number(fileId), p_file_name: newFileName });
+                if (res.ok) { alert('파일 이름이 수정되었습니다.'); closeFileEditModal(); loadLibraryFiles(); } else { alert('수정 실패'); }
+            } catch (e) { alert('수정 중 오류가 발생했습니다.'); }
         }
 
         async function submitFileUpload() {
-            const fileNameInput = document.getElementById('inputFileName').value.trim();
-            const fileInput = document.getElementById('inputLibraryFile');
-
-            if (!fileNameInput || fileInput.files.length === 0) {
-                return alert('파일 이름과 파일을 모두 선택해주세요.');
-            }
-
-            const file = fileInput.files[0];
-            const realExt = getFileExt(file.name);
-            const fileName = (realExt && getFileExt(fileNameInput) !== realExt)
-                ? `${fileNameInput}.${realExt}`
-                : fileNameInput;
-
+            const fileNameInput = document.getElementById('inputFileName').value.trim(); const fileInput = document.getElementById('inputLibraryFile');
+            if (!fileNameInput || fileInput.files.length === 0) return alert('파일 이름과 파일을 모두 선택해주세요.');
+            const file = fileInput.files[0]; const realExt = getFileExt(file.name);
+            const fileName = (realExt && getFileExt(fileNameInput) !== realExt) ? `${fileNameInput}.${realExt}` : fileNameInput;
+            
             document.getElementById('loadingSpinner').style.display = 'flex';
             document.getElementById('spinnerText').textContent = '⏳ 파일 업로드 중...';
-
             try {
-                // Upload to R2 (자료실 파일은 Download/ 폴더 아래에 정리)
                 const uploadRes = await fetch(WORKER_PRESIGN_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': file.type || 'application/octet-stream',
-                        'X-File-Name': encodeURIComponent(`Download/${fileName}`)
-                    },
-                    body: file
+                    method: 'POST', headers: { 'Content-Type': file.type || 'application/octet-stream', 'X-File-Name': encodeURIComponent(`Download/${fileName}`) }, body: file
                 });
-
                 if (!uploadRes.ok) throw new Error(`업로드 실패: ${uploadRes.status}`);
                 const { fileName: uploadedFileName } = await uploadRes.json();
-
                 const fileUrl = R2_PUBLIC_DOMAIN + uploadedFileName;
-
-                // Save to DB
-                const dbRes = await callAdminRpc('admin_create_library_file', {
-                    p_file_name: fileName,
-                    p_file_url: fileUrl,
-                    p_file_size: file.size
-                });
-
+                const dbRes = await callAdminRpc('admin_create_library_file', { p_file_name: fileName, p_file_url: fileUrl, p_file_size: file.size });
+                
                 document.getElementById('loadingSpinner').style.display = 'none';
-                document.getElementById('spinnerText').textContent = '⏳ Cloudflare R2 스토리지로 영상 업로드 중...';
-
-                if (dbRes.ok) {
-                    alert('파일이 업로드되었습니다!');
-                    closeFileUploadModal();
-                    loadLibraryFiles();
-                } else {
-                    const errorText = await dbRes.text();
-                    console.error('파일 DB 저장 실패 상세:', { status: dbRes.status, statusText: dbRes.statusText, body: errorText });
-                    alert('DB 저장 실패\n\n상태 코드: ' + dbRes.status + '\n에러: ' + (errorText || dbRes.statusText));
-                }
+                if (dbRes.ok) { alert('파일이 업로드되었습니다!'); closeFileUploadModal(); loadLibraryFiles(); } else { alert('DB 저장 실패'); }
             } catch (err) {
-                document.getElementById('loadingSpinner').style.display = 'none';
-                document.getElementById('spinnerText').textContent = '⏳ Cloudflare R2 스토리지로 영상 업로드 중...';
-                console.error("업로드 실패:", err);
-                alert("업로드 중 오류가 발생했습니다: " + err.message);
+                document.getElementById('loadingSpinner').style.display = 'none'; alert("업로드 중 오류가 발생했습니다: " + err.message);
             }
         }
 
-        // 드래그 앤 드롭 핸들러
-        let draggedElement = null;
-        let draggedIndex = null;
-        let draggedDate = null;
-
-        function handleDragStart(event, index, date) {
-            draggedElement = event.currentTarget;
-            draggedIndex = index;
-            draggedDate = date;
-            event.currentTarget.classList.add('dragging');
-            event.dataTransfer.effectAllowed = 'move';
-        }
-
+        let draggedElement = null; let draggedIndex = null; let draggedDate = null;
+        function handleDragStart(event, index, date) { draggedElement = event.currentTarget; draggedIndex = index; draggedDate = date; event.currentTarget.classList.add('dragging'); event.dataTransfer.effectAllowed = 'move'; }
         function handleDragOver(event) {
-            event.preventDefault();
-            event.dataTransfer.dropEffect = 'move';
-            const target = event.currentTarget;
-            if (target !== draggedElement && target.classList.contains('video-card')) {
-                target.classList.add('drag-over');
-            }
+            event.preventDefault(); event.dataTransfer.dropEffect = 'move'; const target = event.currentTarget;
+            if (target !== draggedElement && target.classList.contains('video-card')) target.classList.add('drag-over');
         }
-
         function handleDrop(event, targetIndex, targetDate) {
-            event.preventDefault();
-            event.stopPropagation();
-
-            const target = event.currentTarget;
-            target.classList.remove('drag-over');
-
-            if (draggedDate !== targetDate) {
-                alert('같은 프로젝트 내에서만 순서를 변경할 수 있습니다.');
-                return;
-            }
-
+            event.preventDefault(); event.stopPropagation(); event.currentTarget.classList.remove('drag-over');
+            if (draggedDate !== targetDate) return alert('같은 프로젝트 내에서만 순서를 변경할 수 있습니다.');
             if (draggedIndex === targetIndex) return;
-
-            // 배열에서 순서 변경
-            const group = displayArchive.find(g => g.date === targetDate);
-            if (!group) return;
-
-            const [movedItem] = group.items.splice(draggedIndex, 1);
-            group.items.splice(targetIndex, 0, movedItem);
-
-            // DB에 순서 저장
-            saveVideoOrder(group);
-
-            // UI 다시 렌더링
-            renderArchive();
+            const group = displayArchive.find(g => g.date === targetDate); if (!group) return;
+            const [movedItem] = group.items.splice(draggedIndex, 1); group.items.splice(targetIndex, 0, movedItem);
+            saveVideoOrder(group); renderArchive();
         }
-
         function handleDragEnd(event) {
-            event.currentTarget.classList.remove('dragging');
-            document.querySelectorAll('.video-card.drag-over').forEach(el => {
-                el.classList.remove('drag-over');
-            });
-            draggedElement = null;
-            draggedIndex = null;
-            draggedDate = null;
+            event.currentTarget.classList.remove('dragging'); document.querySelectorAll('.video-card.drag-over').forEach(el => el.classList.remove('drag-over'));
+            draggedElement = null; draggedIndex = null; draggedDate = null;
         }
-
         async function saveVideoOrder(group) {
             try {
                 for (let i = 0; i < group.items.length; i++) {
                     const item = group.items[i];
                     if (item.id) {
-                        const res = await callAdminRpc('admin_update_video_order', {
-                            p_video_id: item.id,
-                            p_new_order: i
-                        });
-                        if (!res.ok) {
-                            const errorText = await res.text();
-                            throw new Error(`상태 코드 ${res.status}: ${errorText}`);
-                        }
+                        const res = await callAdminRpc('admin_update_video_order', { p_video_id: item.id, p_new_order: i });
+                        if (!res.ok) throw new Error(`상태 코드 ${res.status}`);
                     }
                 }
-                console.log('순서 저장 완료');
-            } catch (e) {
-                console.error('순서 저장 실패:', e);
-                alert('순서 저장 중 오류가 발생했습니다: ' + e.message);
-                loadArchiveFromDB();
-            }
+            } catch (e) { alert('순서 저장 중 오류가 발생했습니다: ' + e.message); loadArchiveFromDB(); }
         }
 
+        // 앱 렌더링 초기화
         (async function init() {
-            applyAdminMode();
-            setupQuickLinksScroll();
-            await loadArchiveFromDB();
+            initApp();
         })();
     </script>
 </body>
