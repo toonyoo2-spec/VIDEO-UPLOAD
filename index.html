@@ -240,6 +240,15 @@
         .note-content-editable { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 1.2rem; min-height: 340px; outline: none; line-height: 1.8; margin-bottom: 4rem; }
         .note-content-editable:focus { border-color: var(--accent-red); }
         .note-content-editable img, .note-content-editable video { max-width: 100%; border-radius: 8px; margin: 0.6rem 0; display: block; }
+        .note-content-editable .note-embed-frame { width: 100%; aspect-ratio: 16 / 9; border: none; border-radius: 8px; margin: 0.6rem 0; display: block; }
+        .note-content-editable h1 { font-size: 1.7rem; font-weight: 800; margin: 1rem 0 0.5rem; }
+        .note-content-editable h2 { font-size: 1.35rem; font-weight: 800; margin: 0.9rem 0 0.4rem; }
+        .note-content-editable h3 { font-size: 1.1rem; font-weight: 700; margin: 0.8rem 0 0.3rem; }
+        .note-content-editable[contenteditable="false"] { border-color: transparent; background: transparent; padding-left: 0; padding-right: 0; cursor: default; margin-bottom: 1.5rem; }
+        .note-title-input[readonly] { background: transparent; border-color: transparent; padding-left: 0; cursor: default; font-size: 1.4rem; }
+
+        .note-date-section { margin-bottom: 2rem; }
+        .note-date-section > .date-badge { display: inline-block; margin-bottom: 0.8rem; }
 
         /* 드래그 앤 드롭 스타일 */
         .video-card.draggable { cursor: grab; }
@@ -320,29 +329,39 @@
         <main id="noteContainer" class="grid-layout-align" style="display: none;">
             <div id="noteListView">
                 <div class="note-editor-header">
-                    <div></div>
+                    <div id="noteAuthorTabs" class="nav-row"></div>
                     <button class="btn-admin-action" style="display: inline-block;" onclick="openNoteEditor()">+ 새 글</button>
                 </div>
-                <div id="noteListContainer" class="note-list"></div>
+                <div id="noteListContainer"></div>
             </div>
             <div id="noteEditorView" style="display: none;">
                 <div class="note-editor-header">
                     <button class="btn-cancel" onclick="closeNoteEditor()">← 목록으로</button>
                     <div style="display: flex; gap: 0.5rem;">
                         <button class="admin-delete-badge" id="noteDeleteBtn" style="display: none;" onclick="deleteCurrentNote()">삭제</button>
-                        <button class="btn-submit" id="noteSaveBtn" onclick="saveCurrentNote()">저장</button>
+                        <button class="btn-cancel" id="noteEditToggleBtn" style="display: none;" onclick="toggleNoteEditMode()">✏️ 수정</button>
+                        <button class="btn-submit" id="noteSaveBtn" style="display: none;" onclick="saveCurrentNote()">저장</button>
                     </div>
                 </div>
                 <input type="text" id="noteTitleInput" class="note-title-input" placeholder="제목을 입력하세요">
                 <div id="noteMetaInfo" class="note-meta-info"></div>
-                <div class="note-toolbar">
+                <div class="note-toolbar" id="noteToolbar" style="display: none;">
+                    <button type="button" title="옵션+커맨드+1" onclick="noteExec('formatBlock','&lt;h1&gt;')">H1</button>
+                    <button type="button" title="옵션+커맨드+2" onclick="noteExec('formatBlock','&lt;h2&gt;')">H2</button>
+                    <button type="button" title="옵션+커맨드+3" onclick="noteExec('formatBlock','&lt;h3&gt;')">H3</button>
                     <button type="button" onclick="noteExec('bold')"><b>B</b></button>
                     <button type="button" onclick="noteExec('italic')"><i>I</i></button>
                     <button type="button" onclick="noteExec('insertUnorderedList')">• 목록</button>
                     <label class="note-toolbar-upload">🖼️ 이미지<input type="file" accept="image/*" style="display:none;" onchange="insertNoteMedia(this,'image')"></label>
-                    <label class="note-toolbar-upload">🎬 동영상<input type="file" accept="video/*" style="display:none;" onchange="insertNoteMedia(this,'video')"></label>
+                    <label class="note-toolbar-upload">🎬 동영상 업로드<input type="file" accept="video/*" style="display:none;" onchange="insertNoteMedia(this,'video')"></label>
+                    <button type="button" class="note-toolbar-upload" onclick="toggleNoteVideoLinkInput()">🔗 동영상 링크</button>
                 </div>
-                <div id="noteContentEditable" class="note-content-editable" contenteditable="true"></div>
+                <div id="noteVideoLinkRow" style="display: none; gap: 0.5rem; margin-bottom: 0.8rem;">
+                    <input type="text" id="noteVideoLinkInput" class="admin-input" style="flex: 1;" placeholder="YouTube / Vimeo / mp4 직접 링크 붙여넣기" onkeypress="if(event.key==='Enter') confirmNoteVideoEmbed()">
+                    <button class="btn-submit" onclick="confirmNoteVideoEmbed()">삽입</button>
+                    <button class="btn-cancel" onclick="toggleNoteVideoLinkInput(false)">취소</button>
+                </div>
+                <div id="noteContentEditable" class="note-content-editable" contenteditable="false"></div>
             </div>
         </main>
 
@@ -1700,10 +1719,12 @@
         // --- Note 게시판 기능 ---
         let currentNotes = [];
         let currentNoteId = null;
+        let noteEditMode = false;
+        let noteAuthorFilter = 'ALL';
 
         async function loadNotes() {
             try {
-                const res = await fetch(`${SUPABASE_URL}/rest/v1/notes?select=*&order=updated_at.desc`, {
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/notes?select=*&order=created_at.desc`, {
                     headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${adminToken}` }
                 });
                 const data = await res.json();
@@ -1718,22 +1739,56 @@
             return d.textContent || '';
         }
 
+        function noteAuthorName(n) { return (n.author_email || '').split('@')[0] || '알 수 없음'; }
+
+        function renderNoteAuthorTabs() {
+            const tabsContainer = document.getElementById('noteAuthorTabs');
+            const authors = Array.from(new Set(currentNotes.map(noteAuthorName))).sort();
+            let html = `<button class="tab-btn ${noteAuthorFilter === 'ALL' ? 'active' : ''}" onclick="setNoteAuthorFilter('ALL')">전체</button>`;
+            authors.forEach(a => {
+                html += `<button class="tab-btn ${noteAuthorFilter === a ? 'active' : ''}" onclick="setNoteAuthorFilter('${a}')">${a}</button>`;
+            });
+            tabsContainer.innerHTML = html;
+        }
+
+        function setNoteAuthorFilter(author) { noteAuthorFilter = author; renderNoteList(); }
+
         function renderNoteList() {
+            renderNoteAuthorTabs();
             const container = document.getElementById('noteListContainer');
-            if (currentNotes.length === 0) {
+            const filtered = noteAuthorFilter === 'ALL' ? currentNotes : currentNotes.filter(n => noteAuthorName(n) === noteAuthorFilter);
+
+            if (filtered.length === 0) {
                 container.innerHTML = '<div class="note-empty">아직 작성된 글이 없습니다. "+ 새 글"로 시작해보세요.</div>';
                 return;
             }
-            container.innerHTML = currentNotes.map(n => {
-                const snippet = stripHtml(n.content).slice(0, 90) || '(내용 없음)';
-                const author = (n.author_email || '').split('@')[0] || '알 수 없음';
-                const date = n.updated_at ? new Date(n.updated_at).toLocaleDateString('ko-KR') : '';
-                const safeTitle = (n.title || '(제목 없음)').replace(/</g, '&lt;');
+
+            // 날짜별로 그룹화 (작성일 기준, 최신순)
+            const groups = {};
+            filtered.forEach(n => {
+                const key = (n.created_at || '').slice(0, 10) || '날짜 미상';
+                if (!groups[key]) groups[key] = [];
+                groups[key].push(n);
+            });
+            const sortedKeys = Object.keys(groups).sort((a, b) => b.localeCompare(a));
+
+            container.innerHTML = sortedKeys.map(key => {
+                const label = key === '날짜 미상' ? key : key.replace(/-/g, '.');
+                const cards = groups[key].map(n => {
+                    const snippet = stripHtml(n.content).slice(0, 90).replace(/</g, '&lt;') || '(내용 없음)';
+                    const safeTitle = (n.title || '(제목 없음)').replace(/</g, '&lt;');
+                    return `
+                        <div class="note-card" onclick="openNoteEditor('${n.id}')">
+                            <div class="note-card-title">${safeTitle}</div>
+                            <div class="note-card-snippet">${snippet}</div>
+                            <div class="note-card-meta">${noteAuthorName(n)}</div>
+                        </div>
+                    `;
+                }).join('');
                 return `
-                    <div class="note-card" onclick="openNoteEditor('${n.id}')">
-                        <div class="note-card-title">${safeTitle}</div>
-                        <div class="note-card-snippet">${snippet.replace(/</g, '&lt;')}</div>
-                        <div class="note-card-meta">${author} · ${date}</div>
+                    <div class="note-date-section">
+                        <span class="date-badge">${label}</span>
+                        <div class="note-list">${cards}</div>
                     </div>
                 `;
             }).join('');
@@ -1747,33 +1802,57 @@
         function openNoteEditor(id) {
             currentNoteId = id || null;
             const note = currentNoteId ? currentNotes.find(n => n.id === currentNoteId) : null;
-            const editable = canEditNote(note);
+            noteEditMode = !note; // 새 글은 바로 편집 모드, 기존 글은 뷰어 모드로 먼저 열림
 
             document.getElementById('noteTitleInput').value = note ? note.title : '';
-            document.getElementById('noteTitleInput').readOnly = !editable;
             document.getElementById('noteContentEditable').innerHTML = note ? (note.content || '') : '';
-            document.getElementById('noteContentEditable').contentEditable = editable ? 'true' : 'false';
-            document.querySelector('.note-toolbar').style.display = editable ? 'flex' : 'none';
-            document.getElementById('noteDeleteBtn').style.display = (note && editable) ? 'inline-block' : 'none';
-            document.getElementById('noteSaveBtn').style.display = editable ? 'inline-block' : 'none';
-            document.getElementById('noteMetaInfo').textContent = note
-                ? `작성자: ${(note.author_email || '').split('@')[0]} · 마지막 수정: ${new Date(note.updated_at).toLocaleString('ko-KR')}${editable ? '' : ' · 읽기 전용 (작성자만 수정 가능)'}`
-                : '새 글 작성 중';
+            applyNoteEditorMode(note);
+
             document.getElementById('noteListView').style.display = 'none';
             document.getElementById('noteEditorView').style.display = 'block';
+        }
+
+        function applyNoteEditorMode(note) {
+            const editable = canEditNote(note);
+            document.getElementById('noteTitleInput').readOnly = !noteEditMode;
+            document.getElementById('noteContentEditable').contentEditable = noteEditMode ? 'true' : 'false';
+            document.getElementById('noteToolbar').style.display = noteEditMode ? 'flex' : 'none';
+            document.getElementById('noteSaveBtn').style.display = noteEditMode ? 'inline-block' : 'none';
+            document.getElementById('noteEditToggleBtn').style.display = (editable && !noteEditMode && note) ? 'inline-block' : 'none';
+            document.getElementById('noteDeleteBtn').style.display = (note && editable) ? 'inline-block' : 'none';
+            document.getElementById('noteMetaInfo').textContent = note
+                ? `작성자: ${noteAuthorName(note)} · 마지막 수정: ${new Date(note.updated_at).toLocaleString('ko-KR')}${editable ? '' : ' · 읽기 전용 (작성자만 수정 가능)'}`
+                : '새 글 작성 중';
+        }
+
+        function toggleNoteEditMode() {
+            noteEditMode = true;
+            const note = currentNoteId ? currentNotes.find(n => n.id === currentNoteId) : null;
+            applyNoteEditorMode(note);
+            document.getElementById('noteContentEditable').focus();
         }
 
         function closeNoteEditor() {
             document.getElementById('noteEditorView').style.display = 'none';
             document.getElementById('noteListView').style.display = 'block';
+            toggleNoteVideoLinkInput(false);
             currentNoteId = null;
+            noteEditMode = false;
             loadNotes();
         }
 
-        function noteExec(cmd) {
+        function noteExec(cmd, value) {
             document.getElementById('noteContentEditable').focus();
-            document.execCommand(cmd, false, null);
+            document.execCommand(cmd, false, value || null);
         }
+
+        // Notion처럼 옵션+커맨드+1/2/3으로 헤딩 크기 전환 (Mac: Option=Alt, Command=Meta)
+        document.getElementById('noteContentEditable').addEventListener('keydown', function (e) {
+            if (e.altKey && e.metaKey && ['1', '2', '3'].includes(e.key)) {
+                e.preventDefault();
+                noteExec('formatBlock', `<h${e.key}>`);
+            }
+        });
 
         async function insertNoteMedia(inputEl, type) {
             const file = inputEl.files[0];
@@ -1792,6 +1871,33 @@
                 document.getElementById('loadingSpinner').style.display = 'none';
                 inputEl.value = '';
             }
+        }
+
+        // 동영상 링크(임베드) 삽입 — 파일 업로드와 별개로, URL만 붙여넣는 방식
+        function toggleNoteVideoLinkInput(show) {
+            const row = document.getElementById('noteVideoLinkRow');
+            const shouldShow = show !== undefined ? show : (row.style.display === 'none');
+            row.style.display = shouldShow ? 'flex' : 'none';
+            if (shouldShow) document.getElementById('noteVideoLinkInput').focus();
+            else document.getElementById('noteVideoLinkInput').value = '';
+        }
+
+        function confirmNoteVideoEmbed() {
+            const url = document.getElementById('noteVideoLinkInput').value.trim();
+            if (!url) return;
+            let html;
+            const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{6,})/);
+            const vimeo = url.match(/vimeo\.com\/(\d+)/);
+            if (yt) {
+                html = `<iframe src="https://www.youtube.com/embed/${yt[1]}" class="note-embed-frame" allowfullscreen></iframe>`;
+            } else if (vimeo) {
+                html = `<iframe src="https://player.vimeo.com/video/${vimeo[1]}" class="note-embed-frame" allowfullscreen></iframe>`;
+            } else {
+                html = `<video src="${url}" controls></video>`;
+            }
+            document.getElementById('noteContentEditable').focus();
+            document.execCommand('insertHTML', false, html);
+            toggleNoteVideoLinkInput(false);
         }
 
         async function saveCurrentNote() {
