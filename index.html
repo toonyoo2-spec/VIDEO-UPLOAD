@@ -680,6 +680,7 @@
         const NOTE_ACCESS_KEY = 'socra_note_access';
         const USER_ID_KEY = 'socra_user_id';
         const USER_EMAIL_KEY = 'socra_user_email';
+        const USER_NAME_KEY = 'socra_user_name';
         const VISIBLE_TABS_KEY = 'socra_visible_tabs';
 
         let adminToken = localStorage.getItem(ADMIN_TOKEN_KEY);
@@ -687,6 +688,7 @@
         let noteAccess = localStorage.getItem(NOTE_ACCESS_KEY) === '1';
         let currentUserId = localStorage.getItem(USER_ID_KEY) || null;
         let currentUserEmail = localStorage.getItem(USER_EMAIL_KEY) || null;
+        let currentUserName = localStorage.getItem(USER_NAME_KEY) || null;
         let visibleTabs = JSON.parse(localStorage.getItem(VISIBLE_TABS_KEY) || '["archive","library"]');
         let isAdmin = !!(adminToken && Number(localStorage.getItem(ADMIN_EXP_KEY)) > Date.now() && userRole === 'editor');
 
@@ -697,6 +699,7 @@
             noteAccess = false;
             currentUserId = null;
             currentUserEmail = null;
+            currentUserName = null;
             visibleTabs = ['archive', 'library'];
             isAdmin = false;
             localStorage.removeItem(ADMIN_TOKEN_KEY);
@@ -705,6 +708,7 @@
             localStorage.removeItem(NOTE_ACCESS_KEY);
             localStorage.removeItem(USER_ID_KEY);
             localStorage.removeItem(USER_EMAIL_KEY);
+            localStorage.removeItem(USER_NAME_KEY);
             localStorage.removeItem(VISIBLE_TABS_KEY);
         }
 
@@ -766,8 +770,8 @@
                     return alert('로그인 실패: 아이디나 비밀번호를 확인해주세요.');
                 }
 
-                // 2. 권한(role, note_access, visible_tabs) 가져오기
-                const profileRes = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${data.user.id}&select=role,note_access,visible_tabs`, {
+                // 2. 권한(role, note_access, visible_tabs, display_name) 가져오기
+                const profileRes = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${data.user.id}&select=role,note_access,visible_tabs,display_name`, {
                     headers: {
                         'apikey': SUPABASE_ANON_KEY,
                         'Authorization': `Bearer ${data.access_token}`
@@ -780,10 +784,12 @@
                     noteAccess = profileData[0].note_access === true;
                     visibleTabs = Array.isArray(profileData[0].visible_tabs) && profileData[0].visible_tabs.length > 0
                         ? profileData[0].visible_tabs : ['archive', 'library'];
+                    currentUserName = profileData[0].display_name || null;
                 } else {
                     userRole = 'viewer';
                     noteAccess = false;
                     visibleTabs = ['archive', 'library'];
+                    currentUserName = null;
                 }
 
                 // 3. 상태 저장 및 UI 업데이트
@@ -798,6 +804,7 @@
                 localStorage.setItem(NOTE_ACCESS_KEY, noteAccess ? '1' : '0');
                 localStorage.setItem(USER_ID_KEY, currentUserId);
                 localStorage.setItem(USER_EMAIL_KEY, currentUserEmail);
+                if (currentUserName) localStorage.setItem(USER_NAME_KEY, currentUserName); else localStorage.removeItem(USER_NAME_KEY);
                 localStorage.setItem(VISIBLE_TABS_KEY, JSON.stringify(visibleTabs));
                 
                 // 로그인 창 비우기
@@ -823,6 +830,7 @@
                 noteAccess = false;
                 currentUserId = null;
                 currentUserEmail = null;
+                currentUserName = null;
                 visibleTabs = ['archive', 'library'];
                 localStorage.removeItem(ADMIN_TOKEN_KEY);
                 localStorage.removeItem(ADMIN_EXP_KEY);
@@ -830,6 +838,7 @@
                 localStorage.removeItem(NOTE_ACCESS_KEY);
                 localStorage.removeItem(USER_ID_KEY);
                 localStorage.removeItem(USER_EMAIL_KEY);
+                localStorage.removeItem(USER_NAME_KEY);
                 localStorage.removeItem(VISIBLE_TABS_KEY);
 
                 // 메인으로 되돌려놓고 앱 숨기기
@@ -1771,7 +1780,7 @@
             return d.textContent || '';
         }
 
-        function noteAuthorName(n) { return (n.author_email || '').split('@')[0] || '알 수 없음'; }
+        function noteAuthorName(n) { return n.author_name || (n.author_email || '').split('@')[0] || '알 수 없음'; }
 
         function renderNoteSidebar() {
             const authorTabs = document.getElementById('noteAuthorTabs');
@@ -1951,7 +1960,7 @@
                     const res = await adminRest(`notes?id=eq.${currentNoteId}`, 'PATCH', { title, content, updated_at: new Date().toISOString() });
                     if (!res.ok) throw new Error('수정 실패');
                 } else {
-                    const res = await adminRest('notes', 'POST', { title, content, author_id: currentUserId, author_email: currentUserEmail });
+                    const res = await adminRest('notes', 'POST', { title, content, author_id: currentUserId, author_email: currentUserEmail, author_name: currentUserName });
                     if (!res.ok) throw new Error('생성 실패');
                 }
                 closeNoteEditor();
