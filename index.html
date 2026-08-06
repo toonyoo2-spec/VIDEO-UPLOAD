@@ -233,8 +233,10 @@
         .note-title-input:focus { border-color: var(--accent-red); }
         .note-meta-info { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.8rem; }
 
-        .note-toolbar { display: flex; gap: 0.5rem; margin-bottom: 0.6rem; flex-wrap: wrap; }
-        .note-toolbar button, .note-toolbar-upload { background: #18181b; border: 1px solid var(--border-color); color: var(--text-primary); padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 700; }
+        .note-toolbar { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.6rem; flex-wrap: wrap; }
+        .note-toolbar-group { display: flex; gap: 0.3rem; }
+        .note-toolbar-divider { width: 1px; height: 20px; background: var(--border-color); flex-shrink: 0; }
+        .note-toolbar button, .note-toolbar-upload { background: #18181b; border: 1px solid var(--border-color); color: var(--text-primary); padding: 0.4rem 0.7rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 700; white-space: nowrap; }
         .note-toolbar button:hover, .note-toolbar-upload:hover { border-color: var(--border-hover); }
 
         .note-content-editable { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 1.2rem; min-height: 340px; outline: none; line-height: 1.8; margin-bottom: 4rem; }
@@ -244,6 +246,12 @@
         .note-content-editable h1 { font-size: 1.7rem; font-weight: 800; margin: 1rem 0 0.5rem; }
         .note-content-editable h2 { font-size: 1.35rem; font-weight: 800; margin: 0.9rem 0 0.4rem; }
         .note-content-editable h3 { font-size: 1.1rem; font-weight: 700; margin: 0.8rem 0 0.3rem; }
+        .note-content-editable p { margin: 0.4rem 0; }
+        .note-content-editable ul, .note-content-editable ol { margin: 0.4rem 0; padding-left: 1.4rem; }
+        .note-content-editable blockquote { border-left: 3px solid var(--accent-red); margin: 0.8rem 0; padding: 0.3rem 0 0.3rem 1rem; color: var(--text-secondary); font-style: italic; }
+        .note-content-editable hr { border: none; border-top: 1px solid var(--border-color); margin: 1.2rem 0; }
+        .note-content-editable code { background: #18181b; border: 1px solid var(--border-color); border-radius: 4px; padding: 0.1rem 0.35rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.85em; }
+        .note-content-editable a { color: var(--accent-blue); text-decoration: underline; }
         .note-content-editable[contenteditable="false"] { border-color: transparent; background: transparent; padding-left: 0; padding-right: 0; cursor: default; margin-bottom: 1.5rem; }
         .note-title-input[readonly] { background: transparent; border-color: transparent; padding-left: 0; cursor: default; font-size: 1.4rem; }
 
@@ -377,15 +385,50 @@
                 <input type="text" id="noteTitleInput" class="note-title-input" placeholder="제목을 입력하세요">
                 <div id="noteMetaInfo" class="note-meta-info"></div>
                 <div class="note-toolbar" id="noteToolbar" style="display: none;">
-                    <button type="button" title="옵션+커맨드+1" onclick="noteExec('formatBlock','&lt;h1&gt;')">H1</button>
-                    <button type="button" title="옵션+커맨드+2" onclick="noteExec('formatBlock','&lt;h2&gt;')">H2</button>
-                    <button type="button" title="옵션+커맨드+3" onclick="noteExec('formatBlock','&lt;h3&gt;')">H3</button>
-                    <button type="button" onclick="noteExec('bold')"><b>B</b></button>
-                    <button type="button" onclick="noteExec('italic')"><i>I</i></button>
-                    <button type="button" onclick="noteExec('insertUnorderedList')">• 목록</button>
-                    <label class="note-toolbar-upload">🖼️ 이미지<input type="file" accept="image/*" style="display:none;" onchange="insertNoteMedia(this,'image')"></label>
-                    <label class="note-toolbar-upload">🎬 동영상 업로드<input type="file" accept="video/*" style="display:none;" onchange="insertNoteMedia(this,'video')"></label>
-                    <button type="button" class="note-toolbar-upload" onclick="toggleNoteVideoLinkInput()">🔗 동영상 링크</button>
+                    <div class="note-toolbar-group">
+                        <button type="button" title="실행 취소 (⌘Z)" onclick="noteExec('undo')">↶</button>
+                        <button type="button" title="다시 실행 (⇧⌘Z)" onclick="noteExec('redo')">↷</button>
+                    </div>
+                    <div class="note-toolbar-divider"></div>
+                    <div class="note-toolbar-group">
+                        <button type="button" title="옵션+커맨드+1" onclick="noteExec('formatBlock','&lt;h1&gt;')">H1</button>
+                        <button type="button" title="옵션+커맨드+2" onclick="noteExec('formatBlock','&lt;h2&gt;')">H2</button>
+                        <button type="button" title="옵션+커맨드+3" onclick="noteExec('formatBlock','&lt;h3&gt;')">H3</button>
+                        <button type="button" title="본문으로" onclick="noteExec('formatBlock','&lt;p&gt;')">본문</button>
+                    </div>
+                    <div class="note-toolbar-divider"></div>
+                    <div class="note-toolbar-group">
+                        <button type="button" title="굵게 (⌘B)" onclick="noteExec('bold')"><b>B</b></button>
+                        <button type="button" title="기울임 (⌘I)" onclick="noteExec('italic')"><i>I</i></button>
+                        <button type="button" title="밑줄 (⌘U)" onclick="noteExec('underline')"><u>U</u></button>
+                        <button type="button" title="취소선" onclick="noteExec('strikeThrough')"><s>S</s></button>
+                        <button type="button" title="인라인 코드" onclick="insertNoteInlineCode()">&lt;/&gt;</button>
+                    </div>
+                    <div class="note-toolbar-divider"></div>
+                    <div class="note-toolbar-group">
+                        <button type="button" title="왼쪽 정렬" onclick="noteExec('justifyLeft')">◧</button>
+                        <button type="button" title="가운데 정렬" onclick="noteExec('justifyCenter')">▣</button>
+                        <button type="button" title="오른쪽 정렬" onclick="noteExec('justifyRight')">◨</button>
+                    </div>
+                    <div class="note-toolbar-divider"></div>
+                    <div class="note-toolbar-group">
+                        <button type="button" title="글머리 목록" onclick="noteExec('insertUnorderedList')">• 목록</button>
+                        <button type="button" title="번호 목록" onclick="noteExec('insertOrderedList')">1. 목록</button>
+                        <button type="button" title="인용구" onclick="noteExec('formatBlock','&lt;blockquote&gt;')">" 인용구</button>
+                        <button type="button" title="구분선" onclick="insertNoteDivider()">─ 구분선</button>
+                        <button type="button" title="링크" onclick="toggleNoteLinkInput()">🔗 링크</button>
+                    </div>
+                    <div class="note-toolbar-divider"></div>
+                    <div class="note-toolbar-group">
+                        <label class="note-toolbar-upload">🖼️ 이미지<input type="file" accept="image/*" style="display:none;" onchange="insertNoteMedia(this,'image')"></label>
+                        <label class="note-toolbar-upload">🎬 동영상 업로드<input type="file" accept="video/*" style="display:none;" onchange="insertNoteMedia(this,'video')"></label>
+                        <button type="button" class="note-toolbar-upload" onclick="toggleNoteVideoLinkInput()">🎬 동영상 링크</button>
+                    </div>
+                </div>
+                <div id="noteLinkRow" style="display: none; gap: 0.5rem; margin-bottom: 0.8rem;">
+                    <input type="text" id="noteLinkInput" class="admin-input" style="flex: 1;" placeholder="https:// 링크 붙여넣기 (텍스트를 먼저 선택하면 그 텍스트에 링크가 걸립니다)" onkeypress="if(event.key==='Enter') confirmNoteLink()">
+                    <button class="btn-submit" onclick="confirmNoteLink()">삽입</button>
+                    <button class="btn-cancel" onclick="toggleNoteLinkInput(false)">취소</button>
                 </div>
                 <div id="noteVideoLinkRow" style="display: none; gap: 0.5rem; margin-bottom: 0.8rem;">
                     <input type="text" id="noteVideoLinkInput" class="admin-input" style="flex: 1;" placeholder="YouTube / Vimeo / mp4 직접 링크 붙여넣기" onkeypress="if(event.key==='Enter') confirmNoteVideoEmbed()">
@@ -1972,8 +2015,56 @@
             }
         }
 
+        function insertNoteDivider() {
+            document.getElementById('noteContentEditable').focus();
+            document.execCommand('insertHTML', false, '<hr>');
+        }
+
+        function insertNoteInlineCode() {
+            const el = document.getElementById('noteContentEditable');
+            el.focus();
+            const sel = window.getSelection();
+            const text = sel && sel.rangeCount > 0 ? sel.toString() : '';
+            document.execCommand('insertHTML', false, `<code>${(text || '코드').replace(/</g, '&lt;')}</code>`);
+        }
+
+        // 링크/동영상링크 입력창은 하나만 열리도록 서로 닫아줌
+        function closeNoteInlineInputRows() {
+            document.getElementById('noteLinkRow').style.display = 'none';
+            document.getElementById('noteLinkInput').value = '';
+            document.getElementById('noteVideoLinkRow').style.display = 'none';
+            document.getElementById('noteVideoLinkInput').value = '';
+        }
+
+        // 링크 삽입 — 텍스트를 선택한 상태면 그 텍스트에 링크를 걸고, 아니면 URL 텍스트를 그대로 삽입
+        function toggleNoteLinkInput(show) {
+            closeNoteInlineInputRows();
+            if (show === false) return;
+            const row = document.getElementById('noteLinkRow');
+            const shouldShow = show !== undefined ? show : (row.style.display === 'none');
+            row.style.display = shouldShow ? 'flex' : 'none';
+            if (shouldShow) document.getElementById('noteLinkInput').focus();
+            else document.getElementById('noteLinkInput').value = '';
+        }
+
+        function confirmNoteLink() {
+            let url = document.getElementById('noteLinkInput').value.trim();
+            if (!url) return;
+            if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+            document.getElementById('noteContentEditable').focus();
+            const sel = window.getSelection();
+            const hasSelection = sel && sel.rangeCount > 0 && !sel.isCollapsed;
+            if (hasSelection) {
+                document.execCommand('createLink', false, url);
+            } else {
+                document.execCommand('insertHTML', false, `<a href="${url}" target="_blank" rel="noopener">${url}</a>`);
+            }
+            toggleNoteLinkInput(false);
+        }
+
         // 동영상 링크(임베드) 삽입 — 파일 업로드와 별개로, URL만 붙여넣는 방식
         function toggleNoteVideoLinkInput(show) {
+            toggleNoteLinkInput(false);
             const row = document.getElementById('noteVideoLinkRow');
             const shouldShow = show !== undefined ? show : (row.style.display === 'none');
             row.style.display = shouldShow ? 'flex' : 'none';
